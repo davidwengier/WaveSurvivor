@@ -152,6 +152,90 @@
       font-size: 0.68rem;
     }
 
+    .commander-health {
+      position: absolute;
+      top: 3.1rem;
+      left: 50%;
+      width: min(22rem, calc(100% - 2rem));
+      height: 0.9rem;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 22%);
+      border-radius: 999px;
+      background: rgb(28 20 16 / 72%);
+      transform: translateX(-50%);
+    }
+
+    .commander-health[hidden] {
+      display: none;
+    }
+
+    .commander-health span {
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #dc2626, #fb7185);
+      transition: width 100ms linear;
+    }
+
+    .mobile-controls {
+      position: absolute;
+      right: 0;
+      bottom: 0.7rem;
+      left: 0;
+      z-index: 4;
+      display: none;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 0.8rem;
+      pointer-events: none;
+    }
+
+    .mobile-controls[hidden] {
+      display: none !important;
+    }
+
+    .joystick {
+      position: relative;
+      width: 6.2rem;
+      height: 6.2rem;
+      border: 1px solid rgb(255 255 255 / 25%);
+      border-radius: 50%;
+      background: rgb(28 20 16 / 50%);
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .joystick-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: rgb(34 211 238 / 76%);
+      box-shadow: 0 0 1.2rem rgb(34 211 238 / 45%);
+      transform: translate(-50%, -50%);
+    }
+
+    .dash-button {
+      width: 5rem;
+      height: 5rem;
+      border: 1px solid rgb(255 255 255 / 24%);
+      border-radius: 50%;
+      background: rgb(194 65 12 / 78%);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      pointer-events: auto;
+      text-transform: uppercase;
+      touch-action: none;
+    }
+
+    .dash-button.cooldown {
+      opacity: 0.4;
+    }
+
     .panel {
       margin-top: 0.8rem;
       padding: 0.9rem;
@@ -516,6 +600,12 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
+
+    @media (pointer: coarse) {
+      .mobile-controls {
+        display: flex;
+      }
+    }
   </style>
 </head>
 <body>
@@ -535,7 +625,14 @@
     <section class="arena-shell">
       <canvas id="arena"></canvas>
       <div id="arenaLabel" class="arena-label">Planning phase</div>
+      <div id="commanderHealth" class="commander-health" hidden><span></span></div>
       <div id="battleLog" class="battle-log">Play command cards, choose a route, then deploy.</div>
+      <div id="mobileControls" class="mobile-controls" hidden>
+        <div id="joystick" class="joystick" aria-label="Movement joystick">
+          <div id="joystickKnob" class="joystick-knob"></div>
+        </div>
+        <button id="dashButton" class="dash-button">Dash</button>
+      </div>
     </section>
 
     <section class="panel">
@@ -581,8 +678,8 @@
       <p>The old world is gone. Build a command deck, gather a warband, create faction engines, and send your survivors into automatic battles across the ashlands.</p>
       <div class="how-to">
         <div><strong>Play cards</strong>Recruit units and stack permanent upgrades.</div>
-        <div><strong>Build engines</strong>Focus your deck to find the same factions and unit mods.</div>
-        <div><strong>Pick a route</strong>Risk harder enemy squads for stronger card rewards.</div>
+        <div><strong>Lead the fight</strong>Move with WASD or the joystick. Dash with Space.</div>
+        <div><strong>Build engines</strong>Focus your deck to find matching factions and unit mods.</div>
       </div>
       <button id="startButton" class="primary">Start expedition</button>
       <p id="bestSector">Best sector: 0</p>
@@ -629,6 +726,14 @@
     const rewardOverlay = document.querySelector("#rewardOverlay");
     const rewardGrid = document.querySelector("#rewardGrid");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
+    const commanderHealth = document.querySelector("#commanderHealth");
+    const commanderHealthFill = commanderHealth.querySelector("span");
+    const mobileControls = document.querySelector("#mobileControls");
+    const joystick = document.querySelector("#joystick");
+    const joystickKnob = document.querySelector("#joystickKnob");
+    const dashButton = document.querySelector("#dashButton");
+    const keys = new Set();
+    const touchMove = { x: 0, y: 0 };
 
     const factions = {
       Wardens: { color: "#94a3b8", bonus: "3+: 22% damage reduction" },
@@ -725,6 +830,7 @@
       enemies: [],
       projectiles: [],
       particles: [],
+      commander: null,
       elapsed: 0
     };
 
@@ -789,6 +895,7 @@
       combat.enemies = [];
       combat.projectiles = [];
       combat.particles = [];
+      combat.commander = null;
       startPlanning();
     }
 
@@ -801,6 +908,8 @@
       drawCards(5);
       arenaLabel.textContent = "Planning phase";
       battleLog.textContent = "Play cards, choose a route, then deploy.";
+      commanderHealth.hidden = true;
+      mobileControls.hidden = true;
       render();
     }
 
@@ -1037,6 +1146,57 @@
       return { ...base, hp: base.hp * scale, damage: base.damage * (1 + run.stage * 0.08) };
     }
 
+    function movementVector() {
+      let x = touchMove.x;
+      let y = touchMove.y;
+      if (keys.has("a") || keys.has("arrowleft")) x -= 1;
+      if (keys.has("d") || keys.has("arrowright")) x += 1;
+      if (keys.has("w") || keys.has("arrowup")) y -= 1;
+      if (keys.has("s") || keys.has("arrowdown")) y += 1;
+      const length = Math.hypot(x, y);
+      return length > 1 ? { x: x / length, y: y / length } : { x, y };
+    }
+
+    function createCommander() {
+      return {
+        id: "commander",
+        name: "Commander",
+        faction: "Commander",
+        symbol: "P",
+        color: "#f8fafc",
+        rank: 1,
+        side: "ally",
+        commander: true,
+        x: width * 0.25,
+        y: height * 0.68,
+        radius: 16,
+        maxHealth: 180 * run.health,
+        health: 180 * run.health,
+        damage: 24 * run.damage,
+        range: 230,
+        speed: 205,
+        cooldown: 0.58 * run.attackSpeed,
+        timer: 0,
+        crit: run.crit,
+        invulnerable: 0,
+        dashTimer: 0
+      };
+    }
+
+    function dash() {
+      const commander = combat.commander;
+      if (combat.state !== "battle" || !commander || commander.dashTimer > 0) return;
+      const move = movementVector();
+      if (Math.hypot(move.x, move.y) < 0.1) return;
+      commander.x += move.x * 120;
+      commander.y += move.y * 120;
+      commander.x = Math.max(commander.radius, Math.min(width - commander.radius, commander.x));
+      commander.y = Math.max(height * 0.46, Math.min(height * 0.94, commander.y));
+      commander.invulnerable = 0.35;
+      commander.dashTimer = 2.4;
+      burst(commander.x, commander.y, "#67e8f9", 14);
+    }
+
     function startBattle() {
       if (combat.state !== "planning" || !run.selectedEncounter || run.warband.length === 0) return;
       run.hand.forEach(id => id && run.discard.push(id));
@@ -1047,9 +1207,11 @@
       combat.particles = [];
       const counts = factionCounts();
 
-      combat.allies = run.warband.map((entry, index) => {
+      combat.commander = createCommander();
+      combat.allies = [combat.commander, ...run.warband.map((entry, index) => {
         const unit = unitById(entry.id);
         const fighter = makeFighter(unit, entry.rank, "ally", index, run.warband.length);
+        fighter.formationIndex = index;
         const boost = run.typeBoosts[entry.id] || { damage: 1, health: 1, speed: 1 };
         fighter.maxHealth *= run.health * boost.health;
         fighter.health = fighter.maxHealth;
@@ -1064,7 +1226,7 @@
           fighter.regen = fighter.maxHealth * 0.012;
         }
         return fighter;
-      });
+      })];
 
       const encounter = encounters.find(item => item.id === run.selectedEncounter);
       const baseCount = 3 + Math.floor(run.stage * 0.85);
@@ -1077,7 +1239,9 @@
         return fighter;
       });
       arenaLabel.textContent = `${encounter.name} - sector ${run.stage}`;
-      battleLog.textContent = "The warbands advance.";
+      battleLog.textContent = "Move to lead your warband. Your commander and units fire automatically.";
+      commanderHealth.hidden = false;
+      mobileControls.hidden = false;
       render();
     }
 
@@ -1103,7 +1267,9 @@
     }
 
     function damageTarget(target, amount, attacker) {
+      if (target.commander && target.invulnerable > 0) return;
       target.health -= amount * (1 - (target.reduction || 0));
+      if (target.commander) target.invulnerable = 0.45;
       burst(target.x, target.y, attacker.color, 4);
       if (attacker.knockback) target.x += attacker.side === "ally" ? 16 : -16;
       if (attacker.splash) {
@@ -1142,6 +1308,63 @@
       }
     }
 
+    function updateCommander(delta) {
+      const commander = combat.commander;
+      if (!commander || commander.health <= 0) return;
+      const move = movementVector();
+      commander.x += move.x * commander.speed * delta;
+      commander.y += move.y * commander.speed * delta;
+      commander.x = Math.max(commander.radius, Math.min(width - commander.radius, commander.x));
+      commander.y = Math.max(height * 0.46, Math.min(height * 0.94, commander.y));
+      commander.timer -= delta;
+      commander.invulnerable = Math.max(0, commander.invulnerable - delta);
+      commander.dashTimer = Math.max(0, commander.dashTimer - delta);
+      const target = nearest(commander, combat.enemies);
+      if (target.target && commander.timer <= 0) {
+        attack(commander, target.target);
+        commander.timer = commander.cooldown;
+      }
+      commanderHealthFill.style.width =
+        `${Math.max(0, commander.health / commander.maxHealth * 100)}%`;
+      dashButton.classList.toggle("cooldown", commander.dashTimer > 0);
+    }
+
+    function updateSquad(delta) {
+      const commander = combat.commander;
+      if (!commander) return;
+      const squad = combat.allies.filter(unit => !unit.commander);
+      squad.forEach((fighter, index) => {
+        if (fighter.regen) {
+          fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta);
+        }
+        fighter.timer -= delta;
+        const target = nearest(fighter, combat.enemies);
+        const engagementRange = Math.max(220, fighter.range + 50);
+        if (target.target && target.distance <= engagementRange) {
+          const attackRange = fighter.range + fighter.radius + target.target.radius;
+          if (target.distance > attackRange) {
+            fighter.x += (target.target.x - fighter.x) / target.distance * fighter.speed * delta;
+            fighter.y += (target.target.y - fighter.y) / target.distance * fighter.speed * delta;
+          } else if (fighter.timer <= 0) {
+            attack(fighter, target.target);
+            fighter.timer = fighter.cooldown;
+          }
+          return;
+        }
+
+        const columns = 5;
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const anchorX = commander.x - 55 - row * 30;
+        const anchorY = commander.y + (column - 2) * 34;
+        const distance = Math.hypot(anchorX - fighter.x, anchorY - fighter.y);
+        if (distance > 8) {
+          fighter.x += (anchorX - fighter.x) / distance * fighter.speed * 1.45 * delta;
+          fighter.y += (anchorY - fighter.y) / distance * fighter.speed * 1.45 * delta;
+        }
+      });
+    }
+
     function updateFighters(fighters, targets, delta) {
       for (const fighter of fighters) {
         if (fighter.regen) fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta);
@@ -1161,7 +1384,8 @@
 
     function updateBattle(delta) {
       combat.elapsed += delta;
-      updateFighters(combat.allies, combat.enemies, delta);
+      updateCommander(delta);
+      updateSquad(delta);
       updateFighters(combat.enemies, combat.allies, delta);
 
       for (let index = combat.projectiles.length - 1; index >= 0; index -= 1) {
@@ -1188,7 +1412,7 @@
         if (particle.life <= 0) combat.particles.splice(index, 1);
       }
       if (combat.enemies.length === 0) finishBattle(true);
-      else if (combat.allies.length === 0 || combat.elapsed > 55) finishBattle(false);
+      else if (!combat.allies.some(unit => unit.commander) || combat.elapsed > 55) finishBattle(false);
     }
 
     function rewardPool(encounter) {
@@ -1219,6 +1443,8 @@
 
     function finishBattle(won) {
       const encounter = encounters.find(item => item.id === run.selectedEncounter);
+      commanderHealth.hidden = true;
+      mobileControls.hidden = true;
       if (won) {
         run.wins += 1;
         combat.state = "reward";
@@ -1239,6 +1465,8 @@
 
     function endRun() {
       combat.state = "gameover";
+      commanderHealth.hidden = true;
+      mobileControls.hidden = true;
       const best = Math.max(Number(localStorage.getItem("ashfallBest") || 0), run.stage);
       localStorage.setItem("ashfallBest", String(best));
       document.querySelector("#finalSector").textContent = run.stage;
@@ -1429,6 +1657,56 @@
     document.querySelector("#restartButton").addEventListener("click", () => {
       gameOverOverlay.hidden = true;
       resetRun();
+    });
+    window.addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+        event.preventDefault();
+      }
+      keys.add(key);
+      if (key === " ") dash();
+    });
+    window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+    window.addEventListener("blur", () => keys.clear());
+
+    let joystickPointer = null;
+    function updateJoystick(event) {
+      const bounds = joystick.getBoundingClientRect();
+      const centerX = bounds.left + bounds.width / 2;
+      const centerY = bounds.top + bounds.height / 2;
+      let x = event.clientX - centerX;
+      let y = event.clientY - centerY;
+      const limit = bounds.width * 0.3;
+      const distance = Math.hypot(x, y);
+      if (distance > limit) {
+        x = x / distance * limit;
+        y = y / distance * limit;
+      }
+      touchMove.x = x / limit;
+      touchMove.y = y / limit;
+      joystickKnob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    }
+
+    joystick.addEventListener("pointerdown", event => {
+      joystickPointer = event.pointerId;
+      joystick.setPointerCapture(event.pointerId);
+      updateJoystick(event);
+    });
+    joystick.addEventListener("pointermove", event => {
+      if (event.pointerId === joystickPointer) updateJoystick(event);
+    });
+    function releaseJoystick(event) {
+      if (event.pointerId !== joystickPointer) return;
+      joystickPointer = null;
+      touchMove.x = 0;
+      touchMove.y = 0;
+      joystickKnob.style.transform = "translate(-50%, -50%)";
+    }
+    joystick.addEventListener("pointerup", releaseJoystick);
+    joystick.addEventListener("pointercancel", releaseJoystick);
+    dashButton.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      dash();
     });
     window.addEventListener("resize", resizeCanvas);
 
