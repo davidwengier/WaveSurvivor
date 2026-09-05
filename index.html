@@ -2751,7 +2751,7 @@
       }
     }
 
-    function finishRun(completed) {
+    function finishRun(completed, showSummary = true) {
       if (runRewardClaimed) return;
       runRewardClaimed = true;
       state = "gameover";
@@ -2780,11 +2780,19 @@
       document.querySelector("#earnedChests").textContent = earned;
       document.querySelector("#earnedSkillPoints").textContent = earnedSkills;
       document.querySelector("#finalMultiplier").textContent = `x${rewardMultiplier}`;
-      gameOverOverlay.hidden = false;
+      gameOverOverlay.hidden = !showSummary;
+      return { earned, earnedSkills };
     }
 
     function endRun() {
       finishRun(false);
+    }
+
+    function claimRunAndReturnToHub() {
+      const rewards = finishRun(true, false);
+      if (!rewards) return;
+      showHub();
+      chestResult.textContent = `Run complete: claimed ${rewards.earned} chests and ${rewards.earnedSkills} skill cores.`;
     }
 
     function showHub() {
@@ -2882,7 +2890,7 @@
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
     document.querySelector("#lobbyButton").addEventListener("click", showHub);
-    document.querySelector("#claimRunButton").addEventListener("click", () => finishRun(true));
+    document.querySelector("#claimRunButton").addEventListener("click", claimRunAndReturnToHub);
     document.querySelector("#continueRunButton").addEventListener("click", continueRun);
     document.querySelector("#startButton").addEventListener("click", startRun);
     document.querySelector("#restartButton").addEventListener("click", showHub);
