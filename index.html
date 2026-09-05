@@ -403,6 +403,154 @@
       text-transform: uppercase;
     }
 
+    .loot-section {
+      margin: 1rem 0;
+      padding: 0.9rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.75rem;
+      background: rgb(255 255 255 / 4%);
+      text-align: left;
+    }
+
+    .loot-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .loot-heading h2 {
+      margin: 0 0 0.2rem;
+      font-size: 1.15rem;
+    }
+
+    .loot-heading p {
+      margin: 0;
+      color: #aeb8ca;
+      font-size: 0.76rem;
+    }
+
+    .loot-heading strong {
+      flex: none;
+      color: #94a3b8;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .loadout-grid,
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
+
+    .inventory-grid {
+      margin-top: 0.65rem;
+    }
+
+    .loot-card {
+      min-width: 0;
+      padding: 0.7rem;
+      border: 1px solid var(--rarity-color, rgb(255 255 255 / 14%));
+      border-radius: 0.65rem;
+      background-color: #111620;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--rarity-color, #94a3b8) 10%, transparent), transparent 65%),
+        #111620;
+    }
+
+    .loot-card.equipped {
+      box-shadow: inset 0 0 0 1px var(--rarity-color, #67e8f9);
+    }
+
+    .loot-card header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+    }
+
+    .loot-card header span,
+    .empty-slot span {
+      color: #94a3b8;
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .loot-card header em {
+      color: var(--rarity-color, #94a3b8);
+      font-size: 0.6rem;
+      font-style: normal;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .loot-card h3 {
+      margin: 0.45rem 0 0.35rem;
+      overflow: hidden;
+      color: var(--rarity-color, white);
+      font-size: 0.88rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .loot-stats {
+      min-height: 2.1rem;
+      color: #d5ddeb;
+      font-size: 0.68rem;
+      line-height: 1.5;
+    }
+
+    .loot-actions {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.55rem;
+    }
+
+    .loot-actions button {
+      flex: 1;
+      padding: 0.42rem;
+      border: 1px solid rgb(255 255 255 / 14%);
+      border-radius: 0.42rem;
+      background: rgb(255 255 255 / 7%);
+      color: white;
+      cursor: pointer;
+      font-size: 0.62rem;
+      font-weight: 900;
+    }
+
+    .loot-actions button:hover {
+      background: rgb(255 255 255 / 13%);
+    }
+
+    .loot-actions .salvage {
+      color: #fda4af;
+    }
+
+    .empty-slot {
+      min-height: 7.3rem;
+      display: grid;
+      place-items: center;
+      border: 1px dashed rgb(255 255 255 / 16%);
+      border-radius: 0.65rem;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .empty-inventory {
+      grid-column: 1 / -1;
+      padding: 1rem;
+      border: 1px dashed rgb(255 255 255 / 12%);
+      border-radius: 0.65rem;
+      color: #64748b;
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
     .primary {
       min-width: 12rem;
       padding: 0.85rem 1.4rem;
@@ -580,8 +728,16 @@
       .upgrade-grid,
       .hub-grid,
       .gear-grid,
-      .mode-grid {
+      .mode-grid,
+      .loadout-grid,
+      .inventory-grid {
         grid-template-columns: 1fr;
+      }
+
+      .loot-heading {
+        align-items: start;
+        flex-direction: column;
+        gap: 0.3rem;
       }
 
       .upgrade {
@@ -636,10 +792,10 @@
       <div class="hub-grid">
         <section class="hub-section">
           <h2>Recovered chests</h2>
-          <p>Runs award chests. Open them for scrap used on permanent gear.</p>
+          <p>Runs award chests. Every chest contains a randomized equipment drop and bonus scrap.</p>
           <button id="openChestButton" class="chest-button">
             <strong>Open chest</strong>
-            <span>Contains 12-24 scrap</span>
+            <span id="chestHint">Contains equipment + 3-8 scrap</span>
           </button>
           <div id="chestResult" class="chest-result"></div>
         </section>
@@ -649,6 +805,17 @@
           <div id="gearGrid" class="gear-grid"></div>
         </section>
       </div>
+      <section class="loot-section">
+        <div class="loot-heading">
+          <div>
+            <h2>Equipment vault</h2>
+            <p>Equip one item in each slot. Salvage unwanted loot into scrap.</p>
+          </div>
+          <strong id="inventoryCount">0 / 24 items</strong>
+        </div>
+        <div id="loadoutGrid" class="loadout-grid"></div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
       <section class="mode-section">
         <h2>Choose game mode</h2>
         <p>Each mode changes pacing, bosses, and chest rewards.</p>
@@ -717,9 +884,13 @@
     const chestCount = document.querySelector("#chestCount");
     const scrapCount = document.querySelector("#scrapCount");
     const openChestButton = document.querySelector("#openChestButton");
+    const chestHint = document.querySelector("#chestHint");
     const chestResult = document.querySelector("#chestResult");
     const gearGrid = document.querySelector("#gearGrid");
     const modeGrid = document.querySelector("#modeGrid");
+    const loadoutGrid = document.querySelector("#loadoutGrid");
+    const inventoryGrid = document.querySelector("#inventoryGrid");
+    const inventoryCount = document.querySelector("#inventoryCount");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -791,6 +962,56 @@
       }
     ];
 
+    const lootRarities = {
+      common: { name: "Common", color: "#cbd5e1", power: 1, salvage: 4, chance: 0.48 },
+      uncommon: { name: "Uncommon", color: "#4ade80", power: 1.45, salvage: 8, chance: 0.28 },
+      rare: { name: "Rare", color: "#60a5fa", power: 2, salvage: 14, chance: 0.15 },
+      epic: { name: "Epic", color: "#c084fc", power: 2.75, salvage: 24, chance: 0.07 },
+      legendary: { name: "Legendary", color: "#fbbf24", power: 3.7, salvage: 40, chance: 0.02 }
+    };
+
+    const lootSlots = {
+      blaster: {
+        name: "Weapon",
+        bases: [
+          { id: "arc-pistol", name: "Arc Pistol", stats: { damage: [6, 10], fireRate: [2, 4] } },
+          { id: "hunter-cannon", name: "Hunter Cannon", stats: { damage: [8, 13], critChance: [1, 2] } },
+          { id: "storm-repeater", name: "Storm Repeater", stats: { fireRate: [4, 7], projectileSpeed: [8, 14] } }
+        ]
+      },
+      armor: {
+        name: "Armor",
+        bases: [
+          { id: "bulwark-shell", name: "Bulwark Shell", stats: { health: [10, 18], armor: [1, 1] } },
+          { id: "repair-rig", name: "Repair Rig", stats: { health: [8, 14], regen: [0.15, 0.3] } },
+          { id: "void-plate", name: "Void Plate", stats: { armor: [1, 2], magnet: [8, 15] } }
+        ]
+      },
+      boots: {
+        name: "Boots",
+        bases: [
+          { id: "vector-boots", name: "Vector Boots", stats: { speed: [3, 5], dashCooldown: [3, 5] } },
+          { id: "scavenger-treads", name: "Scavenger Treads", stats: { speed: [2, 4], magnet: [12, 22] } },
+          { id: "blink-runners", name: "Blink Runners", stats: { dashCooldown: [5, 8], speed: [2, 3] } }
+        ]
+      }
+    };
+
+    const statDefinitions = {
+      damage: { label: "Damage", format: value => `+${value}%` },
+      fireRate: { label: "Fire rate", format: value => `+${value}%` },
+      critChance: { label: "Critical chance", format: value => `+${value}%` },
+      projectileSpeed: { label: "Projectile speed", format: value => `+${value}%` },
+      health: { label: "Maximum health", format: value => `+${value}` },
+      armor: { label: "Armor", format: value => `+${value}` },
+      regen: { label: "Health regeneration", format: value => `+${value}/s` },
+      magnet: { label: "Pickup range", format: value => `+${value}` },
+      speed: { label: "Movement speed", format: value => `+${value}%` },
+      dashCooldown: { label: "Dash recharge", format: value => `+${value}%` }
+    };
+
+    const inventoryLimit = 24;
+
     const defaultMeta = {
       chests: 1,
       scrap: 0,
@@ -799,14 +1020,48 @@
         blaster: 0,
         armor: 0,
         boots: 0
+      },
+      inventory: [],
+      equipped: {
+        blaster: null,
+        armor: null,
+        boots: null
       }
     };
+
+    function lootBase(slot, baseId) {
+      return lootSlots[slot]?.bases.find(base => base.id === baseId);
+    }
+
+    function normalizeLootItem(item) {
+      if (!item || typeof item.id !== "string" || !lootRarities[item.rarity] || !lootBase(item.slot, item.baseId)) {
+        return null;
+      }
+      const stats = {};
+      for (const [key, value] of Object.entries(item.stats || {})) {
+        if (statDefinitions[key] && Number.isFinite(Number(value))) {
+          stats[key] = Math.max(0, Number(value));
+        }
+      }
+      if (Object.keys(stats).length === 0) return null;
+      return {
+        id: item.id,
+        slot: item.slot,
+        baseId: item.baseId,
+        rarity: item.rarity,
+        stats
+      };
+    }
 
     function loadMeta() {
       const saved = localStorage.getItem("maxGameMeta");
       if (!saved) return structuredClone(defaultMeta);
       try {
         const parsed = JSON.parse(saved);
+        const inventory = Array.isArray(parsed.inventory)
+          ? parsed.inventory.map(normalizeLootItem).filter(Boolean).slice(0, inventoryLimit)
+          : [];
+        const inventoryIds = new Set(inventory.map(item => item.id));
         return {
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
@@ -815,6 +1070,12 @@
             blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
             armor: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.armor) || 0))),
             boots: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.boots) || 0)))
+          },
+          inventory,
+          equipped: {
+            blaster: inventoryIds.has(parsed.equipped?.blaster) ? parsed.equipped.blaster : null,
+            armor: inventoryIds.has(parsed.equipped?.armor) ? parsed.equipped.armor : null,
+            boots: inventoryIds.has(parsed.equipped?.boots) ? parsed.equipped.boots : null
           }
         };
       } catch (error) {
@@ -832,6 +1093,126 @@
 
     function activeMode() {
       return gameModes[meta.selectedMode];
+    }
+
+    function equippedLoot() {
+      return Object.values(meta.equipped)
+        .map(id => meta.inventory.find(item => item.id === id))
+        .filter(Boolean);
+    }
+
+    function rollLootRarity() {
+      let roll = Math.random();
+      for (const [id, rarity] of Object.entries(lootRarities)) {
+        roll -= rarity.chance;
+        if (roll <= 0) return id;
+      }
+      return "common";
+    }
+
+    function createLoot() {
+      const slotIds = Object.keys(lootSlots);
+      const slot = slotIds[Math.floor(Math.random() * slotIds.length)];
+      const bases = lootSlots[slot].bases;
+      const base = bases[Math.floor(Math.random() * bases.length)];
+      const rarity = rollLootRarity();
+      const power = lootRarities[rarity].power;
+      const stats = {};
+      for (const [stat, range] of Object.entries(base.stats)) {
+        const value = (range[0] + Math.random() * (range[1] - range[0])) * power;
+        stats[stat] = stat === "regen" ? Math.round(value * 100) / 100 : Math.round(value);
+      }
+      return {
+        id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`,
+        slot,
+        baseId: base.id,
+        rarity,
+        stats
+      };
+    }
+
+    function lootName(item) {
+      return lootBase(item.slot, item.baseId).name;
+    }
+
+    function lootStats(item) {
+      return Object.entries(item.stats)
+        .map(([stat, value]) => `${statDefinitions[stat].format(value)} ${statDefinitions[stat].label}`)
+        .join("<br>");
+    }
+
+    function lootCard(item, location) {
+      const rarity = lootRarities[item.rarity];
+      const isEquipped = meta.equipped[item.slot] === item.id;
+      const actions = location === "loadout"
+        ? `<button data-unequip="${item.slot}">Unequip</button>`
+        : `
+            <button data-equip="${item.id}">Equip</button>
+            <button class="salvage" data-salvage="${item.id}">Salvage +${rarity.salvage}</button>
+          `;
+      return `
+        <article class="loot-card ${isEquipped ? "equipped" : ""}" style="--rarity-color: ${rarity.color}">
+          <header>
+            <span>${lootSlots[item.slot].name}</span>
+            <em>${rarity.name}</em>
+          </header>
+          <h3>${lootName(item)}</h3>
+          <div class="loot-stats">${lootStats(item)}</div>
+          <div class="loot-actions">${actions}</div>
+        </article>
+      `;
+    }
+
+    function renderLoot() {
+      inventoryCount.textContent = `${meta.inventory.length} / ${inventoryLimit} items`;
+      loadoutGrid.innerHTML = Object.entries(lootSlots).map(([slot, definition]) => {
+        const item = meta.inventory.find(candidate => candidate.id === meta.equipped[slot]);
+        return item
+          ? lootCard(item, "loadout")
+          : `<div class="empty-slot"><span>${definition.name}<br>Empty</span></div>`;
+      }).join("");
+      const unequipped = meta.inventory.filter(item => meta.equipped[item.slot] !== item.id);
+      inventoryGrid.innerHTML = unequipped.length
+        ? unequipped.map(item => lootCard(item, "inventory")).join("")
+        : `<div class="empty-inventory">Open a chest to recover your first piece of equipment.</div>`;
+      loadoutGrid.querySelectorAll("[data-unequip]").forEach(button => {
+        button.addEventListener("click", () => unequipLoot(button.dataset.unequip));
+      });
+      inventoryGrid.querySelectorAll("[data-equip]").forEach(button => {
+        button.addEventListener("click", () => equipLoot(button.dataset.equip));
+      });
+      inventoryGrid.querySelectorAll("[data-salvage]").forEach(button => {
+        button.addEventListener("click", () => salvageLoot(button.dataset.salvage));
+      });
+    }
+
+    function equipLoot(id) {
+      const item = meta.inventory.find(candidate => candidate.id === id);
+      if (!item) return;
+      meta.equipped[item.slot] = item.id;
+      chestResult.textContent = `${lootName(item)} equipped.`;
+      saveMeta();
+      renderHub();
+    }
+
+    function unequipLoot(slot) {
+      if (!lootSlots[slot]) return;
+      meta.equipped[slot] = null;
+      saveMeta();
+      renderHub();
+    }
+
+    function salvageLoot(id) {
+      const index = meta.inventory.findIndex(item => item.id === id);
+      if (index < 0) return;
+      const item = meta.inventory[index];
+      const scrap = lootRarities[item.rarity].salvage;
+      if (meta.equipped[item.slot] === item.id) meta.equipped[item.slot] = null;
+      meta.inventory.splice(index, 1);
+      meta.scrap += scrap;
+      chestResult.textContent = `${lootName(item)} salvaged for ${scrap} scrap.`;
+      saveMeta();
+      renderHub();
     }
 
     const player = {
@@ -934,10 +1315,22 @@
       return 10 + level * 15;
     }
 
+    function totalEquippedStats() {
+      const totals = {};
+      for (const item of equippedLoot()) {
+        for (const [stat, value] of Object.entries(item.stats)) {
+          totals[stat] = (totals[stat] || 0) + value;
+        }
+      }
+      return totals;
+    }
+
     function renderHub() {
       chestCount.textContent = meta.chests;
       scrapCount.textContent = meta.scrap;
-      openChestButton.disabled = meta.chests < 1;
+      const inventoryFull = meta.inventory.length >= inventoryLimit;
+      openChestButton.disabled = meta.chests < 1 || inventoryFull;
+      chestHint.textContent = inventoryFull ? "Vault full - salvage an item first" : "Contains equipment + 3-8 scrap";
       gearGrid.innerHTML = gearDefinitions.map(gear => {
         const level = meta.gear[gear.id];
         const cost = gearCost(level);
@@ -966,16 +1359,21 @@
           renderHub();
         });
       });
+      renderLoot();
       document.querySelector("#startButton").textContent = `Start ${activeMode().name}`;
       updateBestRun();
     }
 
     function openChest() {
-      if (meta.chests < 1) return;
+      if (meta.chests < 1 || meta.inventory.length >= inventoryLimit) return;
       meta.chests -= 1;
-      const scrap = 12 + Math.floor(Math.random() * 13);
+      const scrap = 3 + Math.floor(Math.random() * 6);
+      const item = createLoot();
       meta.scrap += scrap;
-      chestResult.textContent = `Found ${scrap} scrap.`;
+      meta.inventory.push(item);
+      if (!meta.equipped[item.slot]) meta.equipped[item.slot] = item.id;
+      const rarity = lootRarities[item.rarity];
+      chestResult.innerHTML = `Found <span style="color:${rarity.color}">${rarity.name} ${lootName(item)}</span> and ${scrap} scrap.`;
       saveMeta();
       renderHub();
     }
@@ -1006,9 +1404,10 @@
     }
 
     function resetRun() {
-      const damageBonus = 1 + meta.gear.blaster * 0.15;
-      const healthBonus = meta.gear.armor * 20;
-      const speedBonus = 1 + meta.gear.boots * 0.07;
+      const loot = totalEquippedStats();
+      const damageBonus = 1 + meta.gear.blaster * 0.15 + (loot.damage || 0) / 100;
+      const healthBonus = meta.gear.armor * 20 + (loot.health || 0);
+      const speedBonus = 1 + meta.gear.boots * 0.07 + (loot.speed || 0) / 100;
       enemies.length = 0;
       projectiles.length = 0;
       enemyProjectiles.length = 0;
@@ -1026,19 +1425,19 @@
         health: 100 + healthBonus,
         maxHealth: 100 + healthBonus,
         damage: 18 * damageBonus,
-        fireRate: 0.58,
+        fireRate: 0.58 / (1 + (loot.fireRate || 0) / 100),
         fireTimer: 0,
-        projectileSpeed: 560,
+        projectileSpeed: 560 * (1 + (loot.projectileSpeed || 0) / 100),
         projectiles: 1,
         pierce: 0,
-        magnet: 90,
-        armor: 0,
-        critChance: 0.08,
+        magnet: 90 + (loot.magnet || 0),
+        armor: loot.armor || 0,
+        critChance: Math.min(0.75, 0.08 + (loot.critChance || 0) / 100),
         level: 1,
         xp: 0,
         xpNeeded: 18,
-        regen: 0,
-        dashCooldown: 2.5,
+        regen: loot.regen || 0,
+        dashCooldown: 2.5 / (1 + (loot.dashCooldown || 0) / 100),
         dashTimer: 0,
         invulnerable: 0
       });
