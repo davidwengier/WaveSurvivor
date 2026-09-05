@@ -218,7 +218,7 @@
 
     .controls-copy {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0.65rem;
       margin: 1.2rem 0;
     }
@@ -1200,6 +1200,7 @@
         <div class="control-card"><strong>Move</strong>WASD, arrow keys, or joystick</div>
         <div class="control-card"><strong>Dash</strong>Space or the Dash button</div>
         <div class="control-card"><strong>Attack</strong>Automatic targeting</div>
+        <div class="control-card"><strong>Supplies</strong>Break gold caches for energy and recovery items</div>
       </div>
       <button id="startButton" class="primary">Start run</button>
       <p id="bestRun">Best survival: 0:00</p>
@@ -1296,6 +1297,8 @@
     const projectiles = [];
     const enemyProjectiles = [];
     const gems = [];
+    const supplyCrates = [];
+    const pickups = [];
     const particles = [];
     const backgroundStars = [];
 
@@ -1307,6 +1310,7 @@
     let wave = 1;
     let kills = 0;
     let spawnTimer = 0;
+    let supplyTimer = 0;
     let pendingLevels = 0;
     let shake = 0;
     let waveBannerTimer = 0;
@@ -2001,7 +2005,8 @@
       dashCooldown: 2.5,
       dashTimer: 0,
       invulnerable: 0,
-      facing: -Math.PI / 2
+      facing: -Math.PI / 2,
+      moving: false
     };
 
     const upgrades = [
@@ -2311,11 +2316,14 @@
       projectiles.length = 0;
       enemyProjectiles.length = 0;
       gems.length = 0;
+      supplyCrates.length = 0;
+      pickups.length = 0;
       particles.length = 0;
       elapsed = 0;
       wave = 1;
       kills = 0;
       spawnTimer = 0.4;
+      supplyTimer = 14;
       pendingLevels = 0;
       waveBannerTimer = 1.8;
       rewardMultiplier = 1;
@@ -2342,7 +2350,8 @@
         dashCooldown: 2.5 / (1 + meta.skills.phaseDrive * 0.05 + (loot.dashCooldown || 0) / 100),
         dashTimer: 0,
         invulnerable: 0,
-        facing: -Math.PI / 2
+        facing: -Math.PI / 2,
+        moving: false
       });
       updateHud();
     }
@@ -2416,6 +2425,49 @@
       return { x: -padding, y: Math.random() * height };
     }
 
+    function spawnSupplyCrate() {
+      const margin = 85;
+      let x = margin + Math.random() * Math.max(1, width - margin * 2);
+      let y = margin + Math.random() * Math.max(1, height - margin * 2);
+      if (Math.hypot(x - player.x, y - player.y) < 150) {
+        x = width - x;
+        y = height - y;
+      }
+      supplyCrates.push({
+        x,
+        y,
+        radius: 19,
+        health: 45 + wave * 7,
+        maxHealth: 45 + wave * 7,
+        rotation: Math.random() * Math.PI
+      });
+    }
+
+    function dropPickup(x, y) {
+      pickups.push({
+        x,
+        y,
+        radius: 10,
+        type: Math.random() < 0.68 ? "repair" : "shield",
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function breakSupplyCrate(index) {
+      const crate = supplyCrates[index];
+      supplyCrates.splice(index, 1);
+      for (let gemIndex = 0; gemIndex < 5; gemIndex += 1) {
+        gems.push({
+          x: crate.x + (Math.random() - 0.5) * 24,
+          y: crate.y + (Math.random() - 0.5) * 24,
+          radius: 5,
+          value: 3
+        });
+      }
+      dropPickup(crate.x, crate.y);
+      burst(crate.x, crate.y, "#fbbf24", 22);
+    }
+
     function spawnEnemy(type) {
       const position = randomEdgePosition();
       const mode = activeMode();
@@ -2479,6 +2531,15 @@
         });
       }
       enemy.damage *= mode.enemyDamage || 1;
+      if (!enemy.boss && wave >= 3 && Math.random() < Math.min(0.05 + wave * 0.006, 0.16)) {
+        enemy.elite = true;
+        enemy.radius *= 1.22;
+        enemy.health *= 2.6;
+        enemy.maxHealth = enemy.health;
+        enemy.damage *= 1.35;
+        enemy.speed *= 0.94;
+        enemy.xp *= 3;
+      }
       enemies.push(enemy);
     }
 
@@ -2516,28 +2577,50 @@
       if (state !== "playing" || player.dashTimer > 0) return;
       const move = movementVector();
       if (Math.hypot(move.x, move.y) < 0.1) return;
+      const startX = player.x;
+      const startY = player.y;
       player.x += move.x * 120;
       player.y += move.y * 120;
       player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
       player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
       player.dashTimer = player.dashCooldown;
       player.invulnerable = 0.35;
+      for (let step = 0; step < 6; step += 1) {
+        const progress = step / 5;
+        particles.push({
+          x: startX + (player.x - startX) * progress,
+          y: startY + (player.y - startY) * progress,
+          vx: -move.x * 20,
+          vy: -move.y * 20,
+          life: 0.22 + progress * 0.18,
+          maxLife: 0.4,
+          color: "#67e8f9"
+        });
+      }
       burst(player.x, player.y, "#67e8f9", 14);
     }
 
     function fireWeapon() {
-      if (enemies.length === 0) return;
-      let target = enemies[0];
+      const nearbyEnemies = enemies.filter(enemy => Math.hypot(enemy.x - player.x, enemy.y - player.y) < 320);
+      const targets = nearbyEnemies.length > 0 ? nearbyEnemies : [...enemies, ...supplyCrates];
+      if (targets.length === 0) return;
+      let target = targets[0];
       let nearest = Infinity;
-      for (const enemy of enemies) {
-        const distance = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+      for (const candidate of targets) {
+        const distance = Math.hypot(candidate.x - player.x, candidate.y - player.y);
         if (distance < nearest) {
           nearest = distance;
-          target = enemy;
+          target = candidate;
         }
       }
       const baseAngle = Math.atan2(target.y - player.y, target.x - player.x);
       player.facing = baseAngle;
+      burst(
+        player.x + Math.cos(baseAngle) * 20,
+        player.y + Math.sin(baseAngle) * 20,
+        "#e0f2fe",
+        3
+      );
       const spread = 0.16;
       for (let index = 0; index < player.projectiles; index += 1) {
         const offset = (index - (player.projectiles - 1) / 2) * spread;
@@ -2628,7 +2711,7 @@
       const enemy = enemies[index];
       enemies.splice(index, 1);
       kills += 1;
-      const gemCount = enemy.boss ? 12 : 1;
+      const gemCount = enemy.boss ? 12 : enemy.elite ? 5 : 1;
       for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
         gems.push({
           x: enemy.x + (Math.random() - 0.5) * enemy.radius,
@@ -2637,6 +2720,7 @@
           value: Math.ceil(enemy.xp / gemCount)
         });
       }
+      if (enemy.elite && Math.random() < 0.55) dropPickup(enemy.x, enemy.y);
       burst(enemy.x, enemy.y, enemy.color, enemy.boss ? 36 : 9);
     }
 
@@ -2718,6 +2802,10 @@
       }
 
       const move = movementVector();
+      player.moving = Math.hypot(move.x, move.y) > 0.08;
+      if (player.moving && enemies.length === 0) {
+        player.facing = Math.atan2(move.y, move.x);
+      }
       player.x += move.x * player.speed * delta;
       player.y += move.y * player.speed * delta;
       player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
@@ -2736,6 +2824,11 @@
       if (spawnTimer <= 0) {
         spawnEnemy(chooseEnemyType());
         spawnTimer = Math.max(0.13, (0.82 - wave * 0.045) / mode.spawnRate);
+      }
+      supplyTimer -= delta;
+      if (supplyTimer <= 0 && supplyCrates.length < 2) {
+        spawnSupplyCrate();
+        supplyTimer = 28 + Math.random() * 12;
       }
 
       for (const enemy of enemies) {
@@ -2803,6 +2896,18 @@
             removed = true;
           }
         }
+        for (let crateIndex = supplyCrates.length - 1; crateIndex >= 0 && !removed; crateIndex -= 1) {
+          const crate = supplyCrates[crateIndex];
+          if (!circleHit(projectile, crate)) continue;
+          crate.health -= projectile.damage;
+          burst(projectile.x, projectile.y, "#fbbf24", 4);
+          if (crate.health <= 0) breakSupplyCrate(crateIndex);
+          if (projectile.remainingPierce > 0) {
+            projectile.remainingPierce -= 1;
+          } else {
+            removed = true;
+          }
+        }
         if (removed) projectiles.splice(projectileIndex, 1);
       }
 
@@ -2828,6 +2933,20 @@
           gainXp(gem.value);
           gems.splice(index, 1);
         }
+      }
+
+      for (let index = pickups.length - 1; index >= 0; index -= 1) {
+        const pickup = pickups[index];
+        pickup.phase += delta * 2.5;
+        if (!circleHit(pickup, player)) continue;
+        if (pickup.type === "repair") {
+          player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.28);
+          burst(pickup.x, pickup.y, "#4ade80", 16);
+        } else {
+          player.invulnerable = Math.max(player.invulnerable, 3);
+          burst(pickup.x, pickup.y, "#60a5fa", 16);
+        }
+        pickups.splice(index, 1);
       }
 
       for (let index = particles.length - 1; index >= 0; index -= 1) {
@@ -3129,6 +3248,61 @@
       context.restore();
     }
 
+    function drawSupplyCrate(crate) {
+      context.save();
+      context.translate(crate.x, crate.y);
+      context.rotate(crate.rotation + Math.sin(elapsed * 0.8) * 0.04);
+      context.shadowColor = "#fbbf24";
+      context.shadowBlur = 14;
+      context.fillStyle = "#713f12";
+      context.strokeStyle = "#fde68a";
+      context.lineWidth = 2;
+      context.fillRect(-16, -14, 32, 28);
+      context.strokeRect(-16, -14, 32, 28);
+      context.fillStyle = "#f59e0b";
+      context.fillRect(-3, -14, 6, 28);
+      context.fillRect(-16, -3, 32, 6);
+      context.fillStyle = "#fff7ed";
+      context.fillRect(-2, -2, 4, 4);
+      context.restore();
+
+      if (crate.health < crate.maxHealth) {
+        context.fillStyle = "rgba(0,0,0,0.7)";
+        context.fillRect(crate.x - 17, crate.y - 23, 34, 4);
+        context.fillStyle = "#fbbf24";
+        context.fillRect(crate.x - 17, crate.y - 23, 34 * Math.max(0, crate.health / crate.maxHealth), 4);
+      }
+    }
+
+    function drawPickup(pickup) {
+      const repair = pickup.type === "repair";
+      const color = repair ? "#4ade80" : "#60a5fa";
+      context.save();
+      context.translate(pickup.x, pickup.y + Math.sin(pickup.phase) * 3);
+      context.rotate(pickup.phase * 0.35);
+      context.shadowColor = color;
+      context.shadowBlur = 20;
+      context.fillStyle = "rgba(7, 12, 24, 0.92)";
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      polygonPath(10, repair ? 6 : 8, Math.PI / 8);
+      context.fill();
+      context.stroke();
+      context.strokeStyle = "#ffffff";
+      context.lineWidth = 2;
+      context.beginPath();
+      if (repair) {
+        context.moveTo(-4, 0);
+        context.lineTo(4, 0);
+        context.moveTo(0, -4);
+        context.lineTo(0, 4);
+      } else {
+        context.arc(0, 0, 4, 0, Math.PI * 2);
+      }
+      context.stroke();
+      context.restore();
+    }
+
     function drawEnemy(enemy) {
       const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
       context.save();
@@ -3139,6 +3313,18 @@
       context.fillStyle = enemy.color;
       context.strokeStyle = "rgba(255,255,255,0.75)";
       context.lineWidth = enemy.boss ? 3 : 1.5;
+
+      if (enemy.elite) {
+        context.save();
+        context.rotate(-angle + elapsed * 0.8);
+        context.strokeStyle = "#fbbf24";
+        context.lineWidth = 2;
+        context.globalAlpha = 0.8;
+        polygonPath(enemy.radius + 7, 8, Math.PI / 8);
+        context.stroke();
+        context.restore();
+        context.strokeStyle = "rgba(255,255,255,0.85)";
+      }
 
       if (enemy.type === "swift") {
         polygonPath(enemy.radius + 3, 3, 0);
@@ -3192,24 +3378,73 @@
       context.translate(player.x, player.y);
       context.rotate(player.facing);
       context.globalAlpha = player.invulnerable > 0 && Math.floor(elapsed * 20) % 2 ? 0.35 : 1;
-      context.shadowColor = "#22d3ee";
-      context.shadowBlur = 24;
-      context.fillStyle = "#67e8f9";
+
+      context.save();
+      context.rotate(-player.facing);
+      context.scale(1, 0.48);
+      const shadow = context.createRadialGradient(0, 5, 1, 0, 5, 27);
+      shadow.addColorStop(0, "rgba(0,0,0,0.5)");
+      shadow.addColorStop(1, "rgba(0,0,0,0)");
+      context.fillStyle = shadow;
       context.beginPath();
-      context.moveTo(player.radius + 7, 0);
-      context.lineTo(-player.radius, player.radius * 0.82);
-      context.lineTo(-player.radius * 0.55, 0);
-      context.lineTo(-player.radius, -player.radius * 0.82);
+      context.arc(0, 5, 27, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+
+      const stride = player.moving ? Math.sin(elapsed * 15) * 3 : 0;
+      context.fillStyle = "#172554";
+      context.strokeStyle = "#60a5fa";
+      context.lineWidth = 1.5;
+      context.fillRect(-13 + stride, -10, 12, 6);
+      context.strokeRect(-13 + stride, -10, 12, 6);
+      context.fillRect(-13 - stride, 4, 12, 6);
+      context.strokeRect(-13 - stride, 4, 12, 6);
+
+      context.shadowColor = "#22d3ee";
+      context.shadowBlur = 18;
+      context.fillStyle = "#0e7490";
+      context.beginPath();
+      context.moveTo(9, -11);
+      context.lineTo(15, -6);
+      context.lineTo(15, 6);
+      context.lineTo(9, 11);
+      context.lineTo(-10, 9);
+      context.lineTo(-13, 0);
+      context.lineTo(-10, -9);
       context.closePath();
       context.fill();
-      context.strokeStyle = "#e0f2fe";
+      context.strokeStyle = "#a5f3fc";
       context.lineWidth = 2;
       context.stroke();
-      context.shadowBlur = 10;
-      context.fillStyle = "#ffffff";
+
+      context.shadowBlur = 8;
+      context.fillStyle = "#1e293b";
+      context.fillRect(4, -13, 20, 5);
+      context.strokeStyle = "#67e8f9";
+      context.strokeRect(4, -13, 20, 5);
+      context.fillStyle = "#e0f2fe";
+      context.fillRect(20, -12, 7, 3);
+
+      context.fillStyle = "#0f172a";
       context.beginPath();
-      context.arc(1, 0, 4.5, 0, Math.PI * 2);
+      context.arc(2, 0, 8, 0, Math.PI * 2);
       context.fill();
+      context.strokeStyle = "#bae6fd";
+      context.stroke();
+      context.fillStyle = "#22d3ee";
+      context.beginPath();
+      context.ellipse(5, 0, 4, 2.5, 0, 0, Math.PI * 2);
+      context.fill();
+
+      if (player.armor > 0 || player.invulnerable > 1) {
+        context.rotate(-player.facing);
+        context.strokeStyle = player.invulnerable > 1 ? "#60a5fa" : "#c4b5fd";
+        context.globalAlpha *= 0.45 + Math.sin(elapsed * 5) * 0.12;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, player.radius + 8, 0, Math.PI * 2);
+        context.stroke();
+      }
       context.restore();
     }
 
@@ -3233,6 +3468,14 @@
         polygonPath(6, 4, Math.PI / 4);
         context.fill();
         context.restore();
+      }
+
+      for (const crate of supplyCrates) {
+        drawSupplyCrate(crate);
+      }
+
+      for (const pickup of pickups) {
+        drawPickup(pickup);
       }
 
       for (const projectile of projectiles) {
