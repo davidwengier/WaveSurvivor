@@ -106,17 +106,19 @@
     .arena-shell {
       position: relative;
       overflow: hidden;
-      border: 1px solid rgb(255 255 255 / 12%);
+      border: 0.35rem solid #5b321c;
       border-radius: 1.1rem;
-      background: #0b1020;
-      box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 30%);
+      background: #8dd8ef;
+      box-shadow:
+        0 1.5rem 4rem rgb(0 0 0 / 30%),
+        inset 0 0 0 0.18rem #b66c32;
     }
 
     #arena {
       display: block;
       width: 100%;
-      height: min(52vh, 34rem);
-      min-height: 23rem;
+      height: min(58vh, 39rem);
+      min-height: 26rem;
     }
 
     .battle-banner {
@@ -126,8 +128,8 @@
       padding: 0.45rem 0.8rem;
       border: 1px solid rgb(255 255 255 / 12%);
       border-radius: 999px;
-      background: rgb(8 10 18 / 78%);
-      color: #cbd5e1;
+      background: rgb(66 37 20 / 84%);
+      color: #fff7ed;
       font-size: 0.72rem;
       font-weight: 900;
       letter-spacing: 0.12em;
@@ -138,8 +140,8 @@
     }
 
     .battle-banner.fighting {
-      border-color: rgb(251 146 60 / 45%);
-      color: #fdba74;
+      border-color: #fde68a;
+      color: #fef3c7;
     }
 
     .panel {
@@ -461,8 +463,9 @@
       max-width: min(22rem, calc(100% - 1.4rem));
       padding: 0.5rem 0.7rem;
       border-radius: 0.55rem;
-      background: rgb(3 5 12 / 70%);
-      color: #cbd5e1;
+      border: 1px solid rgb(255 255 255 / 18%);
+      background: rgb(66 37 20 / 80%);
+      color: #fff7ed;
       font-size: 0.7rem;
       pointer-events: none;
     }
@@ -487,8 +490,8 @@
       }
 
       #arena {
-        height: 42vh;
-        min-height: 19rem;
+        height: 48vh;
+        min-height: 21rem;
       }
 
       .panel-head {
@@ -1276,15 +1279,18 @@
       const row = index % rows;
       const xStep = Math.min(48, width * 0.055);
       const startX = side === "ally" ? width * 0.12 : width * 0.88;
+      const battleTop = height * 0.43;
+      const battleHeight = height * 0.45;
       return {
         id: definition.id,
         name: definition.name,
         family: definition.family,
         symbol: definition.symbol,
+        rank,
         color: families[definition.family]?.color || definition.color,
         side,
         x: startX + (side === "ally" ? column : -column) * xStep,
-        y: height / (rows + 1) * (row + 1),
+        y: battleTop + battleHeight / (rows + 1) * (row + 1),
         radius: (total > 14 ? 9 : 12) + rank * 1.5,
         maxHealth: definition.health * rankMultiplier,
         health: definition.health * rankMultiplier,
@@ -1678,57 +1684,137 @@
     }
 
     function drawBackground() {
-      context.fillStyle = "#09101f";
+      const sky = context.createLinearGradient(0, 0, 0, height);
+      sky.addColorStop(0, "#78c9ef");
+      sky.addColorStop(0.58, "#d9f3f2");
+      sky.addColorStop(0.59, "#71b84a");
+      sky.addColorStop(1, "#3f7f35");
+      context.fillStyle = sky;
       context.fillRect(0, 0, width, height);
-      context.strokeStyle = "rgba(148, 163, 184, 0.08)";
-      context.lineWidth = 1;
-      const gridSize = 44;
-      for (let x = 0; x < width; x += gridSize) {
+
+      context.fillStyle = "rgba(255, 245, 180, 0.9)";
+      context.beginPath();
+      context.arc(width * 0.82, height * 0.16, Math.min(38, width * 0.05), 0, Math.PI * 2);
+      context.fill();
+
+      context.fillStyle = "rgba(255, 255, 255, 0.7)";
+      [
+        [width * 0.16, height * 0.16, 1],
+        [width * 0.54, height * 0.1, 0.75]
+      ].forEach(([x, y, scale]) => {
         context.beginPath();
-        context.moveTo(x, 0);
-        context.lineTo(x, height);
+        context.ellipse(x, y, 45 * scale, 15 * scale, 0, 0, Math.PI * 2);
+        context.ellipse(x + 35 * scale, y + 3, 35 * scale, 12 * scale, 0, 0, Math.PI * 2);
+        context.ellipse(x - 32 * scale, y + 5, 28 * scale, 10 * scale, 0, 0, Math.PI * 2);
+        context.fill();
+      });
+
+      context.fillStyle = "#579b4b";
+      context.beginPath();
+      context.moveTo(0, height * 0.55);
+      context.quadraticCurveTo(width * 0.18, height * 0.33, width * 0.38, height * 0.55);
+      context.quadraticCurveTo(width * 0.62, height * 0.27, width, height * 0.55);
+      context.lineTo(width, height * 0.68);
+      context.lineTo(0, height * 0.68);
+      context.closePath();
+      context.fill();
+
+      context.fillStyle = "#78b957";
+      context.fillRect(0, height * 0.53, width, height * 0.47);
+
+      const field = context.createLinearGradient(0, height * 0.48, 0, height);
+      field.addColorStop(0, "rgba(250, 227, 161, 0.78)");
+      field.addColorStop(1, "rgba(173, 113, 58, 0.9)");
+      context.fillStyle = field;
+      context.beginPath();
+      context.ellipse(width / 2, height * 0.76, width * 0.48, height * 0.28, 0, 0, Math.PI * 2);
+      context.fill();
+
+      context.strokeStyle = "rgba(91, 50, 28, 0.2)";
+      context.lineWidth = 2;
+      for (let row = 0; row < 5; row += 1) {
+        const y = height * (0.58 + row * 0.085);
+        context.beginPath();
+        context.moveTo(width * 0.04, y);
+        context.quadraticCurveTo(width / 2, y + 10, width * 0.96, y);
         context.stroke();
       }
-      for (let y = 0; y < height; y += gridSize) {
-        context.beginPath();
-        context.moveTo(0, y);
-        context.lineTo(width, y);
-        context.stroke();
-      }
-      const gradient = context.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, "rgba(34, 211, 238, 0.08)");
-      gradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
-      gradient.addColorStop(1, "rgba(244, 63, 94, 0.08)");
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, width, height);
+
+      context.setLineDash([7, 8]);
+      context.strokeStyle = "rgba(255, 255, 255, 0.65)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(width / 2, height * 0.48);
+      context.lineTo(width / 2, height * 0.95);
+      context.stroke();
+      context.setLineDash([]);
+
+      context.fillStyle = "rgba(18, 73, 94, 0.78)";
+      context.fillRect(0, height * 0.36, width * 0.18, 28);
+      context.fillStyle = "rgba(127, 29, 29, 0.78)";
+      context.fillRect(width * 0.82, height * 0.36, width * 0.18, 28);
+      context.fillStyle = "#f8fafc";
+      context.font = "900 11px Inter, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText("YOUR PACK", width * 0.09, height * 0.36 + 14);
+      context.fillText("RIVAL PACK", width * 0.91, height * 0.36 + 14);
     }
 
     function drawFighter(fighter) {
       context.save();
       context.translate(fighter.x, fighter.y);
-      context.shadowColor = fighter.color;
-      context.shadowBlur = 16;
+      const depth = Math.max(0.8, Math.min(1.15, 0.8 + (fighter.y - height * 0.4) / height * 0.7));
+      const bob = combat.state === "battle"
+        ? Math.sin(combat.elapsed * 8 + fighter.x * 0.035) * 1.8
+        : Math.sin(performance.now() * 0.002 + fighter.x) * 1.2;
+      context.scale(depth, depth);
+
+      context.fillStyle = "rgba(47, 31, 20, 0.28)";
       context.beginPath();
-      context.arc(0, 0, fighter.radius, 0, Math.PI * 2);
+      context.ellipse(0, fighter.radius + 8, fighter.radius * 1.1, fighter.radius * 0.35, 0, 0, Math.PI * 2);
+      context.fill();
+
+      context.translate(0, bob);
+      context.strokeStyle = "#493323";
+      context.lineWidth = Math.max(2, fighter.radius * 0.16);
+      context.lineCap = "round";
+      context.beginPath();
+      context.moveTo(-fighter.radius * 0.48, fighter.radius * 0.55);
+      context.lineTo(-fighter.radius * 0.58, fighter.radius * 1.05);
+      context.moveTo(fighter.radius * 0.48, fighter.radius * 0.55);
+      context.lineTo(fighter.radius * 0.58, fighter.radius * 1.05);
+      context.stroke();
+
+      context.shadowColor = fighter.color;
+      context.shadowBlur = 14;
+      context.beginPath();
+      context.ellipse(0, 0, fighter.radius * 1.05, fighter.radius * 0.82, 0, 0, Math.PI * 2);
       context.fillStyle = fighter.color;
       context.fill();
-      context.strokeStyle = "#f8fafc";
+      context.strokeStyle = fighter.side === "ally" ? "#ecfeff" : "#fff1f2";
       context.lineWidth = 2;
       context.stroke();
       context.shadowBlur = 0;
-      context.fillStyle = "#071018";
-      context.font = `950 ${fighter.radius}px Inter, sans-serif`;
+      context.font = `${fighter.radius * 1.45}px "Segoe UI Emoji", sans-serif`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText(fighter.symbol, 0, 1);
+      context.fillText(fighter.symbol, 0, -1);
+
+      if (fighter.rank > 1) {
+        context.fillStyle = "#fef08a";
+        context.font = `900 ${Math.max(8, fighter.radius * 0.55)}px Inter, sans-serif`;
+        context.fillText("*".repeat(fighter.rank), 0, fighter.radius + 15);
+      }
+
       context.fillStyle = "rgba(0,0,0,0.65)";
-      context.fillRect(-fighter.radius, -fighter.radius - 10, fighter.radius * 2, 4);
+      context.fillRect(-fighter.radius, -fighter.radius - 12, fighter.radius * 2, 5);
       context.fillStyle = fighter.side === "ally" ? "#4ade80" : "#fb7185";
       context.fillRect(
         -fighter.radius,
-        -fighter.radius - 10,
+        -fighter.radius - 12,
         fighter.radius * 2 * Math.max(0, fighter.health / fighter.maxHealth),
-        4
+        5
       );
       context.restore();
     }
@@ -1737,14 +1823,21 @@
       const preview = run.crew.length
         ? run.crew
         : [{ id: "badger", rank: 1 }, { id: "lion", rank: 1 }, { id: "toucan", rank: 1 }];
+      const columns = Math.min(8, preview.length);
+      const rows = Math.ceil(preview.length / columns);
+      const spacingX = Math.min(62, width / (columns + 1));
       preview.forEach((unit, index) => {
         const definition = unitDefinition(unit.id);
-        const x = width / 2 + (index - (preview.length - 1) / 2) * Math.min(72, width / 8);
-        const y = height / 2 + Math.sin(index * 1.7) * 22;
+        const row = Math.floor(index / columns);
+        const rowCount = Math.min(columns, preview.length - row * columns);
+        const column = index % columns;
+        const x = width / 2 + (column - (rowCount - 1) / 2) * spacingX;
+        const y = height * 0.62 + row * Math.min(58, height * 0.12);
         drawFighter({
           x,
           y,
           radius: 13 + unit.rank * 2,
+          rank: unit.rank,
           color: families[definition.family].color,
           symbol: definition.symbol,
           side: "ally",
@@ -1757,9 +1850,16 @@
     function draw() {
       drawBackground();
       if (combat.state === "battle") {
-        combat.allies.forEach(drawFighter);
-        combat.enemies.forEach(drawFighter);
+        [...combat.allies, ...combat.enemies]
+          .sort((left, right) => left.y - right.y)
+          .forEach(drawFighter);
         for (const projectile of combat.projectiles) {
+          context.strokeStyle = projectile.color;
+          context.lineWidth = 2;
+          context.beginPath();
+          context.moveTo(projectile.x - projectile.vx * 0.025, projectile.y - projectile.vy * 0.025);
+          context.lineTo(projectile.x, projectile.y);
+          context.stroke();
           context.beginPath();
           context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
           context.fillStyle = projectile.color;
@@ -1768,7 +1868,9 @@
         for (const particle of combat.particles) {
           context.globalAlpha = Math.max(0, particle.life / 0.45);
           context.fillStyle = particle.color;
-          context.fillRect(particle.x - 2, particle.y - 2, 4, 4);
+          context.beginPath();
+          context.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+          context.fill();
         }
         context.globalAlpha = 1;
       } else {
