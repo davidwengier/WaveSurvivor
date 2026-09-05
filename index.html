@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MaxGame - Wild Assembly</title>
+  <title>MaxGame - Ashfall Protocol</title>
   <style>
     :root {
       color-scheme: dark;
       font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      background: #080a12;
+      background: #0d0b0a;
       color: #f8fafc;
     }
 
@@ -20,9 +20,9 @@
       min-height: 100vh;
       margin: 0;
       background:
-        radial-gradient(circle at 12% 4%, rgb(249 115 22 / 14%), transparent 28rem),
-        radial-gradient(circle at 88% 16%, rgb(34 211 238 / 12%), transparent 30rem),
-        #080a12;
+        radial-gradient(circle at 15% 0%, rgb(234 88 12 / 14%), transparent 28rem),
+        radial-gradient(circle at 85% 10%, rgb(14 116 144 / 12%), transparent 30rem),
+        #0d0b0a;
     }
 
     button {
@@ -31,9 +31,9 @@
     }
 
     .app {
-      width: min(78rem, 100%);
+      width: min(82rem, 100%);
       margin: auto;
-      padding: 1rem;
+      padding: 0.8rem;
     }
 
     header {
@@ -41,12 +41,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 1rem;
-      padding: 0.85rem 1rem;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 1rem;
-      background: rgb(12 15 26 / 82%);
-      backdrop-filter: blur(0.7rem);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid #4a3427;
+      border-radius: 0.8rem;
+      background: rgb(23 19 17 / 92%);
+      box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
     }
 
     .brand small,
@@ -56,31 +56,31 @@
 
     .brand small {
       color: #fb923c;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 900;
       letter-spacing: 0.2em;
       text-transform: uppercase;
     }
 
     .brand strong {
-      font-size: clamp(1.5rem, 5vw, 2.4rem);
+      font-size: clamp(1.4rem, 5vw, 2.35rem);
       font-weight: 950;
-      letter-spacing: -0.06em;
+      letter-spacing: -0.055em;
       line-height: 1;
       text-transform: uppercase;
     }
 
     .stats {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
 
     .stat {
-      min-width: 5.5rem;
+      min-width: 5.4rem;
       padding: 0.45rem 0.65rem;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 0.65rem;
-      background: rgb(255 255 255 / 4%);
+      border: 1px solid #45352d;
+      border-radius: 0.55rem;
+      background: #151312;
       text-align: center;
     }
 
@@ -90,66 +90,74 @@
     }
 
     .stat small {
-      color: #94a3b8;
-      font-size: 0.58rem;
-      font-weight: 850;
+      color: #9d928c;
+      font-size: 0.56rem;
+      font-weight: 900;
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
     .stat strong {
       margin-top: 0.05rem;
-      color: #f8fafc;
+      color: #fed7aa;
       font-size: 1rem;
     }
 
     .arena-shell {
       position: relative;
       overflow: hidden;
-      border: 0.35rem solid #5b321c;
-      border-radius: 1.1rem;
-      background: #8dd8ef;
+      border: 0.25rem solid #53331f;
+      border-radius: 0.8rem;
+      background: #9a6a45;
       box-shadow:
-        0 1.5rem 4rem rgb(0 0 0 / 30%),
-        inset 0 0 0 0.18rem #b66c32;
+        0 1.4rem 4rem rgb(0 0 0 / 32%),
+        inset 0 0 0 0.15rem #9a5b2e;
     }
 
     #arena {
       display: block;
       width: 100%;
-      height: min(58vh, 39rem);
-      min-height: 26rem;
+      height: min(53vh, 35rem);
+      min-height: 23rem;
     }
 
-    .battle-banner {
+    .arena-label,
+    .battle-log {
       position: absolute;
-      top: 1rem;
+      z-index: 2;
+      border: 1px solid rgb(255 255 255 / 14%);
+      background: rgb(28 20 16 / 82%);
+      color: #ffedd5;
+      backdrop-filter: blur(0.35rem);
+    }
+
+    .arena-label {
+      top: 0.7rem;
       left: 50%;
-      padding: 0.45rem 0.8rem;
-      border: 1px solid rgb(255 255 255 / 12%);
+      padding: 0.38rem 0.7rem;
       border-radius: 999px;
-      background: rgb(66 37 20 / 84%);
-      color: #fff7ed;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 900;
       letter-spacing: 0.12em;
-      pointer-events: none;
       text-transform: uppercase;
       transform: translateX(-50%);
-      backdrop-filter: blur(0.4rem);
     }
 
-    .battle-banner.fighting {
-      border-color: #fde68a;
-      color: #fef3c7;
+    .battle-log {
+      right: 0.6rem;
+      bottom: 0.6rem;
+      max-width: min(28rem, calc(100% - 1.2rem));
+      padding: 0.45rem 0.65rem;
+      border-radius: 0.45rem;
+      font-size: 0.68rem;
     }
 
     .panel {
-      margin-top: 1rem;
-      padding: 1rem;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 1rem;
-      background: rgb(12 15 26 / 88%);
+      margin-top: 0.8rem;
+      padding: 0.9rem;
+      border: 1px solid #3c302b;
+      border-radius: 0.75rem;
+      background: rgb(22 19 18 / 94%);
     }
 
     .panel-head {
@@ -157,205 +165,209 @@
       align-items: end;
       justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.7rem;
     }
 
     .panel h2 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       letter-spacing: -0.03em;
     }
 
     .panel p {
-      margin: 0.2rem 0 0;
-      color: #94a3b8;
-      font-size: 0.82rem;
+      margin: 0.15rem 0 0;
+      color: #a8a09c;
+      font-size: 0.78rem;
     }
 
     .actions {
       display: flex;
-      gap: 0.55rem;
+      gap: 0.5rem;
     }
 
     .primary,
     .secondary {
-      padding: 0.7rem 1rem;
-      border-radius: 0.65rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.55rem;
       color: white;
       cursor: pointer;
       font-weight: 900;
     }
 
     .primary {
-      background: linear-gradient(135deg, #ea580c, #f97316);
-      box-shadow: 0 0.6rem 1.5rem rgb(249 115 22 / 18%);
+      background: linear-gradient(135deg, #c2410c, #f97316);
     }
 
     .secondary {
-      border: 1px solid rgb(255 255 255 / 14%);
-      background: #202535;
+      border: 1px solid #4b3d36;
+      background: #292321;
     }
 
-    .primary:disabled,
-    .secondary:disabled {
+    button:disabled {
       cursor: not-allowed;
       filter: grayscale(0.8);
-      opacity: 0.45;
+      opacity: 0.42;
     }
 
-    .shop-grid,
+    .hand,
     .challenge-grid,
-    .crew-grid,
-    .relic-grid {
+    .warband,
+    .reward-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.75rem;
+      gap: 0.65rem;
     }
 
-    .unit-card,
-    .challenge-card,
-    .relic-card {
-      position: relative;
+    .hand {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .challenge-grid,
+    .reward-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .warband {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .card,
+    .challenge,
+    .unit {
       min-width: 0;
-      padding: 0.85rem;
-      border: 1px solid var(--unit-color, rgb(255 255 255 / 14%));
-      border-radius: 0.8rem;
+      border: 1px solid var(--accent, #5b463b);
+      border-radius: 0.65rem;
       background:
-        linear-gradient(145deg, color-mix(in srgb, var(--unit-color, #64748b) 12%, #141824), #0c0f19);
+        linear-gradient(145deg, color-mix(in srgb, var(--accent) 10%, #211c1a), #12100f);
       color: white;
       text-align: left;
     }
 
-    button.unit-card,
-    button.challenge-card,
-    button.relic-card {
+    .card,
+    .challenge {
+      padding: 0.75rem;
+    }
+
+    button.card,
+    button.challenge {
       cursor: pointer;
     }
 
-    button.unit-card:hover,
-    button.challenge-card:hover,
-    button.relic-card:hover {
-      filter: brightness(1.15);
+    button.card:hover,
+    button.challenge:hover {
+      filter: brightness(1.14);
       transform: translateY(-2px);
     }
 
+    .card-top,
     .unit-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
 
-    .unit-icon {
+    .card-cost {
       display: grid;
-      width: 2.6rem;
-      height: 2.6rem;
+      width: 1.8rem;
+      height: 1.8rem;
       place-items: center;
       border-radius: 50%;
-      background: var(--unit-color);
-      color: #071018;
-      font-size: 1.15rem;
+      background: #0e7490;
+      color: white;
       font-weight: 950;
-      box-shadow: 0 0 1rem color-mix(in srgb, var(--unit-color) 35%, transparent);
     }
 
-    .unit-cost,
-    .unit-level {
-      padding: 0.2rem 0.45rem;
-      border-radius: 999px;
-      background: rgb(0 0 0 / 35%);
-      color: #fde68a;
-      font-size: 0.68rem;
+    .card-kind,
+    .unit-faction,
+    .danger {
+      color: var(--accent);
+      font-size: 0.6rem;
       font-weight: 900;
-    }
-
-    .unit-card h3,
-    .relic-card h3 {
-      margin: 0.65rem 0 0.2rem;
-      font-size: 1rem;
-    }
-
-    .unit-family {
-      color: var(--unit-color);
-      font-size: 0.65rem;
-      font-weight: 900;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.11em;
       text-transform: uppercase;
     }
 
-    .unit-card p,
-    .relic-card p {
-      min-height: 2.5rem;
-      margin-top: 0.45rem;
-      color: #aab4c6;
+    .card h3,
+    .challenge h3,
+    .unit h3 {
+      margin: 0.55rem 0 0.2rem;
+      font-size: 0.95rem;
+    }
+
+    .card p,
+    .challenge p,
+    .unit p {
+      margin: 0.35rem 0 0;
+      color: #afa6a0;
+      font-size: 0.72rem;
       line-height: 1.4;
     }
 
-    .unit-numbers {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.35rem;
-      margin-top: 0.65rem;
-      color: #cbd5e1;
-      font-size: 0.7rem;
+    .card p {
+      min-height: 3rem;
     }
 
-    .crew-grid {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .challenge-card.selected {
+    .challenge.selected {
       border-color: #facc15;
-      background:
-        radial-gradient(circle at 50% 0%, rgb(250 204 21 / 14%), transparent 12rem),
-        #171522;
-      box-shadow: inset 0 0 0 1px rgb(250 204 21 / 35%);
-    }
-
-    .challenge-card h3 {
-      margin: 0.25rem 0 0.35rem;
-    }
-
-    .challenge-card .danger {
-      color: #fb7185;
-      font-size: 0.68rem;
-      font-weight: 900;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      box-shadow: inset 0 0 0 1px rgb(250 204 21 / 45%);
     }
 
     .challenge-reward {
       display: block;
-      margin-top: 0.7rem;
+      margin-top: 0.6rem;
       color: #fde68a;
-      font-size: 0.76rem;
+      font-size: 0.7rem;
       font-weight: 900;
     }
 
-    .crew-empty {
-      grid-column: 1 / -1;
-      padding: 1.4rem;
-      border: 1px dashed rgb(255 255 255 / 15%);
-      border-radius: 0.75rem;
-      color: #64748b;
-      text-align: center;
+    .unit {
+      padding: 0.55rem;
+    }
+
+    .unit-icon {
+      display: grid;
+      width: 2rem;
+      height: 2rem;
+      place-items: center;
+      border-radius: 0.35rem;
+      background: var(--accent);
+      color: #0f0d0c;
+      font-weight: 950;
+    }
+
+    .unit-rank {
+      color: #fde68a;
+      font-size: 0.65rem;
+      font-weight: 900;
+    }
+
+    .unit p {
+      min-height: 2rem;
     }
 
     .synergies {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-top: 0.8rem;
+      gap: 0.4rem;
+      margin-top: 0.7rem;
     }
 
     .synergy {
-      padding: 0.35rem 0.55rem;
-      border: 1px solid var(--unit-color);
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--accent);
       border-radius: 999px;
-      background: color-mix(in srgb, var(--unit-color) 10%, transparent);
-      color: #dbeafe;
-      font-size: 0.68rem;
+      color: #ddd6d3;
+      font-size: 0.65rem;
       font-weight: 800;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 1.2rem;
+      border: 1px dashed #4b3d36;
+      border-radius: 0.6rem;
+      color: #786e69;
+      text-align: center;
     }
 
     .overlay {
@@ -365,7 +377,7 @@
       display: grid;
       place-items: center;
       padding: 1rem;
-      background: rgb(3 5 12 / 84%);
+      background: rgb(8 6 5 / 86%);
       backdrop-filter: blur(0.8rem);
     }
 
@@ -374,22 +386,22 @@
     }
 
     .modal {
-      width: min(48rem, 100%);
+      width: min(52rem, 100%);
       max-height: calc(100vh - 2rem);
       overflow: auto;
-      padding: clamp(1.3rem, 4vw, 2.4rem);
-      border: 1px solid rgb(251 146 60 / 30%);
-      border-radius: 1.2rem;
+      padding: clamp(1.2rem, 4vw, 2.4rem);
+      border: 1px solid #7c4928;
+      border-radius: 0.9rem;
       background:
-        radial-gradient(circle at 50% 0%, rgb(249 115 22 / 13%), transparent 20rem),
-        #0d111d;
+        radial-gradient(circle at 50% 0%, rgb(234 88 12 / 13%), transparent 20rem),
+        #171311;
       box-shadow: 0 2rem 7rem #000;
       text-align: center;
     }
 
     .eyebrow {
       color: #fb923c;
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 900;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -398,32 +410,32 @@
     .modal h1,
     .modal h2 {
       margin: 0.35rem 0 0.65rem;
-      font-size: clamp(2.2rem, 8vw, 4.8rem);
+      font-size: clamp(2rem, 8vw, 4.6rem);
       letter-spacing: -0.06em;
       line-height: 0.95;
     }
 
     .modal > p {
-      max-width: 35rem;
+      max-width: 38rem;
       margin: 0.8rem auto 1.2rem;
-      color: #aab4c6;
-      line-height: 1.6;
+      color: #b8aea8;
+      line-height: 1.55;
     }
 
     .how-to {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.65rem;
-      margin: 1.2rem 0;
+      gap: 0.6rem;
+      margin: 1.1rem 0;
     }
 
     .how-to div {
-      padding: 0.8rem;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 0.7rem;
-      background: rgb(255 255 255 / 4%);
-      color: #aab4c6;
-      font-size: 0.8rem;
+      padding: 0.75rem;
+      border: 1px solid #3d322d;
+      border-radius: 0.55rem;
+      background: #211c1a;
+      color: #aaa09a;
+      font-size: 0.76rem;
     }
 
     .how-to strong {
@@ -436,7 +448,7 @@
       display: flex;
       justify-content: center;
       gap: 2rem;
-      margin: 1.2rem 0;
+      margin: 1.1rem 0;
     }
 
     .result-stats strong,
@@ -446,36 +458,19 @@
 
     .result-stats strong {
       color: #fdba74;
-      font-size: 1.8rem;
+      font-size: 1.7rem;
     }
 
     .result-stats span {
-      color: #94a3b8;
-      font-size: 0.65rem;
+      color: #8f8580;
+      font-size: 0.62rem;
       font-weight: 900;
       text-transform: uppercase;
     }
 
-    .battle-log {
-      position: absolute;
-      right: 0.7rem;
-      bottom: 0.7rem;
-      max-width: min(22rem, calc(100% - 1.4rem));
-      padding: 0.5rem 0.7rem;
-      border-radius: 0.55rem;
-      border: 1px solid rgb(255 255 255 / 18%);
-      background: rgb(66 37 20 / 80%);
-      color: #fff7ed;
-      font-size: 0.7rem;
-      pointer-events: none;
-    }
-
     @media (max-width: 760px) {
-      .app {
-        padding: 0.6rem;
-      }
-
-      header {
+      header,
+      .panel-head {
         align-items: stretch;
         flex-direction: column;
       }
@@ -490,13 +485,8 @@
       }
 
       #arena {
-        height: 48vh;
-        min-height: 21rem;
-      }
-
-      .panel-head {
-        align-items: stretch;
-        flex-direction: column;
+        height: 45vh;
+        min-height: 20rem;
       }
 
       .actions {
@@ -504,29 +494,26 @@
         grid-template-columns: 1fr 1fr;
       }
 
-      .shop-grid {
+      .hand {
         display: flex;
         overflow-x: auto;
-        padding-bottom: 0.55rem;
+        padding-bottom: 0.5rem;
         scroll-snap-type: x mandatory;
       }
 
-      .shop-grid .unit-card {
-        min-width: min(78vw, 18rem);
+      .hand .card {
+        min-width: min(76vw, 17rem);
         scroll-snap-align: center;
       }
 
-      .challenge-grid {
+      .challenge-grid,
+      .reward-grid,
+      .how-to {
         grid-template-columns: 1fr;
       }
 
-      .crew-grid {
+      .warband {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .how-to,
-      .relic-grid {
-        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -536,42 +523,40 @@
     <header>
       <div class="brand">
         <small>Working title</small>
-        <strong>MaxGame: Wild Assembly</strong>
+        <strong>Ashfall Protocol</strong>
       </div>
       <div class="stats">
-        <div class="stat"><small>Stage</small><strong id="stageDisplay">1</strong></div>
-        <div class="stat"><small>Food</small><strong id="coinDisplay">12</strong></div>
+        <div class="stat"><small>Sector</small><strong id="stageDisplay">1</strong></div>
+        <div class="stat"><small>Energy</small><strong id="energyDisplay">3 / 3</strong></div>
         <div class="stat"><small>Lives</small><strong id="lifeDisplay">3</strong></div>
       </div>
     </header>
 
     <section class="arena-shell">
       <canvas id="arena"></canvas>
-      <div id="battleBanner" class="battle-banner">Gather your pack</div>
-      <div id="battleLog" class="battle-log">Choose animals and an encounter, then start the battle.</div>
+      <div id="arenaLabel" class="arena-label">Planning phase</div>
+      <div id="battleLog" class="battle-log">Play command cards, choose a route, then deploy.</div>
     </section>
 
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Recruit trail</h2>
-          <p>Build a pack of up to 24 animals. Three matching ranks evolve into a stronger animal.</p>
+          <h2>Command hand</h2>
+          <p>Spend energy to recruit survivors or permanently modify your build.</p>
         </div>
         <div class="actions">
-          <button id="rerollButton" class="secondary">Reroll - 1 food</button>
+          <button id="mulliganButton" class="secondary">Mulligan (1)</button>
+          <button id="deployButton" class="primary">Deploy</button>
         </div>
       </div>
-      <div id="shopGrid" class="shop-grid"></div>
+      <div id="hand" class="hand"></div>
     </section>
 
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Choose a challenge</h2>
-          <p>Pick the rival animal force and reward that best fits your current pack.</p>
-        </div>
-        <div class="actions">
-          <button id="battleButton" class="primary">Enter battle</button>
+          <h2>Choose a route</h2>
+          <p>Harder encounters improve the card reward after victory.</p>
         </div>
       </div>
       <div id="challengeGrid" class="challenge-grid"></div>
@@ -580,48 +565,48 @@
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Your pack <span id="crewCount">0 / 24</span></h2>
-          <p>Habitat bonuses activate at two animals. Tap an animal to release it for food.</p>
+          <h2>Warband <span id="warbandCount">0 / 20</span></h2>
+          <p>Three matching rank-one units combine into rank two. Faction bonuses activate at three units.</p>
         </div>
       </div>
-      <div id="crewGrid" class="crew-grid"></div>
+      <div id="warband" class="warband"></div>
       <div id="synergies" class="synergies"></div>
     </section>
   </main>
 
   <div id="titleOverlay" class="overlay">
     <div class="modal">
-      <div class="eyebrow">An original animal army roguelite</div>
-      <h1>Wild Assembly</h1>
-      <p>Gather a growing animal army, focus its species and habitat pools, choose your next encounter, and watch your build collide with increasingly dangerous rival packs.</p>
+      <div class="eyebrow">Deck-building army roguelite</div>
+      <h1>Ashfall Protocol</h1>
+      <p>The old world is gone. Build a command deck, gather a warband, create faction engines, and send your survivors into automatic battles across the ashlands.</p>
       <div class="how-to">
-        <div><strong>Gather</strong>Grow a large pack from a rotating selection of animals.</div>
-        <div><strong>Evolve</strong>Three matching animals combine into a higher rank.</div>
-        <div><strong>Adapt</strong>Pick encounters and instincts that suit your pack.</div>
+        <div><strong>Play cards</strong>Recruit units and stack permanent upgrades.</div>
+        <div><strong>Build engines</strong>Focus your deck to find the same factions and unit mods.</div>
+        <div><strong>Pick a route</strong>Risk harder enemy squads for stronger card rewards.</div>
       </div>
-      <button id="startButton" class="primary">Begin a run</button>
-      <p id="bestStage">Best stage: 0</p>
+      <button id="startButton" class="primary">Start expedition</button>
+      <p id="bestSector">Best sector: 0</p>
     </div>
   </div>
 
-  <div id="relicOverlay" class="overlay" hidden>
+  <div id="rewardOverlay" class="overlay" hidden>
     <div class="modal">
-      <div class="eyebrow">New instinct</div>
-      <h2>Choose an adaptation</h2>
-      <div id="relicGrid" class="relic-grid"></div>
+      <div class="eyebrow">Salvage recovered</div>
+      <h2>Add one card to your deck</h2>
+      <div id="rewardGrid" class="reward-grid"></div>
     </div>
   </div>
 
   <div id="gameOverOverlay" class="overlay" hidden>
     <div class="modal">
-      <div class="eyebrow">Pack defeated</div>
-      <h2>Run over</h2>
+      <div class="eyebrow">Expedition lost</div>
+      <h2>The ashlands win</h2>
       <div class="result-stats">
-        <div><strong id="finalStage">1</strong><span>Stage</span></div>
-        <div><strong id="finalWins">0</strong><span>Wins</span></div>
-        <div><strong id="finalUnits">0</strong><span>Animals</span></div>
+        <div><strong id="finalSector">1</strong><span>Sector</span></div>
+        <div><strong id="finalWins">0</strong><span>Victories</span></div>
+        <div><strong id="finalCards">0</strong><span>Deck size</span></div>
       </div>
-      <button id="restartButton" class="primary">Start another run</button>
+      <button id="restartButton" class="primary">New expedition</button>
     </div>
   </div>
 
@@ -629,427 +614,113 @@
     const canvas = document.querySelector("#arena");
     const context = canvas.getContext("2d");
     const stageDisplay = document.querySelector("#stageDisplay");
-    const coinDisplay = document.querySelector("#coinDisplay");
+    const energyDisplay = document.querySelector("#energyDisplay");
     const lifeDisplay = document.querySelector("#lifeDisplay");
-    const battleBanner = document.querySelector("#battleBanner");
+    const arenaLabel = document.querySelector("#arenaLabel");
     const battleLog = document.querySelector("#battleLog");
-    const shopGrid = document.querySelector("#shopGrid");
+    const handDisplay = document.querySelector("#hand");
     const challengeGrid = document.querySelector("#challengeGrid");
-    const crewGrid = document.querySelector("#crewGrid");
-    const crewCount = document.querySelector("#crewCount");
+    const warbandDisplay = document.querySelector("#warband");
+    const warbandCount = document.querySelector("#warbandCount");
     const synergiesDisplay = document.querySelector("#synergies");
-    const rerollButton = document.querySelector("#rerollButton");
-    const battleButton = document.querySelector("#battleButton");
+    const mulliganButton = document.querySelector("#mulliganButton");
+    const deployButton = document.querySelector("#deployButton");
     const titleOverlay = document.querySelector("#titleOverlay");
-    const relicOverlay = document.querySelector("#relicOverlay");
-    const relicGrid = document.querySelector("#relicGrid");
+    const rewardOverlay = document.querySelector("#rewardOverlay");
+    const rewardGrid = document.querySelector("#rewardGrid");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
 
-    const families = {
-      Woodland: {
-        color: "#4ade80",
-        bonus: "2+: pack steadily regenerates health"
-      },
-      Savanna: {
-        color: "#fbbf24",
-        bonus: "2+: pack gains 20% critical chance"
-      },
-      Tundra: {
-        color: "#67e8f9",
-        bonus: "2+: pack takes 18% less damage"
-      },
-      Jungle: {
-        color: "#a3e635",
-        bonus: "2+: pack attacks 22% faster"
-      },
-      Wetland: {
-        color: "#38bdf8",
-        bonus: "2+: pack gains extra health and recovery"
-      },
-      Night: {
-        color: "#c084fc",
-        bonus: "2+: pack deals 18% more damage"
-      },
-      Desert: {
-        color: "#fb923c",
-        bonus: "2+: pack moves 18% faster"
-      }
+    const factions = {
+      Wardens: { color: "#94a3b8", bonus: "3+: 22% damage reduction" },
+      Raiders: { color: "#fb923c", bonus: "3+: 24% critical chance" },
+      Tech: { color: "#22d3ee", bonus: "3+: 25% faster attacks" },
+      Mutants: { color: "#c084fc", bonus: "3+: regeneration and 15% more health" }
     };
 
-    const unitDefinitions = [
-      {
-        id: "badger",
-        name: "Badger",
-        family: "Woodland",
-        symbol: "🦡",
-        cost: 3,
-        health: 145,
-        damage: 13,
-        range: 34,
-        speed: 50,
-        cooldown: 0.9,
-        knockback: true,
-        description: "A stubborn front-line digger that shoves enemies back."
-      },
-      {
-        id: "fox",
-        name: "Fox",
-        family: "Woodland",
-        symbol: "🦊",
-        cost: 4,
-        health: 72,
-        damage: 21,
-        range: 38,
-        speed: 91,
-        cooldown: 0.62,
-        description: "A nimble hunter with rapid close-range strikes."
-      },
-      {
-        id: "stag",
-        name: "Stag",
-        family: "Woodland",
-        symbol: "🦌",
-        cost: 5,
-        health: 125,
-        damage: 28,
-        range: 48,
-        speed: 64,
-        cooldown: 1.05,
-        knockback: true,
-        description: "Charges through the front line with heavy antler blows."
-      },
-      {
-        id: "lion",
-        name: "Lion",
-        family: "Savanna",
-        symbol: "🦁",
-        cost: 5,
-        health: 118,
-        damage: 32,
-        range: 42,
-        speed: 67,
-        cooldown: 0.95,
-        splash: true,
-        description: "A proud brawler whose roar damages nearby rivals."
-      },
-      {
-        id: "cheetah",
-        name: "Cheetah",
-        family: "Savanna",
-        symbol: "🐆",
-        cost: 3,
-        health: 62,
-        damage: 18,
-        range: 34,
-        speed: 118,
-        cooldown: 0.52,
-        description: "The fastest attacker in the pack."
-      },
-      {
-        id: "elephant",
-        name: "Elephant",
-        family: "Savanna",
-        symbol: "🐘",
-        cost: 5,
-        health: 205,
-        damage: 20,
-        range: 45,
-        speed: 35,
-        cooldown: 1.15,
-        knockback: true,
-        description: "A massive protector that scatters the enemy line."
-      },
-      {
-        id: "polar-bear",
-        name: "Polar Bear",
-        family: "Tundra",
-        symbol: "🐻‍❄️",
-        cost: 5,
-        health: 190,
-        damage: 25,
-        range: 40,
-        speed: 41,
-        cooldown: 1.05,
-        description: "An icy wall of fur and muscle."
-      },
-      {
-        id: "arctic-fox",
-        name: "Arctic Fox",
-        family: "Tundra",
-        symbol: "🦊",
-        cost: 4,
-        health: 76,
-        damage: 21,
-        range: 180,
-        speed: 77,
-        cooldown: 0.78,
-        description: "Throws shards of ice while darting around danger."
-      },
-      {
-        id: "snowy-owl",
-        name: "Snowy Owl",
-        family: "Tundra",
-        symbol: "🦉",
-        cost: 4,
-        health: 58,
-        damage: 27,
-        range: 280,
-        speed: 58,
-        cooldown: 1.12,
-        description: "A patient long-range hunter."
-      },
-      {
-        id: "gorilla",
-        name: "Gorilla",
-        family: "Jungle",
-        symbol: "🦍",
-        cost: 5,
-        health: 165,
-        damage: 29,
-        range: 42,
-        speed: 48,
-        cooldown: 0.95,
-        splash: true,
-        description: "Ground-pounding attacks strike clustered enemies."
-      },
-      {
-        id: "poison-frog",
-        name: "Poison Frog",
-        family: "Jungle",
-        symbol: "🐸",
-        cost: 3,
-        health: 55,
-        damage: 15,
-        range: 220,
-        speed: 61,
-        cooldown: 0.64,
-        description: "Rapid venom shots wear down distant targets."
-      },
-      {
-        id: "toucan",
-        name: "Toucan",
-        family: "Jungle",
-        symbol: "🦜",
-        cost: 5,
-        health: 70,
-        damage: 12,
-        range: 195,
-        speed: 55,
-        cooldown: 1.25,
-        healer: true,
-        description: "Delivers restorative fruit to wounded allies."
-      },
-      {
-        id: "crocodile",
-        name: "Crocodile",
-        family: "Wetland",
-        symbol: "🐊",
-        cost: 4,
-        health: 170,
-        damage: 24,
-        range: 36,
-        speed: 39,
-        cooldown: 1.05,
-        description: "A heavily armored ambush predator."
-      },
-      {
-        id: "otter",
-        name: "Otter",
-        family: "Wetland",
-        symbol: "🦦",
-        cost: 3,
-        health: 82,
-        damage: 17,
-        range: 42,
-        speed: 88,
-        cooldown: 0.6,
-        description: "A playful skirmisher that attacks relentlessly."
-      },
-      {
-        id: "heron",
-        name: "Heron",
-        family: "Wetland",
-        symbol: "🪿",
-        cost: 4,
-        health: 66,
-        damage: 29,
-        range: 250,
-        speed: 50,
-        cooldown: 1.15,
-        description: "Precise beak strikes reach across the battlefield."
-      },
-      {
-        id: "bat",
-        name: "Bat",
-        family: "Night",
-        symbol: "🦇",
-        cost: 4,
-        health: 55,
-        damage: 22,
-        range: 205,
-        speed: 84,
-        cooldown: 0.82,
-        chain: true,
-        description: "Sonic attacks echo into a second target."
-      },
-      {
-        id: "wolf",
-        name: "Wolf",
-        family: "Night",
-        symbol: "🐺",
-        cost: 4,
-        health: 96,
-        damage: 25,
-        range: 38,
-        speed: 82,
-        cooldown: 0.72,
-        description: "A relentless hunter that excels in a large pack."
-      },
-      {
-        id: "hedgehog",
-        name: "Hedgehog",
-        family: "Night",
-        symbol: "🦔",
-        cost: 3,
-        health: 128,
-        damage: 14,
-        range: 34,
-        speed: 43,
-        cooldown: 0.78,
-        description: "A compact defender with surprising staying power."
-      },
-      {
-        id: "camel",
-        name: "Camel",
-        family: "Desert",
-        symbol: "🐪",
-        cost: 4,
-        health: 138,
-        damage: 19,
-        range: 160,
-        speed: 53,
-        cooldown: 0.92,
-        description: "A hardy ranged fighter built for long battles."
-      },
-      {
-        id: "cobra",
-        name: "Cobra",
-        family: "Desert",
-        symbol: "🐍",
-        cost: 4,
-        health: 68,
-        damage: 31,
-        range: 60,
-        speed: 79,
-        cooldown: 0.88,
-        description: "A fragile striker with a devastating bite."
-      },
-      {
-        id: "fennec",
-        name: "Fennec",
-        family: "Desert",
-        symbol: "🦊",
-        cost: 3,
-        health: 64,
-        damage: 16,
-        range: 215,
-        speed: 93,
-        cooldown: 0.62,
-        description: "A quick desert scout that peppers enemies from range."
-      }
+    const units = [
+      { id: "scrapguard", name: "Scrapguard", faction: "Wardens", symbol: "G", hp: 160, damage: 13, range: 34, speed: 46, cooldown: 0.9, ability: "Shielded front-line survivor." },
+      { id: "crusher", name: "Crusher", faction: "Wardens", symbol: "C", hp: 125, damage: 25, range: 42, speed: 52, cooldown: 1.05, knockback: true, ability: "Heavy strikes shove enemies back." },
+      { id: "marshal", name: "Marshal", faction: "Wardens", symbol: "M", hp: 110, damage: 19, range: 170, speed: 48, cooldown: 0.95, ability: "Reliable mid-range support." },
+      { id: "razor", name: "Razor", faction: "Raiders", symbol: "R", hp: 72, damage: 23, range: 36, speed: 94, cooldown: 0.58, ability: "Extremely fast melee attacker." },
+      { id: "firebug", name: "Firebug", faction: "Raiders", symbol: "F", hp: 70, damage: 20, range: 150, speed: 58, cooldown: 0.82, splash: true, ability: "Firebombs damage clustered enemies." },
+      { id: "longshot", name: "Longshot", faction: "Raiders", symbol: "L", hp: 58, damage: 36, range: 285, speed: 46, cooldown: 1.3, ability: "High damage from extreme range." },
+      { id: "drone", name: "Sentry Drone", faction: "Tech", symbol: "D", hp: 62, damage: 15, range: 220, speed: 65, cooldown: 0.6, ability: "Rapid automatic fire." },
+      { id: "arc", name: "Arc Caster", faction: "Tech", symbol: "A", hp: 68, damage: 27, range: 205, speed: 52, cooldown: 1.05, chain: true, ability: "Electric shots chain to another target." },
+      { id: "medic", name: "Field Medic", faction: "Tech", symbol: "+", hp: 75, damage: 12, range: 180, speed: 51, cooldown: 1.2, healer: true, ability: "Repairs the most wounded ally." },
+      { id: "brute", name: "Ash Brute", faction: "Mutants", symbol: "B", hp: 205, damage: 24, range: 38, speed: 37, cooldown: 1.05, ability: "Massive health and crushing attacks." },
+      { id: "spitter", name: "Spitter", faction: "Mutants", symbol: "S", hp: 76, damage: 19, range: 225, speed: 56, cooldown: 0.75, ability: "Fast corrosive projectiles." },
+      { id: "seer", name: "Glow Seer", faction: "Mutants", symbol: "E", hp: 82, damage: 30, range: 195, speed: 50, cooldown: 1.15, splash: true, ability: "Psychic bursts strike a small area." }
     ];
 
-    const relics = [
-      {
-        name: "Predator's Moon",
-        description: "All animals deal 22% more damage.",
-        apply: run => run.damageMultiplier *= 1.22
-      },
-      {
-        name: "Thick Hide",
-        description: "All animals gain 25% maximum health.",
-        apply: run => run.healthMultiplier *= 1.25
-      },
-      {
-        name: "Feeding Frenzy",
-        description: "All animals attack 18% faster.",
-        apply: run => run.speedMultiplier *= 0.82
-      },
-      {
-        name: "Hunter's Instinct",
-        description: "All animals gain 15% critical hit chance.",
-        apply: run => run.critChance += 0.15
-      },
-      {
-        name: "Full Trough",
-        description: "Gain 8 food immediately and 2 extra after every win.",
-        apply: run => {
-          run.coins += 8;
-          run.bonusIncome += 2;
-        }
-      },
-      {
-        name: "Safe Burrow",
-        description: "Losing a battle recovers 5 food.",
-        apply: run => run.lossRefund += 5
-      }
+    const globalCards = [
+      { id: "battle-drill", name: "Battle Drill", kind: "Protocol", cost: 1, description: "All units deal 12% more damage.", play: run => run.damage *= 1.12 },
+      { id: "body-armor", name: "Body Armor", kind: "Protocol", cost: 1, description: "All units gain 15% maximum health.", play: run => run.health *= 1.15 },
+      { id: "combat-stims", name: "Combat Stims", kind: "Protocol", cost: 1, description: "All units attack 10% faster.", play: run => run.attackSpeed *= 0.9 },
+      { id: "field-rations", name: "Field Rations", kind: "Protocol", cost: 1, description: "Gain one maximum energy for this expedition.", play: run => { run.maxEnergy += 1; run.energy += 1; } }
     ];
 
-    const challengeDefinitions = [
+    const unitCards = units.map(unit => ({
+      id: `recruit-${unit.id}`,
+      name: unit.name,
+      kind: `${unit.faction} recruit`,
+      faction: unit.faction,
+      cost: unit.id === "brute" || unit.id === "longshot" ? 2 : 1,
+      description: unit.ability,
+      unitId: unit.id,
+      play: run => recruitUnit(run, unit.id)
+    }));
+
+    const typeCards = units.flatMap(unit => [
       {
-        id: "horde",
-        name: "Goose Stampede",
-        danger: "Swarm encounter",
-        description: "A huge flock of weaker rivals. Splash damage and fast attacks thrive here.",
-        countMultiplier: 1.65,
-        healthMultiplier: 0.78,
-        damageMultiplier: 0.82,
-        reward: 7
+        id: `damage-${unit.id}`,
+        name: `${unit.name}: Kill Order`,
+        kind: "Unit mod",
+        faction: unit.faction,
+        cost: 1,
+        description: `Every ${unit.name} deals 35% more damage.`,
+        play: run => boostType(run, unit.id, "damage", 1.35)
       },
       {
-        id: "elite",
-        name: "Armored Crabs",
-        danger: "Elite battle",
-        description: "A smaller colony with greatly increased health and crushing claws.",
-        countMultiplier: 0.7,
-        healthMultiplier: 1.75,
-        damageMultiplier: 1.3,
-        reward: 10
-      },
-      {
-        id: "siege",
-        name: "Ancient Mammoth",
-        danger: "Boss battle",
-        description: "A colossal mammoth enters early with a reinforced tundra herd.",
-        countMultiplier: 1,
-        healthMultiplier: 1.15,
-        damageMultiplier: 1.1,
-        reward: 13,
-        boss: true
+        id: `health-${unit.id}`,
+        name: `${unit.name}: Reinforced`,
+        kind: "Unit mod",
+        faction: unit.faction,
+        cost: 1,
+        description: `Every ${unit.name} gains 40% maximum health.`,
+        play: run => boostType(run, unit.id, "health", 1.4)
       }
+    ]);
+
+    const cards = [...unitCards, ...globalCards, ...typeCards];
+
+    const encounters = [
+      { id: "swarm", name: "Dust Mob", danger: "Crowd", description: "Many weak raiders. Splash and attack-speed builds excel.", count: 1.65, hp: 0.78, damage: 0.82, reward: "standard" },
+      { id: "elite", name: "Iron Patrol", danger: "Elite", description: "A small armored squad with increased health and damage.", count: 0.72, hp: 1.7, damage: 1.3, reward: "focused" },
+      { id: "boss", name: "War Rig", danger: "Boss", description: "A roaming fortress and its escort. The reward includes a powerful protocol.", count: 1, hp: 1.2, damage: 1.12, reward: "protocol", boss: true }
     ];
 
     const run = {
       stage: 1,
-      coins: 12,
       lives: 3,
       wins: 0,
-      recruits: 0,
-      crew: [],
-      shop: [],
-      challenges: [],
-      selectedChallenge: null,
-      damageMultiplier: 1,
-      healthMultiplier: 1,
-      speedMultiplier: 1,
-      critChance: 0.05,
-      bonusIncome: 0,
-      lossRefund: 0,
-      typeBonuses: {}
+      maxEnergy: 3,
+      energy: 3,
+      mulligans: 1,
+      deck: [],
+      drawPile: [],
+      discard: [],
+      hand: [],
+      warband: [],
+      selectedEncounter: null,
+      damage: 1,
+      health: 1,
+      attackSpeed: 1,
+      crit: 0.05,
+      typeBoosts: {}
     };
 
     const combat = {
-      state: "recruit",
+      state: "title",
       allies: [],
       enemies: [],
       projectiles: [],
@@ -1058,8 +729,252 @@
     };
 
     let width = 900;
-    let height = 450;
+    let height = 500;
     let lastFrame = performance.now();
+
+    function cardById(id) {
+      return cards.find(card => card.id === id);
+    }
+
+    function unitById(id) {
+      return units.find(unit => unit.id === id);
+    }
+
+    function shuffle(values) {
+      const result = [...values];
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swap]] = [result[swap], result[index]];
+      }
+      return result;
+    }
+
+    function startingDeck() {
+      return [
+        "recruit-scrapguard",
+        "recruit-scrapguard",
+        "recruit-razor",
+        "recruit-drone",
+        "recruit-medic",
+        "recruit-spitter",
+        "battle-drill",
+        "body-armor",
+        "combat-stims",
+        "field-rations"
+      ];
+    }
+
+    function resetRun() {
+      Object.assign(run, {
+        stage: 1,
+        lives: 3,
+        wins: 0,
+        maxEnergy: 3,
+        energy: 3,
+        mulligans: 1,
+        deck: startingDeck(),
+        drawPile: [],
+        discard: [],
+        hand: [],
+        warband: [],
+        selectedEncounter: null,
+        damage: 1,
+        health: 1,
+        attackSpeed: 1,
+        crit: 0.05,
+        typeBoosts: {}
+      });
+      combat.state = "planning";
+      combat.allies = [];
+      combat.enemies = [];
+      combat.projectiles = [];
+      combat.particles = [];
+      startPlanning();
+    }
+
+    function startPlanning() {
+      run.energy = run.maxEnergy;
+      run.mulligans = 1;
+      run.selectedEncounter = null;
+      run.hand.forEach(id => id && run.discard.push(id));
+      run.hand = [];
+      drawCards(5);
+      arenaLabel.textContent = "Planning phase";
+      battleLog.textContent = "Play cards, choose a route, then deploy.";
+      render();
+    }
+
+    function drawCards(count) {
+      while (run.hand.length < count) {
+        if (run.drawPile.length === 0) {
+          if (run.discard.length === 0) {
+            run.drawPile = shuffle(run.deck);
+          } else {
+            run.drawPile = shuffle(run.discard);
+            run.discard = [];
+          }
+        }
+        const card = run.drawPile.pop();
+        if (!card) break;
+        run.hand.push(card);
+      }
+    }
+
+    function boostType(currentRun, id, property, multiplier) {
+      const boost = currentRun.typeBoosts[id] || { damage: 1, health: 1, speed: 1 };
+      boost[property] *= multiplier;
+      currentRun.typeBoosts[id] = boost;
+    }
+
+    function recruitUnit(currentRun, id) {
+      if (currentRun.warband.length >= 20) return false;
+      currentRun.warband.push({ id, rank: 1 });
+      fuseUnits();
+      return true;
+    }
+
+    function fuseUnits() {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const unit of units) {
+          const matches = run.warband
+            .map((entry, index) => ({ entry, index }))
+            .filter(item => item.entry.id === unit.id && item.entry.rank === 1);
+          if (matches.length >= 3) {
+            matches.slice(0, 3).map(item => item.index).sort((a, b) => b - a)
+              .forEach(index => run.warband.splice(index, 1));
+            run.warband.push({ id: unit.id, rank: 2 });
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+
+    function playCard(index) {
+      if (combat.state !== "planning") return;
+      const id = run.hand[index];
+      const card = cardById(id);
+      if (!card || run.energy < card.cost) return;
+      if (card.unitId && run.warband.length >= 20) return;
+      run.energy -= card.cost;
+      const result = card.play(run);
+      if (result === false) {
+        run.energy += card.cost;
+        return;
+      }
+      run.discard.push(id);
+      run.hand[index] = null;
+      render();
+    }
+
+    function mulligan() {
+      if (combat.state !== "planning" || run.mulligans < 1) return;
+      run.hand.forEach(id => id && run.discard.push(id));
+      run.hand = [];
+      run.mulligans -= 1;
+      drawCards(5);
+      render();
+    }
+
+    function factionCounts() {
+      return run.warband.reduce((counts, entry) => {
+        const faction = unitById(entry.id).faction;
+        counts[faction] = (counts[faction] || 0) + 1;
+        return counts;
+      }, {});
+    }
+
+    function chooseEncounter(id) {
+      if (combat.state !== "planning") return;
+      run.selectedEncounter = id;
+      render();
+    }
+
+    function cardMarkup(id, index, reward = false) {
+      const card = cardById(id);
+      const accent = card.faction ? factions[card.faction].color : "#fb923c";
+      return `
+        <button
+          class="card"
+          style="--accent:${accent}"
+          ${reward ? `data-reward="${index}"` : `data-card="${index}"`}
+          ${!reward && (run.energy < card.cost || (card.unitId && run.warband.length >= 20)) ? "disabled" : ""}
+        >
+          <div class="card-top">
+            <span class="card-kind">${card.kind}</span>
+            <span class="card-cost">${card.cost}</span>
+          </div>
+          <h3>${card.name}</h3>
+          <p>${card.description}</p>
+        </button>
+      `;
+    }
+
+    function render() {
+      stageDisplay.textContent = run.stage;
+      energyDisplay.textContent = `${run.energy} / ${run.maxEnergy}`;
+      lifeDisplay.textContent = run.lives;
+      warbandCount.textContent = `${run.warband.length} / 20`;
+
+      handDisplay.innerHTML = run.hand.map((id, index) =>
+        id ? cardMarkup(id, index) : `<div class="empty">Card played</div>`
+      ).join("");
+      handDisplay.querySelectorAll("[data-card]").forEach(button => {
+        button.addEventListener("click", () => playCard(Number(button.dataset.card)));
+      });
+
+      challengeGrid.innerHTML = encounters.map(encounter => `
+        <button
+          class="challenge ${run.selectedEncounter === encounter.id ? "selected" : ""}"
+          style="--accent:${encounter.boss ? "#ef4444" : "#fb923c"}"
+          data-encounter="${encounter.id}"
+        >
+          <span class="danger">${encounter.danger}</span>
+          <h3>${encounter.name}</h3>
+          <p>${encounter.description}</p>
+          <span class="challenge-reward">Reward: ${encounter.reward} card draft</span>
+        </button>
+      `).join("");
+      challengeGrid.querySelectorAll("[data-encounter]").forEach(button => {
+        button.addEventListener("click", () => chooseEncounter(button.dataset.encounter));
+      });
+
+      warbandDisplay.innerHTML = run.warband.length
+        ? run.warband.map(entry => {
+            const unit = unitById(entry.id);
+            return `
+              <article class="unit" style="--accent:${factions[unit.faction].color}">
+                <div class="unit-top">
+                  <span class="unit-icon">${unit.symbol}</span>
+                  <span class="unit-rank">Rank ${entry.rank}</span>
+                </div>
+                <h3>${unit.name}</h3>
+                <span class="unit-faction">${unit.faction}</span>
+                <p>${unit.ability}</p>
+              </article>
+            `;
+          }).join("")
+        : `<div class="empty">Your warband is empty. Play a recruit card.</div>`;
+
+      const active = Object.entries(factionCounts()).filter(([, count]) => count >= 3);
+      synergiesDisplay.innerHTML = active.length
+        ? active.map(([faction, count]) => `
+            <span class="synergy" style="--accent:${factions[faction].color}">
+              ${faction} ${count}: ${factions[faction].bonus}
+            </span>
+          `).join("")
+        : `<span class="synergy" style="--accent:#4b3d36">No faction protocol active</span>`;
+
+      mulliganButton.textContent = `Mulligan (${run.mulligans})`;
+      mulliganButton.disabled = combat.state !== "planning" || run.mulligans < 1;
+      deployButton.disabled =
+        combat.state !== "planning" ||
+        run.warband.length === 0 ||
+        !run.selectedEncounter;
+      draw();
+    }
 
     function resizeCanvas() {
       const bounds = canvas.getBoundingClientRect();
@@ -1069,472 +984,177 @@
       canvas.width = Math.floor(width * ratio);
       canvas.height = Math.floor(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      if (combat.state !== "battle") {
-        draw();
-      }
-    }
-
-    function resetRun() {
-      Object.assign(run, {
-        stage: 1,
-        coins: 12,
-        lives: 3,
-        wins: 0,
-        recruits: 0,
-        crew: [],
-        shop: [],
-        challenges: [],
-        selectedChallenge: null,
-        damageMultiplier: 1,
-        healthMultiplier: 1,
-        speedMultiplier: 1,
-        critChance: 0.05,
-        bonusIncome: 0,
-        lossRefund: 0,
-        typeBonuses: {}
-      });
-      combat.state = "recruit";
-      combat.allies = [];
-      combat.enemies = [];
-      combat.projectiles = [];
-      combat.particles = [];
-      rollShop(false);
-      rollChallenges();
-      render();
-    }
-
-    function randomUnit() {
-      return unitDefinitions[Math.floor(Math.random() * unitDefinitions.length)];
-    }
-
-    function rollShop(charge = true) {
-      if (combat.state !== "recruit") return;
-      if (charge) {
-        if (run.coins < 1) return;
-        run.coins -= 1;
-      }
-      run.shop = Array.from({ length: 3 }, () => randomUnit().id);
-      render();
-    }
-
-    function rollChallenges() {
-      run.challenges = [...challengeDefinitions].sort(() => Math.random() - 0.5);
-      run.selectedChallenge = null;
-    }
-
-    function selectChallenge(id) {
-      if (combat.state !== "recruit") return;
-      run.selectedChallenge = id;
-      render();
-    }
-
-    function unitDefinition(id) {
-      return unitDefinitions.find(unit => unit.id === id);
-    }
-
-    function buyUnit(index) {
-      if (combat.state !== "recruit") return;
-      const id = run.shop[index];
-      if (!id) return;
-      const definition = unitDefinition(id);
-      if (run.coins < definition.cost || run.crew.length >= 24) return;
-      run.coins -= definition.cost;
-      run.recruits += 1;
-      run.crew.push({ id, rank: 1 });
-      run.shop[index] = null;
-      fuseCrew();
-      render();
-    }
-
-    function fuseCrew() {
-      let fused = true;
-      while (fused) {
-        fused = false;
-        for (const definition of unitDefinitions) {
-          for (let rank = 1; rank < 3; rank += 1) {
-            const matches = run.crew
-              .map((unit, index) => ({ unit, index }))
-              .filter(item => item.unit.id === definition.id && item.unit.rank === rank);
-            if (matches.length >= 3) {
-              const indexes = matches.slice(0, 3).map(item => item.index).sort((a, b) => b - a);
-              indexes.forEach(index => run.crew.splice(index, 1));
-              run.crew.push({ id: definition.id, rank: rank + 1 });
-              fused = true;
-              break;
-            }
-          }
-          if (fused) break;
-        }
-      }
-    }
-
-    function familyCounts() {
-      return run.crew.reduce((counts, unit) => {
-        const family = unitDefinition(unit.id).family;
-        counts[family] = (counts[family] || 0) + 1;
-        return counts;
-      }, {});
-    }
-
-    function activeSynergies() {
-      return Object.entries(familyCounts())
-        .filter(([, count]) => count >= 2)
-        .map(([family, count]) => ({ family, count }));
-    }
-
-    function sellUnit(index) {
-      if (combat.state !== "recruit") return;
-      const unit = run.crew[index];
-      if (!unit) return;
-      const definition = unitDefinition(unit.id);
-      run.coins += Math.max(1, definition.cost * unit.rank);
-      run.crew.splice(index, 1);
-      render();
-    }
-
-    function unitCard(unit, index, shop) {
-      if (!unit) {
-        return `<article class="unit-card" style="--unit-color:#334155"><p>Sold out</p></article>`;
-      }
-      const definition = unitDefinition(shop ? unit : unit.id);
-      const rank = shop ? 1 : unit.rank;
-      const rankMultiplier = Math.pow(1.75, rank - 1);
-      const disabled = shop && (run.coins < definition.cost || run.crew.length >= 24);
-      return `
-        <${shop ? "button" : "button"}
-          class="unit-card"
-          style="--unit-color:${families[definition.family].color}"
-          ${shop ? `data-buy="${index}" ${disabled ? "disabled" : ""}` : `data-sell="${index}"`}
-        >
-          <div class="unit-top">
-            <span class="unit-icon">${definition.symbol}</span>
-            <span class="${shop ? "unit-cost" : "unit-level"}">
-              ${shop ? `${definition.cost} food` : `Rank ${rank}`}
-            </span>
-          </div>
-          <h3>${definition.name}</h3>
-          <div class="unit-family">${definition.family}</div>
-          <p>${definition.description}</p>
-          <div class="unit-numbers">
-            <span>HP ${Math.round(definition.health * rankMultiplier)}</span>
-            <span>ATK ${Math.round(definition.damage * rankMultiplier)}</span>
-          </div>
-        </${shop ? "button" : "button"}>
-      `;
-    }
-
-    function render() {
-      stageDisplay.textContent = run.stage;
-      coinDisplay.textContent = run.coins;
-      lifeDisplay.textContent = run.lives;
-      crewCount.textContent = `${run.crew.length} / 24`;
-      shopGrid.innerHTML = run.shop.map((unit, index) => unitCard(unit, index, true)).join("");
-      challengeGrid.innerHTML = run.challenges.map(challenge => `
-        <button
-          class="challenge-card ${run.selectedChallenge === challenge.id ? "selected" : ""}"
-          data-challenge="${challenge.id}"
-          style="--unit-color:${challenge.boss ? "#f43f5e" : "#fb923c"}"
-        >
-          <span class="danger">${challenge.danger}</span>
-          <h3>${challenge.name}</h3>
-          <p>${challenge.description}</p>
-          <span class="challenge-reward">Reward: ${challenge.reward + run.stage} food</span>
-        </button>
-      `).join("");
-      crewGrid.innerHTML = run.crew.length
-        ? run.crew.map((unit, index) => unitCard(unit, index, false)).join("")
-        : `<div class="crew-empty">Your pack is empty. Recruit at least one animal.</div>`;
-
-      const synergies = activeSynergies();
-      synergiesDisplay.innerHTML = synergies.length
-        ? synergies.map(({ family, count }) => `
-            <span class="synergy" style="--unit-color:${families[family].color}">
-              ${family} ${count}: ${families[family].bonus}
-            </span>
-          `).join("")
-        : `<span class="synergy" style="--unit-color:#334155">No faction bonus active</span>`;
-
-      shopGrid.querySelectorAll("[data-buy]").forEach(button => {
-        button.addEventListener("click", () => buyUnit(Number(button.dataset.buy)));
-      });
-      challengeGrid.querySelectorAll("[data-challenge]").forEach(button => {
-        button.addEventListener("click", () => selectChallenge(button.dataset.challenge));
-      });
-      crewGrid.querySelectorAll("[data-sell]").forEach(button => {
-        button.addEventListener("click", () => sellUnit(Number(button.dataset.sell)));
-      });
-      rerollButton.disabled = combat.state !== "recruit" || run.coins < 1;
-      battleButton.disabled =
-        combat.state !== "recruit" ||
-        run.crew.length === 0 ||
-        !run.selectedChallenge;
       draw();
     }
 
     function makeFighter(definition, rank, side, index, total) {
-      const rankMultiplier = Math.pow(1.75, rank - 1);
-      const columns = Math.ceil(total / 8);
+      const rankScale = rank === 2 ? 1.9 : 1;
+      const columns = Math.ceil(total / 7);
       const rows = Math.ceil(total / columns);
       const column = Math.floor(index / rows);
       const row = index % rows;
-      const xStep = Math.min(48, width * 0.055);
       const startX = side === "ally" ? width * 0.12 : width * 0.88;
-      const battleTop = height * 0.43;
-      const battleHeight = height * 0.45;
+      const xStep = Math.min(46, width * 0.05);
+      const battleTop = height * 0.48;
+      const battleHeight = height * 0.38;
       return {
         id: definition.id,
         name: definition.name,
-        family: definition.family,
+        faction: definition.faction,
         symbol: definition.symbol,
+        color: factions[definition.faction]?.color || definition.color,
         rank,
-        color: families[definition.family]?.color || definition.color,
         side,
         x: startX + (side === "ally" ? column : -column) * xStep,
         y: battleTop + battleHeight / (rows + 1) * (row + 1),
         radius: (total > 14 ? 9 : 12) + rank * 1.5,
-        maxHealth: definition.health * rankMultiplier,
-        health: definition.health * rankMultiplier,
-        damage: definition.damage * rankMultiplier,
+        maxHealth: definition.hp * rankScale,
+        health: definition.hp * rankScale,
+        damage: definition.damage * rankScale,
         range: definition.range,
         speed: definition.speed,
         cooldown: definition.cooldown,
-        attackTimer: Math.random() * 0.5,
+        timer: Math.random() * 0.5,
         healer: definition.healer,
         chain: definition.chain,
-        knockback: definition.knockback,
         splash: definition.splash,
-        critChance: side === "ally" ? run.critChance : 0.03
+        knockback: definition.knockback,
+        crit: side === "ally" ? run.crit : 0.03
       };
     }
 
-    function enemyDefinition(index, challenge) {
-      const bossStage = challenge.boss || run.stage % 5 === 0;
-      if (bossStage && index === 0) {
-        return {
-          id: "ancient-mammoth",
-          name: "Ancient Mammoth",
-          family: "Enemy",
-          symbol: "🐘",
-          color: "#f43f5e",
-          health: 320 + run.stage * 48,
-          damage: 20 + run.stage * 2.2,
-          range: 190,
-          speed: 34,
-          cooldown: 1
-        };
+    function enemyDefinition(index, encounter) {
+      if ((encounter.boss || run.stage % 5 === 0) && index === 0) {
+        return { id: "war-rig", name: "War Rig", faction: "Enemy", symbol: "W", color: "#ef4444", hp: 420 + run.stage * 55, damage: 25 + run.stage * 2.2, range: 190, speed: 30, cooldown: 0.95, splash: true };
       }
-      const types = [
-        {
-          id: "wild-goose",
-          name: "Wild Goose",
-          symbol: "🪿",
-          color: "#a78bfa",
-          health: 55,
-          damage: 10,
-          range: 32,
-          speed: 64,
-          cooldown: 0.8
-        },
-        {
-          id: "spitting-cobra",
-          name: "Spitting Cobra",
-          symbol: "🐍",
-          color: "#38bdf8",
-          health: 42,
-          damage: 13,
-          range: 210,
-          speed: 46,
-          cooldown: 1.1
-        },
-        {
-          id: "iron-crab",
-          name: "Iron Crab",
-          symbol: "🦀",
-          color: "#f472b6",
-          health: 105,
-          damage: 16,
-          range: 38,
-          speed: 40,
-          cooldown: 1.05
-        }
+      const pool = [
+        { id: "marauder", name: "Marauder", faction: "Enemy", symbol: "m", color: "#f87171", hp: 58, damage: 11, range: 34, speed: 66, cooldown: 0.78 },
+        { id: "gunner", name: "Dust Gunner", faction: "Enemy", symbol: "g", color: "#fbbf24", hp: 44, damage: 14, range: 215, speed: 45, cooldown: 1.05 },
+        { id: "hulk", name: "Wasteland Hulk", faction: "Enemy", symbol: "H", color: "#a78bfa", hp: 112, damage: 17, range: 38, speed: 37, cooldown: 1.05 }
       ];
-      const definition = types[Math.floor(Math.random() * types.length)];
+      const base = pool[Math.floor(Math.random() * pool.length)];
       const scale = 1 + run.stage * 0.13;
-      return {
-        ...definition,
-        health: definition.health * scale,
-        damage: definition.damage * (1 + run.stage * 0.08)
-      };
+      return { ...base, hp: base.hp * scale, damage: base.damage * (1 + run.stage * 0.08) };
     }
 
     function startBattle() {
-      if (combat.state !== "recruit" || run.crew.length === 0 || !run.selectedChallenge) return;
+      if (combat.state !== "planning" || !run.selectedEncounter || run.warband.length === 0) return;
+      run.hand.forEach(id => id && run.discard.push(id));
+      run.hand = [];
       combat.state = "battle";
       combat.elapsed = 0;
       combat.projectiles = [];
       combat.particles = [];
+      const counts = factionCounts();
 
-      const counts = familyCounts();
-      combat.allies = run.crew.map((unit, index) => {
-        const fighter = makeFighter(unitDefinition(unit.id), unit.rank, "ally", index, run.crew.length);
-        const typeBonus = run.typeBonuses[unit.id] || {
-          damage: 1,
-          health: 1,
-          speed: 1
-        };
-        fighter.maxHealth *= run.healthMultiplier;
-        fighter.maxHealth *= typeBonus.health;
+      combat.allies = run.warband.map((entry, index) => {
+        const unit = unitById(entry.id);
+        const fighter = makeFighter(unit, entry.rank, "ally", index, run.warband.length);
+        const boost = run.typeBoosts[entry.id] || { damage: 1, health: 1, speed: 1 };
+        fighter.maxHealth *= run.health * boost.health;
         fighter.health = fighter.maxHealth;
-        fighter.damage *= run.damageMultiplier;
-        fighter.damage *= typeBonus.damage;
-        fighter.cooldown *= run.speedMultiplier;
-        fighter.cooldown *= typeBonus.speed;
-        if ((counts.Tundra || 0) >= 2) fighter.damageReduction = 0.18;
-        if ((counts.Jungle || 0) >= 2) fighter.cooldown *= 0.78;
-        if ((counts.Woodland || 0) >= 2) fighter.regen = fighter.maxHealth * 0.012;
-        if ((counts.Savanna || 0) >= 2) fighter.critChance += 0.2;
-        if ((counts.Wetland || 0) >= 2) {
+        fighter.damage *= run.damage * boost.damage;
+        fighter.cooldown *= run.attackSpeed * boost.speed;
+        if ((counts.Wardens || 0) >= 3) fighter.reduction = 0.22;
+        if ((counts.Raiders || 0) >= 3) fighter.crit += 0.24;
+        if ((counts.Tech || 0) >= 3) fighter.cooldown *= 0.75;
+        if ((counts.Mutants || 0) >= 3) {
           fighter.maxHealth *= 1.15;
           fighter.health = fighter.maxHealth;
-          fighter.regen = (fighter.regen || 0) + fighter.maxHealth * 0.006;
+          fighter.regen = fighter.maxHealth * 0.012;
         }
-        if ((counts.Night || 0) >= 2) fighter.damage *= 1.18;
-        if ((counts.Desert || 0) >= 2) fighter.speed *= 1.18;
         return fighter;
       });
 
-      const challenge = challengeDefinitions.find(item => item.id === run.selectedChallenge);
-      const baseEnemyCount = 3 + Math.floor(run.stage * 0.9);
-      const enemyCount = Math.min(28, Math.ceil(baseEnemyCount * challenge.countMultiplier));
-      combat.enemies = Array.from({ length: enemyCount }, (_, index) => {
-        const definition = enemyDefinition(index, challenge);
-        const fighter = makeFighter(definition, 1, "enemy", index, enemyCount);
-        fighter.maxHealth *= challenge.healthMultiplier;
+      const encounter = encounters.find(item => item.id === run.selectedEncounter);
+      const baseCount = 3 + Math.floor(run.stage * 0.85);
+      const count = Math.min(26, Math.ceil(baseCount * encounter.count));
+      combat.enemies = Array.from({ length: count }, (_, index) => {
+        const fighter = makeFighter(enemyDefinition(index, encounter), 1, "enemy", index, count);
+        fighter.maxHealth *= encounter.hp;
         fighter.health = fighter.maxHealth;
-        fighter.damage *= challenge.damageMultiplier;
+        fighter.damage *= encounter.damage;
         return fighter;
       });
-
-      battleBanner.textContent = `${challenge.name} - stage ${run.stage}`;
-      battleBanner.classList.add("fighting");
-      battleLog.textContent = "The rival packs collide.";
-      rerollButton.disabled = true;
-      battleButton.disabled = true;
+      arenaLabel.textContent = `${encounter.name} - sector ${run.stage}`;
+      battleLog.textContent = "The warbands advance.";
+      render();
     }
 
-    function nearestTarget(fighter, targets) {
-      let nearest = null;
-      let nearestDistance = Infinity;
-      for (const target of targets) {
-        const distance = Math.hypot(target.x - fighter.x, target.y - fighter.y);
-        if (distance < nearestDistance) {
-          nearest = target;
-          nearestDistance = distance;
+    function nearest(fighter, targets) {
+      let target = null;
+      let distance = Infinity;
+      for (const candidate of targets) {
+        const current = Math.hypot(candidate.x - fighter.x, candidate.y - fighter.y);
+        if (current < distance) {
+          target = candidate;
+          distance = current;
         }
       }
-      return { target: nearest, distance: nearestDistance };
-    }
-
-    function attack(fighter, target) {
-      if (fighter.healer) {
-        const allies = fighter.side === "ally" ? combat.allies : combat.enemies;
-        const wounded = [...allies]
-          .filter(unit => unit.health < unit.maxHealth)
-          .sort((left, right) => left.health / left.maxHealth - right.health / right.maxHealth)[0];
-        if (wounded) {
-          wounded.health = Math.min(wounded.maxHealth, wounded.health + fighter.damage * 1.8);
-          burst(wounded.x, wounded.y, "#4ade80", 7);
-          return;
-        }
-      }
-
-      const critical = Math.random() < fighter.critChance;
-      const damage = fighter.damage * (critical ? 2 : 1);
-      if (fighter.range > 80) {
-        const angle = Math.atan2(target.y - fighter.y, target.x - fighter.x);
-        combat.projectiles.push({
-          x: fighter.x,
-          y: fighter.y,
-          vx: Math.cos(angle) * 360,
-          vy: Math.sin(angle) * 360,
-          radius: 4,
-          side: fighter.side,
-          damage,
-          color: fighter.color,
-          target,
-          chain: fighter.chain
-        });
-      } else {
-        applyDamage(target, damage, fighter);
-      }
-    }
-
-    function applyDamage(target, damage, attacker) {
-      const reduction = target.damageReduction || 0;
-      target.health -= damage * (1 - reduction);
-      burst(target.x, target.y, attacker.color, 4);
-      if (attacker.knockback) {
-        const direction = attacker.side === "ally" ? 1 : -1;
-        target.x += direction * 16;
-      }
-      if (attacker.splash) {
-        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
-        targets
-          .filter(unit =>
-            unit !== target &&
-            unit.health > 0 &&
-            Math.hypot(unit.x - target.x, unit.y - target.y) < 75
-          )
-          .forEach(unit => {
-            unit.health -= damage * 0.35;
-            burst(unit.x, unit.y, attacker.color, 2);
-          });
-      }
-      if (attacker.chain) {
-        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
-        const second = targets
-          .filter(unit => unit !== target && unit.health > 0)
-          .sort((left, right) =>
-            Math.hypot(left.x - target.x, left.y - target.y) -
-            Math.hypot(right.x - target.x, right.y - target.y)
-          )[0];
-        if (second) {
-          second.health -= damage * 0.45;
-          burst(second.x, second.y, attacker.color, 3);
-        }
-      }
+      return { target, distance };
     }
 
     function burst(x, y, color, count) {
       for (let index = 0; index < count; index += 1) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 25 + Math.random() * 75;
-        combat.particles.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          color,
-          life: 0.45
-        });
+        const speed = 25 + Math.random() * 90;
+        combat.particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.45 });
+      }
+    }
+
+    function damageTarget(target, amount, attacker) {
+      target.health -= amount * (1 - (target.reduction || 0));
+      burst(target.x, target.y, attacker.color, 4);
+      if (attacker.knockback) target.x += attacker.side === "ally" ? 16 : -16;
+      if (attacker.splash) {
+        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
+        targets.filter(unit => unit !== target && unit.health > 0 && Math.hypot(unit.x - target.x, unit.y - target.y) < 72)
+          .forEach(unit => unit.health -= amount * 0.35);
+      }
+      if (attacker.chain) {
+        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
+        const second = targets.filter(unit => unit !== target && unit.health > 0)
+          .sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y))[0];
+        if (second) {
+          second.health -= amount * 0.45;
+          burst(second.x, second.y, attacker.color, 3);
+        }
+      }
+    }
+
+    function attack(fighter, target) {
+      if (fighter.healer) {
+        const allies = fighter.side === "ally" ? combat.allies : combat.enemies;
+        const wounded = [...allies].filter(unit => unit.health < unit.maxHealth)
+          .sort((a, b) => a.health / a.maxHealth - b.health / b.maxHealth)[0];
+        if (wounded) {
+          wounded.health = Math.min(wounded.maxHealth, wounded.health + fighter.damage * 1.8);
+          burst(wounded.x, wounded.y, "#4ade80", 6);
+          return;
+        }
+      }
+      const amount = fighter.damage * (Math.random() < fighter.crit ? 2 : 1);
+      if (fighter.range > 80) {
+        const angle = Math.atan2(target.y - fighter.y, target.x - fighter.x);
+        combat.projectiles.push({ x: fighter.x, y: fighter.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: 4, side: fighter.side, amount, attacker: fighter });
+      } else {
+        damageTarget(target, amount, fighter);
       }
     }
 
     function updateFighters(fighters, targets, delta) {
       for (const fighter of fighters) {
-        fighter.regen && (fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta));
-        fighter.attackTimer -= delta;
-        const nearest = nearestTarget(fighter, targets);
-        if (!nearest.target) continue;
-        const desiredRange = fighter.range + fighter.radius + nearest.target.radius;
-        if (nearest.distance > desiredRange) {
-          const dx = nearest.target.x - fighter.x;
-          const dy = nearest.target.y - fighter.y;
-          fighter.x += dx / nearest.distance * fighter.speed * delta;
-          fighter.y += dy / nearest.distance * fighter.speed * delta;
-        } else if (fighter.attackTimer <= 0) {
-          attack(fighter, nearest.target);
-          fighter.attackTimer = fighter.cooldown;
+        if (fighter.regen) fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta);
+        fighter.timer -= delta;
+        const result = nearest(fighter, targets);
+        if (!result.target) continue;
+        const range = fighter.range + fighter.radius + result.target.radius;
+        if (result.distance > range) {
+          fighter.x += (result.target.x - fighter.x) / result.distance * fighter.speed * delta;
+          fighter.y += (result.target.y - fighter.y) / result.distance * fighter.speed * delta;
+        } else if (fighter.timer <= 0) {
+          attack(fighter, result.target);
+          fighter.timer = fighter.cooldown;
         }
       }
     }
@@ -1549,36 +1169,17 @@
         projectile.x += projectile.vx * delta;
         projectile.y += projectile.vy * delta;
         const targets = projectile.side === "ally" ? combat.enemies : combat.allies;
-        const hit = targets.find(target =>
-          target.health > 0 &&
-          Math.hypot(projectile.x - target.x, projectile.y - target.y) <
-            projectile.radius + target.radius
-        );
+        const hit = targets.find(target => target.health > 0 && Math.hypot(projectile.x - target.x, projectile.y - target.y) < projectile.radius + target.radius);
         if (hit) {
-          const attacker = projectile.side === "ally"
-            ? combat.allies.find(unit => unit.color === projectile.color) || combat.allies[0]
-            : combat.enemies[0];
-          applyDamage(hit, projectile.damage, {
-            color: projectile.color,
-            chain: projectile.chain,
-            side: projectile.side,
-            knockback: false,
-            ...attacker
-          });
+          damageTarget(hit, projectile.amount, projectile.attacker);
           combat.projectiles.splice(index, 1);
-        } else if (
-          projectile.x < -30 ||
-          projectile.x > width + 30 ||
-          projectile.y < -30 ||
-          projectile.y > height + 30
-        ) {
+        } else if (projectile.x < -30 || projectile.x > width + 30 || projectile.y < -30 || projectile.y > height + 30) {
           combat.projectiles.splice(index, 1);
         }
       }
 
-      combat.allies = combat.allies.filter(fighter => fighter.health > 0);
-      combat.enemies = combat.enemies.filter(fighter => fighter.health > 0);
-
+      combat.allies = combat.allies.filter(unit => unit.health > 0);
+      combat.enemies = combat.enemies.filter(unit => unit.health > 0);
       for (let index = combat.particles.length - 1; index >= 0; index -= 1) {
         const particle = combat.particles[index];
         particle.x += particle.vx * delta;
@@ -1586,260 +1187,195 @@
         particle.life -= delta;
         if (particle.life <= 0) combat.particles.splice(index, 1);
       }
-
-      if (combat.enemies.length === 0) {
-        finishBattle(true);
-      } else if (combat.allies.length === 0 || combat.elapsed > 55) {
-        finishBattle(false);
-      }
+      if (combat.enemies.length === 0) finishBattle(true);
+      else if (combat.allies.length === 0 || combat.elapsed > 55) finishBattle(false);
     }
 
-    function finishBattle(won) {
-      combat.state = "recruit";
-      battleBanner.classList.remove("fighting");
-      if (won) {
-        const challenge = challengeDefinitions.find(item => item.id === run.selectedChallenge);
-        const reward = challenge.reward + run.stage + run.bonusIncome;
-        run.coins += reward;
-        run.wins += 1;
-        battleLog.textContent = `Victory. The pack gathered ${reward} food.`;
-        run.stage += 1;
-        rollShop(false);
-        rollChallenges();
-        if ((run.stage - 1) % 3 === 0) {
-          showRelics();
-        }
-      } else {
-        run.lives -= 1;
-        run.coins += run.lossRefund;
-        battleLog.textContent = run.lossRefund
-          ? `Defeat. The Safe Burrow recovered ${run.lossRefund} food.`
-          : "Defeat. Adjust the pack and try the encounter again.";
-        if (run.lives <= 0) {
-          endRun();
-          return;
-        }
-        rollChallenges();
-      }
-      battleBanner.textContent = "Gather your pack";
-      render();
+    function rewardPool(encounter) {
+      const owned = [...new Set(run.warband.map(unit => unit.id))];
+      const recruits = unitCards;
+      const focused = typeCards.filter(card => owned.some(id => card.id.endsWith(id)));
+      if (encounter.reward === "protocol") return [...globalCards, ...focused];
+      if (encounter.reward === "focused") return [...focused, ...globalCards, ...recruits];
+      return [...recruits, ...globalCards, ...focused];
     }
 
-    function showRelics() {
-      const recruitedTypes = [...new Set(run.crew.map(unit => unit.id))];
-      const typeRelics = recruitedTypes.flatMap(id => {
-        const definition = unitDefinition(id);
-        return [
-          {
-            name: `${definition.name} Hunting Instinct`,
-            description: `Every ${definition.name} deals 35% more damage.`,
-            apply: currentRun => {
-              const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
-              bonus.damage *= 1.35;
-              currentRun.typeBonuses[id] = bonus;
-            }
-          },
-          {
-            name: `${definition.name} Thick Coat`,
-            description: `Every ${definition.name} gains 40% maximum health.`,
-            apply: currentRun => {
-              const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
-              bonus.health *= 1.4;
-              currentRun.typeBonuses[id] = bonus;
-            }
-          }
-        ];
-      });
-      const choices = [...relics, ...typeRelics].sort(() => Math.random() - 0.5).slice(0, 3);
-      relicGrid.innerHTML = choices.map((relic, index) => `
-        <button class="relic-card" data-relic="${index}" style="--unit-color:#fb923c">
-          <h3>${relic.name}</h3>
-          <p>${relic.description}</p>
-        </button>
-      `).join("");
-      relicOverlay.hidden = false;
-      relicGrid.querySelectorAll("[data-relic]").forEach(button => {
+    function showReward(encounter) {
+      const pool = rewardPool(encounter);
+      const choices = shuffle(pool).slice(0, 3);
+      rewardGrid.innerHTML = choices.map((card, index) => cardMarkup(card.id, index, true)).join("");
+      rewardOverlay.hidden = false;
+      rewardGrid.querySelectorAll("[data-reward]").forEach(button => {
         button.addEventListener("click", () => {
-          choices[Number(button.dataset.relic)].apply(run);
-          relicOverlay.hidden = true;
-          render();
+          const card = choices[Number(button.dataset.reward)];
+          run.deck.push(card.id);
+          run.discard.push(card.id);
+          rewardOverlay.hidden = true;
+          run.stage += 1;
+          startPlanning();
         }, { once: true });
       });
     }
 
-    function endRun() {
-      combat.state = "gameover";
-      const best = Math.max(Number(localStorage.getItem("wildAssemblyBest") || 0), run.stage);
-      localStorage.setItem("wildAssemblyBest", String(best));
-      document.querySelector("#finalStage").textContent = run.stage;
-      document.querySelector("#finalWins").textContent = run.wins;
-      document.querySelector("#finalUnits").textContent = run.recruits;
-      gameOverOverlay.hidden = false;
-      updateBestStage();
+    function finishBattle(won) {
+      const encounter = encounters.find(item => item.id === run.selectedEncounter);
+      if (won) {
+        run.wins += 1;
+        combat.state = "reward";
+        battleLog.textContent = "Victory. Choose one card from the recovered cache.";
+        showReward(encounter);
+      } else {
+        run.lives -= 1;
+        if (run.lives <= 0) {
+          endRun();
+          return;
+        }
+        combat.state = "planning";
+        battleLog.textContent = "Defeat. The convoy regroups and attempts the sector again.";
+        startPlanning();
+      }
+      render();
     }
 
-    function updateBestStage() {
-      const best = Number(localStorage.getItem("wildAssemblyBest") || 0);
-      document.querySelector("#bestStage").textContent = `Best stage: ${best}`;
+    function endRun() {
+      combat.state = "gameover";
+      const best = Math.max(Number(localStorage.getItem("ashfallBest") || 0), run.stage);
+      localStorage.setItem("ashfallBest", String(best));
+      document.querySelector("#finalSector").textContent = run.stage;
+      document.querySelector("#finalWins").textContent = run.wins;
+      document.querySelector("#finalCards").textContent = run.deck.length;
+      gameOverOverlay.hidden = false;
+      updateBest();
+    }
+
+    function updateBest() {
+      document.querySelector("#bestSector").textContent =
+        `Best sector: ${Number(localStorage.getItem("ashfallBest") || 0)}`;
     }
 
     function drawBackground() {
       const sky = context.createLinearGradient(0, 0, 0, height);
-      sky.addColorStop(0, "#78c9ef");
-      sky.addColorStop(0.58, "#d9f3f2");
-      sky.addColorStop(0.59, "#71b84a");
-      sky.addColorStop(1, "#3f7f35");
+      sky.addColorStop(0, "#4b3830");
+      sky.addColorStop(0.5, "#c47a46");
+      sky.addColorStop(0.51, "#82603f");
+      sky.addColorStop(1, "#3d3028");
       context.fillStyle = sky;
       context.fillRect(0, 0, width, height);
 
-      context.fillStyle = "rgba(255, 245, 180, 0.9)";
+      context.fillStyle = "rgba(255, 190, 100, 0.5)";
       context.beginPath();
-      context.arc(width * 0.82, height * 0.16, Math.min(38, width * 0.05), 0, Math.PI * 2);
+      context.arc(width * 0.82, height * 0.16, Math.min(42, width * 0.05), 0, Math.PI * 2);
       context.fill();
 
-      context.fillStyle = "rgba(255, 255, 255, 0.7)";
-      [
-        [width * 0.16, height * 0.16, 1],
-        [width * 0.54, height * 0.1, 0.75]
-      ].forEach(([x, y, scale]) => {
-        context.beginPath();
-        context.ellipse(x, y, 45 * scale, 15 * scale, 0, 0, Math.PI * 2);
-        context.ellipse(x + 35 * scale, y + 3, 35 * scale, 12 * scale, 0, 0, Math.PI * 2);
-        context.ellipse(x - 32 * scale, y + 5, 28 * scale, 10 * scale, 0, 0, Math.PI * 2);
-        context.fill();
-      });
-
-      context.fillStyle = "#579b4b";
+      context.fillStyle = "#49382f";
       context.beginPath();
-      context.moveTo(0, height * 0.55);
-      context.quadraticCurveTo(width * 0.18, height * 0.33, width * 0.38, height * 0.55);
-      context.quadraticCurveTo(width * 0.62, height * 0.27, width, height * 0.55);
-      context.lineTo(width, height * 0.68);
-      context.lineTo(0, height * 0.68);
+      context.moveTo(0, height * 0.52);
+      context.lineTo(width * 0.14, height * 0.32);
+      context.lineTo(width * 0.3, height * 0.52);
+      context.lineTo(width * 0.53, height * 0.27);
+      context.lineTo(width * 0.7, height * 0.52);
+      context.lineTo(width * 0.88, height * 0.35);
+      context.lineTo(width, height * 0.52);
       context.closePath();
       context.fill();
 
-      context.fillStyle = "#78b957";
-      context.fillRect(0, height * 0.53, width, height * 0.47);
-
-      const field = context.createLinearGradient(0, height * 0.48, 0, height);
-      field.addColorStop(0, "rgba(250, 227, 161, 0.78)");
-      field.addColorStop(1, "rgba(173, 113, 58, 0.9)");
-      context.fillStyle = field;
-      context.beginPath();
-      context.ellipse(width / 2, height * 0.76, width * 0.48, height * 0.28, 0, 0, Math.PI * 2);
-      context.fill();
-
-      context.strokeStyle = "rgba(91, 50, 28, 0.2)";
+      context.fillStyle = "#6b4b35";
+      context.fillRect(0, height * 0.48, width, height * 0.52);
+      context.strokeStyle = "rgba(35, 24, 18, 0.35)";
       context.lineWidth = 2;
       for (let row = 0; row < 5; row += 1) {
         const y = height * (0.58 + row * 0.085);
         context.beginPath();
-        context.moveTo(width * 0.04, y);
-        context.quadraticCurveTo(width / 2, y + 10, width * 0.96, y);
+        context.moveTo(0, y);
+        context.quadraticCurveTo(width / 2, y + 12, width, y);
         context.stroke();
       }
 
       context.setLineDash([7, 8]);
-      context.strokeStyle = "rgba(255, 255, 255, 0.65)";
-      context.lineWidth = 2;
+      context.strokeStyle = "rgba(255, 220, 180, 0.38)";
       context.beginPath();
       context.moveTo(width / 2, height * 0.48);
-      context.lineTo(width / 2, height * 0.95);
+      context.lineTo(width / 2, height);
       context.stroke();
       context.setLineDash([]);
 
-      context.fillStyle = "rgba(18, 73, 94, 0.78)";
-      context.fillRect(0, height * 0.36, width * 0.18, 28);
-      context.fillStyle = "rgba(127, 29, 29, 0.78)";
-      context.fillRect(width * 0.82, height * 0.36, width * 0.18, 28);
-      context.fillStyle = "#f8fafc";
-      context.font = "900 11px Inter, sans-serif";
+      context.fillStyle = "rgba(14, 116, 144, 0.72)";
+      context.fillRect(0, height * 0.39, width * 0.18, 24);
+      context.fillStyle = "rgba(153, 27, 27, 0.72)";
+      context.fillRect(width * 0.82, height * 0.39, width * 0.18, 24);
+      context.fillStyle = "#fff7ed";
+      context.font = "900 10px Inter, sans-serif";
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText("YOUR PACK", width * 0.09, height * 0.36 + 14);
-      context.fillText("RIVAL PACK", width * 0.91, height * 0.36 + 14);
+      context.fillText("CONVOY", width * 0.09, height * 0.39 + 12);
+      context.fillText("HOSTILES", width * 0.91, height * 0.39 + 12);
     }
 
     function drawFighter(fighter) {
       context.save();
       context.translate(fighter.x, fighter.y);
-      const depth = Math.max(0.8, Math.min(1.15, 0.8 + (fighter.y - height * 0.4) / height * 0.7));
-      const bob = combat.state === "battle"
-        ? Math.sin(combat.elapsed * 8 + fighter.x * 0.035) * 1.8
-        : Math.sin(performance.now() * 0.002 + fighter.x) * 1.2;
+      const depth = Math.max(0.8, Math.min(1.15, 0.8 + (fighter.y - height * 0.42) / height * 0.8));
+      const bob = Math.sin(combat.elapsed * 8 + fighter.x * 0.03) * 1.5;
       context.scale(depth, depth);
-
-      context.fillStyle = "rgba(47, 31, 20, 0.28)";
+      context.fillStyle = "rgba(20, 12, 8, 0.35)";
       context.beginPath();
-      context.ellipse(0, fighter.radius + 8, fighter.radius * 1.1, fighter.radius * 0.35, 0, 0, Math.PI * 2);
+      context.ellipse(0, fighter.radius + 7, fighter.radius * 1.1, fighter.radius * 0.34, 0, 0, Math.PI * 2);
       context.fill();
-
       context.translate(0, bob);
-      context.strokeStyle = "#493323";
-      context.lineWidth = Math.max(2, fighter.radius * 0.16);
-      context.lineCap = "round";
+
+      context.strokeStyle = "#231815";
+      context.lineWidth = 3;
       context.beginPath();
-      context.moveTo(-fighter.radius * 0.48, fighter.radius * 0.55);
-      context.lineTo(-fighter.radius * 0.58, fighter.radius * 1.05);
-      context.moveTo(fighter.radius * 0.48, fighter.radius * 0.55);
-      context.lineTo(fighter.radius * 0.58, fighter.radius * 1.05);
+      context.moveTo(-fighter.radius * 0.35, fighter.radius * 0.55);
+      context.lineTo(-fighter.radius * 0.45, fighter.radius * 1.05);
+      context.moveTo(fighter.radius * 0.35, fighter.radius * 0.55);
+      context.lineTo(fighter.radius * 0.45, fighter.radius * 1.05);
       context.stroke();
 
       context.shadowColor = fighter.color;
-      context.shadowBlur = 14;
-      context.beginPath();
-      context.ellipse(0, 0, fighter.radius * 1.05, fighter.radius * 0.82, 0, 0, Math.PI * 2);
+      context.shadowBlur = 12;
       context.fillStyle = fighter.color;
+      context.beginPath();
+      context.arc(0, 0, fighter.radius, 0, Math.PI * 2);
       context.fill();
-      context.strokeStyle = fighter.side === "ally" ? "#ecfeff" : "#fff1f2";
+      context.shadowBlur = 0;
+      context.strokeStyle = "#f5e7dc";
       context.lineWidth = 2;
       context.stroke();
-      context.shadowBlur = 0;
-      context.font = `${fighter.radius * 1.45}px "Segoe UI Emoji", sans-serif`;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText(fighter.symbol, 0, -1);
-
+      context.fillStyle = "#17110f";
+      context.font = `950 ${fighter.radius}px Inter, sans-serif`;
+      context.fillText(fighter.symbol, 0, 1);
       if (fighter.rank > 1) {
-        context.fillStyle = "#fef08a";
-        context.font = `900 ${Math.max(8, fighter.radius * 0.55)}px Inter, sans-serif`;
-        context.fillText("*".repeat(fighter.rank), 0, fighter.radius + 15);
+        context.fillStyle = "#fde68a";
+        context.font = "900 9px Inter, sans-serif";
+        context.fillText("II", 0, fighter.radius + 14);
       }
-
       context.fillStyle = "rgba(0,0,0,0.65)";
-      context.fillRect(-fighter.radius, -fighter.radius - 12, fighter.radius * 2, 5);
+      context.fillRect(-fighter.radius, -fighter.radius - 10, fighter.radius * 2, 4);
       context.fillStyle = fighter.side === "ally" ? "#4ade80" : "#fb7185";
-      context.fillRect(
-        -fighter.radius,
-        -fighter.radius - 12,
-        fighter.radius * 2 * Math.max(0, fighter.health / fighter.maxHealth),
-        5
-      );
+      context.fillRect(-fighter.radius, -fighter.radius - 10, fighter.radius * 2 * Math.max(0, fighter.health / fighter.maxHealth), 4);
       context.restore();
     }
 
-    function drawRecruitPreview() {
-      const preview = run.crew.length
-        ? run.crew
-        : [{ id: "badger", rank: 1 }, { id: "lion", rank: 1 }, { id: "toucan", rank: 1 }];
+    function drawPreview() {
+      const preview = run.warband.length
+        ? run.warband
+        : [{ id: "scrapguard", rank: 1 }, { id: "razor", rank: 1 }, { id: "drone", rank: 1 }];
       const columns = Math.min(8, preview.length);
       const rows = Math.ceil(preview.length / columns);
-      const spacingX = Math.min(62, width / (columns + 1));
-      preview.forEach((unit, index) => {
-        const definition = unitDefinition(unit.id);
+      const spacing = Math.min(58, width / (columns + 1));
+      preview.forEach((entry, index) => {
         const row = Math.floor(index / columns);
         const rowCount = Math.min(columns, preview.length - row * columns);
         const column = index % columns;
-        const x = width / 2 + (column - (rowCount - 1) / 2) * spacingX;
-        const y = height * 0.62 + row * Math.min(58, height * 0.12);
+        const unit = unitById(entry.id);
         drawFighter({
-          x,
-          y,
-          radius: 13 + unit.rank * 2,
-          rank: unit.rank,
-          color: families[definition.family].color,
-          symbol: definition.symbol,
+          x: width / 2 + (column - (rowCount - 1) / 2) * spacing,
+          y: height * 0.62 + row * Math.min(55, height * 0.11),
+          radius: 12 + entry.rank * 1.5,
+          rank: entry.rank,
+          color: factions[unit.faction].color,
+          symbol: unit.symbol,
           side: "ally",
           health: 1,
           maxHealth: 1
@@ -1850,11 +1386,9 @@
     function draw() {
       drawBackground();
       if (combat.state === "battle") {
-        [...combat.allies, ...combat.enemies]
-          .sort((left, right) => left.y - right.y)
-          .forEach(drawFighter);
+        [...combat.allies, ...combat.enemies].sort((a, b) => a.y - b.y).forEach(drawFighter);
         for (const projectile of combat.projectiles) {
-          context.strokeStyle = projectile.color;
+          context.strokeStyle = projectile.attacker.color;
           context.lineWidth = 2;
           context.beginPath();
           context.moveTo(projectile.x - projectile.vx * 0.025, projectile.y - projectile.vy * 0.025);
@@ -1862,7 +1396,7 @@
           context.stroke();
           context.beginPath();
           context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
-          context.fillStyle = projectile.color;
+          context.fillStyle = projectile.attacker.color;
           context.fill();
         }
         for (const particle of combat.particles) {
@@ -1874,22 +1408,20 @@
         }
         context.globalAlpha = 1;
       } else {
-        drawRecruitPreview();
+        drawPreview();
       }
     }
 
     function frame(now) {
       const delta = Math.min(0.033, (now - lastFrame) / 1000);
       lastFrame = now;
-      if (combat.state === "battle") {
-        updateBattle(delta);
-      }
+      if (combat.state === "battle") updateBattle(delta);
       draw();
       requestAnimationFrame(frame);
     }
 
-    rerollButton.addEventListener("click", () => rollShop(true));
-    battleButton.addEventListener("click", startBattle);
+    mulliganButton.addEventListener("click", mulligan);
+    deployButton.addEventListener("click", startBattle);
     document.querySelector("#startButton").addEventListener("click", () => {
       titleOverlay.hidden = true;
       resetRun();
@@ -1900,7 +1432,7 @@
     });
     window.addEventListener("resize", resizeCanvas);
 
-    updateBestStage();
+    updateBest();
     resizeCanvas();
     render();
     requestAnimationFrame(frame);
