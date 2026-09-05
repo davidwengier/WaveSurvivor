@@ -1354,6 +1354,86 @@
         bossStartWave: 2,
         goalWaves: 3,
         chestMultiplier: 2
+      },
+      swarm: {
+        name: "Overrun",
+        description: "Face huge packs of weaker, faster creatures inside the living Biohive.",
+        reward: "50% more chests",
+        themeName: "The Biohive",
+        theme: {
+          inner: "#183524",
+          middle: "#0a1c16",
+          edge: "#020805",
+          grid: "74, 222, 128",
+          accent: "#86efac",
+          star: "#bbf7d0",
+          secondary: "#facc15",
+          style: "hive"
+        },
+        waveSeconds: 14,
+        spawnRate: 1.85,
+        enemyScale: 0.72,
+        enemyDamage: 0.78,
+        enemySpeed: 1.12,
+        enemyMix: "swarm",
+        bossEvery: 10,
+        bossStartWave: 10,
+        goalWaves: 10,
+        chestMultiplier: 1.5
+      },
+      glassCannon: {
+        name: "Glass Cannon",
+        description: "Deal devastating damage in the unstable Shattered Prism, but survive with half health.",
+        reward: "Double chest rewards",
+        themeName: "Shattered Prism",
+        theme: {
+          inner: "#3b1747",
+          middle: "#190b2b",
+          edge: "#07030d",
+          grid: "236, 72, 153",
+          accent: "#f0abfc",
+          star: "#fce7f3",
+          secondary: "#67e8f9",
+          style: "prism"
+        },
+        waveSeconds: 20,
+        spawnRate: 1.2,
+        enemyScale: 1.08,
+        enemyDamage: 1.2,
+        enemySpeed: 1.05,
+        playerHealth: 0.5,
+        playerDamage: 2,
+        bossEvery: 3,
+        bossStartWave: 3,
+        goalWaves: 6,
+        chestMultiplier: 2
+      },
+      bulletStorm: {
+        name: "Bullet Storm",
+        description: "Fight projectile-heavy enemies beneath the electrical Tempest Grid.",
+        reward: "Double chest rewards",
+        themeName: "Tempest Grid",
+        theme: {
+          inner: "#102b46",
+          middle: "#071426",
+          edge: "#02050b",
+          grid: "59, 130, 246",
+          accent: "#93c5fd",
+          star: "#dbeafe",
+          secondary: "#facc15",
+          style: "storm"
+        },
+        waveSeconds: 20,
+        spawnRate: 1.15,
+        enemyScale: 0.92,
+        enemyDamage: 0.85,
+        enemySpeed: 0.95,
+        enemyProjectileSpeed: 1.5,
+        enemyMix: "shooters",
+        bossEvery: 7,
+        bossStartWave: 7,
+        goalWaves: 7,
+        chestMultiplier: 2
       }
     };
 
@@ -2176,10 +2256,11 @@
 
     function resetRun() {
       const loot = totalEquippedStats();
+      const mode = activeMode();
       const nexusBonus = meta.skills.nexus * 0.02;
       const damageBonus = 1 + nexusBonus + meta.gear.blaster * 0.15 + meta.skills.force * 0.05 + (loot.damage || 0) / 100;
       const baseHealth = 100 + meta.gear.armor * 20 + meta.skills.vitality * 8 + (loot.health || 0);
-      const maxHealth = Math.round(baseHealth * (1 + nexusBonus + meta.skills.fortitude * 0.05));
+      const maxHealth = Math.round(baseHealth * (1 + nexusBonus + meta.skills.fortitude * 0.05) * (mode.playerHealth || 1));
       const speedBonus = 1 + nexusBonus + meta.gear.boots * 0.07 + meta.skills.agility * 0.03 + (loot.speed || 0) / 100;
       enemies.length = 0;
       projectiles.length = 0;
@@ -2200,7 +2281,7 @@
         speed: 230 * speedBonus,
         health: maxHealth,
         maxHealth,
-        damage: 18 * damageBonus,
+        damage: 18 * damageBonus * (mode.playerDamage || 1),
         fireRate: 0.58 / (1 + meta.skills.rapidFire * 0.04 + (loot.fireRate || 0) / 100),
         fireTimer: 0,
         projectileSpeed: 560 * (1 + meta.skills.overcharge * 0.1 + (loot.projectileSpeed || 0) / 100),
@@ -2292,13 +2373,14 @@
 
     function spawnEnemy(type) {
       const position = randomEdgePosition();
-      const scale = (1 + wave * 0.12) * activeMode().enemyScale;
+      const mode = activeMode();
+      const scale = (1 + wave * 0.12) * mode.enemyScale;
       const enemy = {
         type,
         x: position.x,
         y: position.y,
         radius: 13,
-        speed: 62 + wave * 2,
+        speed: (62 + wave * 2) * (mode.enemySpeed || 1),
         health: 28 * scale,
         maxHealth: 28 * scale,
         damage: 10 + wave * 0.7,
@@ -2310,7 +2392,7 @@
       if (type === "swift") {
         Object.assign(enemy, {
           radius: 9,
-          speed: 105 + wave * 3,
+          speed: (105 + wave * 3) * (mode.enemySpeed || 1),
           health: 15 * scale,
           maxHealth: 15 * scale,
           damage: 7 + wave * 0.5,
@@ -2320,7 +2402,7 @@
       } else if (type === "tank") {
         Object.assign(enemy, {
           radius: 22,
-          speed: 38 + wave,
+          speed: (38 + wave) * (mode.enemySpeed || 1),
           health: 90 * scale,
           maxHealth: 90 * scale,
           damage: 18 + wave,
@@ -2330,7 +2412,7 @@
       } else if (type === "shooter") {
         Object.assign(enemy, {
           radius: 14,
-          speed: 45 + wave,
+          speed: (45 + wave) * (mode.enemySpeed || 1),
           health: 38 * scale,
           maxHealth: 38 * scale,
           damage: 9 + wave * 0.6,
@@ -2341,9 +2423,9 @@
       } else if (type === "boss") {
         Object.assign(enemy, {
           radius: 42,
-          speed: 32 + wave,
-          health: 700 * (1 + wave * 0.18),
-          maxHealth: 700 * (1 + wave * 0.18),
+          speed: (32 + wave) * (mode.enemySpeed || 1),
+          health: 700 * (1 + wave * 0.18) * mode.enemyScale,
+          maxHealth: 700 * (1 + wave * 0.18) * mode.enemyScale,
           damage: 25 + wave,
           color: "#f472b6",
           xp: 100,
@@ -2351,11 +2433,23 @@
           boss: true
         });
       }
+      enemy.damage *= mode.enemyDamage || 1;
       enemies.push(enemy);
     }
 
     function chooseEnemyType() {
       const roll = Math.random();
+      if (activeMode().enemyMix === "swarm") {
+        if (wave >= 4 && roll < 0.08) return "tank";
+        if (wave >= 2 && roll < 0.72) return "swift";
+        return "grunt";
+      }
+      if (activeMode().enemyMix === "shooters") {
+        if (wave >= 3 && roll < 0.18) return "tank";
+        if (wave >= 2 && roll < 0.68) return "shooter";
+        if (roll < 0.82) return "swift";
+        return "grunt";
+      }
       if (wave >= 4 && roll < 0.13) return "shooter";
       if (wave >= 3 && roll < 0.3) return "tank";
       if (wave >= 2 && roll < 0.55) return "swift";
@@ -2419,13 +2513,14 @@
     function enemyShoot(enemy) {
       const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
       const count = enemy.boss ? 7 : 1;
+      const speedMultiplier = activeMode().enemyProjectileSpeed || 1;
       for (let index = 0; index < count; index += 1) {
         const offset = enemy.boss ? (index - 3) * 0.18 : 0;
         enemyProjectiles.push({
           x: enemy.x,
           y: enemy.y,
-          vx: Math.cos(angle + offset) * (enemy.boss ? 190 : 150),
-          vy: Math.sin(angle + offset) * (enemy.boss ? 190 : 150),
+          vx: Math.cos(angle + offset) * (enemy.boss ? 190 : 150) * speedMultiplier,
+          vy: Math.sin(angle + offset) * (enemy.boss ? 190 : 150) * speedMultiplier,
           radius: enemy.boss ? 6 : 5,
           damage: enemy.damage,
           life: 5
@@ -2705,6 +2800,19 @@
       updateHud();
     }
 
+    function drawNebula(theme) {
+      for (let index = 0; index < 3; index += 1) {
+        const x = width * (0.2 + index * 0.3) + Math.sin(elapsed * 0.08 + index * 2) * 90;
+        const y = height * (0.25 + (index % 2) * 0.45) + Math.cos(elapsed * 0.06 + index) * 65;
+        const radius = Math.max(width, height) * (0.25 + index * 0.035);
+        const glow = context.createRadialGradient(x, y, 0, x, y, radius);
+        glow.addColorStop(0, `rgba(${theme.grid}, ${0.075 - index * 0.012})`);
+        glow.addColorStop(1, `rgba(${theme.grid}, 0)`);
+        context.fillStyle = glow;
+        context.fillRect(0, 0, width, height);
+      }
+    }
+
     function drawThemeDecor(theme) {
       context.save();
       if (theme.style === "ruins") {
@@ -2734,7 +2842,7 @@
           context.fillRect(x - 24, 28, 48, 8);
           context.fillRect(x - 24, height - 36, 48, 8);
         }
-      } else {
+      } else if (theme.style === "sanctum") {
         context.translate(width / 2, height / 2);
         context.rotate(elapsed * 0.035);
         context.strokeStyle = `rgba(${theme.grid}, 0.2)`;
@@ -2751,6 +2859,55 @@
           context.arc(Math.cos(angle) * 205, Math.sin(angle) * 205, 5, 0, Math.PI * 2);
           context.fill();
         }
+      } else if (theme.style === "hive") {
+        context.strokeStyle = `rgba(${theme.grid}, 0.16)`;
+        context.lineWidth = 1.5;
+        const spacingX = 86;
+        const spacingY = 74;
+        const drift = elapsed * 8 % spacingY;
+        for (let row = -1; row < height / spacingY + 2; row += 1) {
+          for (let column = -1; column < width / spacingX + 2; column += 1) {
+            const x = column * spacingX + (row % 2 ? spacingX / 2 : 0);
+            const y = row * spacingY + drift;
+            context.save();
+            context.translate(x, y);
+            polygonPath(30 + Math.sin(elapsed * 1.6 + row + column) * 2, 6, Math.PI / 6);
+            context.stroke();
+            context.restore();
+          }
+        }
+      } else if (theme.style === "prism") {
+        for (let index = 0; index < 14; index += 1) {
+          const x = (index * 149 + 55) % Math.max(1, width);
+          const y = (index * 97 + 80) % Math.max(1, height);
+          context.save();
+          context.translate(x, y);
+          context.rotate(elapsed * (index % 2 ? 0.08 : -0.06) + index);
+          context.fillStyle = `rgba(${theme.grid}, ${0.035 + index % 3 * 0.015})`;
+          context.strokeStyle = index % 2 ? theme.secondary : theme.accent;
+          context.globalAlpha = 0.18;
+          polygonPath(22 + index % 4 * 8, 3, Math.PI / 6);
+          context.fill();
+          context.stroke();
+          context.restore();
+        }
+      } else if (theme.style === "storm") {
+        context.strokeStyle = `rgba(${theme.grid}, 0.22)`;
+        context.lineWidth = 1.5;
+        for (let bolt = 0; bolt < 5; bolt += 1) {
+          const baseX = (bolt + 0.5) * width / 5 + Math.sin(elapsed * 0.9 + bolt) * 35;
+          context.beginPath();
+          context.moveTo(baseX, 0);
+          for (let segment = 1; segment <= 7; segment += 1) {
+            const y = segment * height / 7;
+            const x = baseX + Math.sin(elapsed * 2.4 + bolt * 3 + segment) * 28;
+            context.lineTo(x, y);
+          }
+          context.stroke();
+        }
+        context.fillStyle = `rgba(${theme.grid}, 0.045)`;
+        const scanY = elapsed * 110 % Math.max(1, height);
+        context.fillRect(0, scanY - 18, width, 36);
       }
       context.restore();
     }
@@ -2771,6 +2928,7 @@
       backdrop.addColorStop(1, theme.edge);
       context.fillStyle = backdrop;
       context.fillRect(0, 0, width, height);
+      drawNebula(theme);
 
       for (const star of backgroundStars) {
         const pulse = 0.65 + Math.sin(elapsed * 1.4 + star.phase) * 0.35;
