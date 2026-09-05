@@ -2446,6 +2446,11 @@
       if (state === "title") {
         player.x = width / 2;
         player.y = height / 2;
+      } else {
+        for (const entity of [player, ...enemies, ...supplyCrates, ...gems, ...pickups]) {
+          entity.x = Math.max(entity.radius, Math.min(width - entity.radius, entity.x));
+          entity.y = Math.max(entity.radius, Math.min(height - entity.radius, entity.y));
+        }
       }
     }
 
