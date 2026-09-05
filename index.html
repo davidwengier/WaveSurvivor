@@ -640,6 +640,14 @@
       line-height: 1.5;
     }
 
+    .loot-trait {
+      margin-bottom: 0.45rem;
+      color: var(--rarity-color, #67e8f9);
+      font-size: 0.66rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
     .loot-actions {
       display: flex;
       gap: 0.4rem;
@@ -1419,6 +1427,7 @@
     const pickups = [];
     const particles = [];
     const shockwaves = [];
+    const weaponEffects = [];
     const backgroundStars = [];
 
     let width = 0;
@@ -1808,9 +1817,55 @@
       blaster: {
         name: "Weapon",
         bases: [
-          { id: "arc-pistol", name: "Arc Pistol", stats: { damage: [6, 10], fireRate: [2, 4] } },
-          { id: "hunter-cannon", name: "Hunter Cannon", stats: { damage: [8, 13], critChance: [1, 2] } },
-          { id: "storm-repeater", name: "Storm Repeater", stats: { fireRate: [4, 7], projectileSpeed: [8, 14] } }
+          {
+            id: "arc-pistol",
+            name: "Arc Pistol",
+            trait: "Chain lightning leaps to 2 nearby enemies.",
+            weapon: {
+              kind: "arc",
+              damageMultiplier: 0.9,
+              cooldownMultiplier: 1.05,
+              chainCount: 2,
+              chainDamage: 0.45,
+              chainRange: 130,
+              color: "#ecfeff",
+              glow: "#a855f7"
+            },
+            stats: { damage: [6, 10], fireRate: [2, 4] }
+          },
+          {
+            id: "hunter-cannon",
+            name: "Hunter Cannon",
+            trait: "Slow heavy shells explode and damage nearby targets.",
+            weapon: {
+              kind: "hunter",
+              damageMultiplier: 1.75,
+              cooldownMultiplier: 1.55,
+              speedMultiplier: 0.78,
+              radius: 7,
+              blastRadius: 78,
+              blastDamage: 0.5,
+              color: "#fff7ed",
+              glow: "#f97316"
+            },
+            stats: { damage: [8, 13], critChance: [1, 2] }
+          },
+          {
+            id: "storm-repeater",
+            name: "Storm Repeater",
+            trait: "Fires rapid 3-bolt spreads that cover a wide lane.",
+            weapon: {
+              kind: "storm",
+              damageMultiplier: 0.42,
+              cooldownMultiplier: 0.72,
+              speedMultiplier: 1.18,
+              bonusProjectiles: 2,
+              spread: 0.12,
+              color: "#dbeafe",
+              glow: "#3b82f6"
+            },
+            stats: { fireRate: [4, 7], projectileSpeed: [8, 14] }
+          }
         ]
       },
       armor: {
@@ -1842,6 +1897,18 @@
       magnet: { label: "Pickup range", format: value => `+${value}` },
       speed: { label: "Movement speed", format: value => `+${value}%` },
       dashCooldown: { label: "Dash recharge", format: value => `+${value}%` }
+    };
+
+    const defaultWeapon = {
+      kind: "pulse",
+      damageMultiplier: 1,
+      cooldownMultiplier: 1,
+      speedMultiplier: 1,
+      bonusProjectiles: 0,
+      spread: 0.16,
+      radius: 4,
+      color: "#dffaff",
+      glow: "#22d3ee"
     };
 
     const inventoryLimit = 24;
@@ -2053,6 +2120,7 @@
 
     function lootCard(item, location) {
       const rarity = lootRarities[item.rarity];
+      const base = lootBase(item.slot, item.baseId);
       const isEquipped = meta.equipped[item.slot] === item.id;
       const actions = location === "loadout"
         ? `<button data-unequip="${item.slot}">Unequip</button>`
@@ -2067,6 +2135,7 @@
             <em>${rarity.name}</em>
           </header>
           <h3>${lootName(item)}</h3>
+          ${base.trait ? `<div class="loot-trait">${base.trait}</div>` : ""}
           <div class="loot-stats">${lootStats(item)}</div>
           <div class="loot-actions">${actions}</div>
         </article>
@@ -2150,6 +2219,7 @@
       invulnerable: 0,
       overdriveTimer: 0,
       novaCharge: 0,
+      weaponId: null,
       facing: -Math.PI / 2,
       moving: false
     };
@@ -2470,6 +2540,7 @@
       pickups.length = 0;
       particles.length = 0;
       shockwaves.length = 0;
+      weaponEffects.length = 0;
       elapsed = 0;
       wave = 1;
       kills = 0;
@@ -2506,6 +2577,7 @@
         invulnerable: 0,
         overdriveTimer: 0,
         novaCharge: 0,
+        weaponId: meta.inventory.find(item => item.id === meta.equipped.blaster)?.baseId ?? null,
         facing: -Math.PI / 2,
         moving: false
       });
@@ -2840,6 +2912,10 @@
       updateHud();
     }
 
+    function activeWeapon() {
+      return lootBase("blaster", player.weaponId)?.weapon ?? defaultWeapon;
+    }
+
     function fireWeapon() {
       const nearbyEnemies = enemies.filter(enemy => Math.hypot(enemy.x - player.x, enemy.y - player.y) < 320);
       const targets = nearbyEnemies.length > 0 ? nearbyEnemies : [...enemies, ...supplyCrates];
@@ -2854,6 +2930,7 @@
         }
       }
       const baseAngle = Math.atan2(target.y - player.y, target.x - player.x);
+      const weapon = activeWeapon();
       player.facing = baseAngle;
       burst(
         player.x + Math.cos(baseAngle) * 20,
@@ -2861,19 +2938,29 @@
         "#e0f2fe",
         3
       );
-      const spread = 0.16;
-      for (let index = 0; index < player.projectiles; index += 1) {
-        const offset = (index - (player.projectiles - 1) / 2) * spread;
+      const projectileCount = player.projectiles + (weapon.bonusProjectiles || 0);
+      const spread = weapon.spread ?? defaultWeapon.spread;
+      for (let index = 0; index < projectileCount; index += 1) {
+        const offset = (index - (projectileCount - 1) / 2) * spread;
         const angle = baseAngle + offset;
         projectiles.push({
           x: player.x,
           y: player.y,
-          vx: Math.cos(angle) * player.projectileSpeed,
-          vy: Math.sin(angle) * player.projectileSpeed,
-          radius: 4,
-          damage: player.damage,
+          vx: Math.cos(angle) * player.projectileSpeed * (weapon.speedMultiplier || 1),
+          vy: Math.sin(angle) * player.projectileSpeed * (weapon.speedMultiplier || 1),
+          radius: weapon.radius || defaultWeapon.radius,
+          damage: player.damage * weapon.damageMultiplier,
           remainingPierce: player.pierce,
           hitTargets: new Set(),
+          effectTargets: new Set(),
+          kind: weapon.kind,
+          color: weapon.color,
+          glow: weapon.glow,
+          chainCount: weapon.chainCount || 0,
+          chainDamage: weapon.chainDamage || 0,
+          chainRange: weapon.chainRange || 0,
+          blastRadius: weapon.blastRadius || 0,
+          blastDamage: weapon.blastDamage || 0,
           life: 1.5
         });
       }
@@ -2935,6 +3022,70 @@
         }
       }
       return collisions;
+    }
+
+    function triggerWeaponEffect(projectile, primaryTarget) {
+      projectile.effectTargets ??= new Set();
+      if (projectile.chainCount > 0) {
+        let source = primaryTarget;
+        for (let jump = 0; jump < projectile.chainCount; jump += 1) {
+          const target = enemies
+            .filter(enemy => !projectile.hitTargets.has(enemy) && !projectile.effectTargets.has(enemy))
+            .filter(enemy => Math.hypot(enemy.x - source.x, enemy.y - source.y) <= projectile.chainRange)
+            .sort((left, right) =>
+              Math.hypot(left.x - source.x, left.y - source.y)
+              - Math.hypot(right.x - source.x, right.y - source.y)
+            )[0];
+          if (!target) break;
+          projectile.effectTargets.add(target);
+          weaponEffects.push({
+            type: "arc",
+            x1: source.x,
+            y1: source.y,
+            x2: target.x,
+            y2: target.y,
+            life: 0.18,
+            maxLife: 0.18
+          });
+          target.health -= projectile.damage * projectile.chainDamage;
+          burst(target.x, target.y, "#c084fc", 5);
+          const targetIndex = enemies.indexOf(target);
+          if (targetIndex >= 0 && target.health <= 0) defeatEnemy(targetIndex);
+          source = target;
+        }
+      }
+
+      if (projectile.blastRadius > 0) {
+        weaponEffects.push({
+          type: "blast",
+          x: primaryTarget.x,
+          y: primaryTarget.y,
+          radius: 8,
+          maxRadius: projectile.blastRadius,
+          life: 0.3,
+          maxLife: 0.3
+        });
+        burst(primaryTarget.x, primaryTarget.y, "#fb923c", 14);
+        shake = Math.max(shake, 5);
+        for (let index = enemies.length - 1; index >= 0; index -= 1) {
+          const enemy = enemies[index];
+          if (enemy === primaryTarget) continue;
+          if (projectile.effectTargets.has(enemy)) continue;
+          if (Math.hypot(enemy.x - primaryTarget.x, enemy.y - primaryTarget.y) > projectile.blastRadius + enemy.radius) continue;
+          projectile.effectTargets.add(enemy);
+          enemy.health -= projectile.damage * projectile.blastDamage;
+          if (enemy.health <= 0) defeatEnemy(index);
+        }
+        for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
+          const crate = supplyCrates[index];
+          if (crate === primaryTarget) continue;
+          if (projectile.effectTargets.has(crate)) continue;
+          if (Math.hypot(crate.x - primaryTarget.x, crate.y - primaryTarget.y) > projectile.blastRadius + crate.radius) continue;
+          projectile.effectTargets.add(crate);
+          crate.health -= projectile.damage * projectile.blastDamage;
+          if (crate.health <= 0) breakSupplyCrate(index);
+        }
+      }
     }
 
     function damagePlayer(amount) {
@@ -3078,7 +3229,9 @@
 
       if (player.fireTimer <= 0) {
         fireWeapon();
-        player.fireTimer = player.fireRate * (player.overdriveTimer > 0 ? 0.45 : 1);
+        player.fireTimer = player.fireRate
+          * activeWeapon().cooldownMultiplier
+          * (player.overdriveTimer > 0 ? 0.45 : 1);
       }
 
       spawnTimer -= delta;
@@ -3169,12 +3322,15 @@
         let removed = false;
         for (let enemyIndex = enemies.length - 1; enemyIndex >= 0 && !removed; enemyIndex -= 1) {
           const enemy = enemies[enemyIndex];
+          if (!enemy) continue;
           if (projectile.hitTargets.has(enemy) || !projectilesHit(projectile, enemy)) continue;
           projectile.hitTargets.add(enemy);
           const critical = Math.random() < player.critChance;
           enemy.health -= projectile.damage * (critical ? 2 : 1);
           burst(projectile.x, projectile.y, critical ? "#facc15" : "#67e8f9", critical ? 7 : 3);
-          if (enemy.health <= 0) defeatEnemy(enemyIndex);
+          triggerWeaponEffect(projectile, enemy);
+          const currentEnemyIndex = enemies.indexOf(enemy);
+          if (currentEnemyIndex >= 0 && enemy.health <= 0) defeatEnemy(currentEnemyIndex);
           if (projectile.remainingPierce > 0) {
             projectile.remainingPierce -= 1;
           } else {
@@ -3183,11 +3339,14 @@
         }
         for (let crateIndex = supplyCrates.length - 1; crateIndex >= 0 && !removed; crateIndex -= 1) {
           const crate = supplyCrates[crateIndex];
+          if (!crate) continue;
           if (projectile.hitTargets.has(crate) || !projectilesHit(projectile, crate)) continue;
           projectile.hitTargets.add(crate);
           crate.health -= projectile.damage;
           burst(projectile.x, projectile.y, "#fbbf24", 4);
-          if (crate.health <= 0) breakSupplyCrate(crateIndex);
+          triggerWeaponEffect(projectile, crate);
+          const currentCrateIndex = supplyCrates.indexOf(crate);
+          if (currentCrateIndex >= 0 && crate.health <= 0) breakSupplyCrate(currentCrateIndex);
           if (projectile.remainingPierce > 0) {
             projectile.remainingPierce -= 1;
           } else {
@@ -3257,6 +3416,15 @@
         shockwave.life -= delta;
         shockwave.radius = shockwave.maxRadius * (1 - shockwave.life / shockwave.maxLife);
         if (shockwave.life <= 0) shockwaves.splice(index, 1);
+      }
+
+      for (let index = weaponEffects.length - 1; index >= 0; index -= 1) {
+        const effect = weaponEffects[index];
+        effect.life -= delta;
+        if (effect.type === "blast") {
+          effect.radius = effect.maxRadius * (1 - effect.life / effect.maxLife);
+        }
+        if (effect.life <= 0) weaponEffects.splice(index, 1);
       }
 
       shake = Math.max(0, shake - 35 * delta);
@@ -3522,8 +3690,8 @@
     }
 
     function drawProjectile(projectile, friendly) {
-      const color = friendly ? "#dffaff" : "#fb7185";
-      const glow = friendly ? "#22d3ee" : "#f43f5e";
+      const color = friendly ? projectile.color || "#dffaff" : "#fb7185";
+      const glow = friendly ? projectile.glow || "#22d3ee" : "#f43f5e";
       const speed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
       const trail = friendly ? 16 : 12;
       context.save();
@@ -3545,6 +3713,26 @@
       context.beginPath();
       context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
       context.fill();
+      if (friendly && projectile.kind === "hunter") {
+        context.strokeStyle = "#fdba74";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(projectile.x, projectile.y, projectile.radius + 3, 0, Math.PI * 2);
+        context.stroke();
+      } else if (friendly && projectile.kind === "storm") {
+        context.strokeStyle = "#93c5fd";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(
+          projectile.x - projectile.vx / speed * projectile.radius * 2,
+          projectile.y - projectile.vy / speed * projectile.radius * 2
+        );
+        context.lineTo(
+          projectile.x + projectile.vx / speed * projectile.radius * 2,
+          projectile.y + projectile.vy / speed * projectile.radius * 2
+        );
+        context.stroke();
+      }
       context.restore();
     }
 
@@ -3789,6 +3977,39 @@
       context.save();
       if (shake > 0) {
         context.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+      }
+
+      for (const effect of weaponEffects) {
+        const alpha = Math.max(0, effect.life / effect.maxLife);
+        context.save();
+        context.globalAlpha = alpha;
+        if (effect.type === "arc") {
+          context.strokeStyle = "#e9d5ff";
+          context.shadowColor = "#a855f7";
+          context.shadowBlur = 16;
+          context.lineWidth = 3;
+          context.beginPath();
+          context.moveTo(effect.x1, effect.y1);
+          const segments = 5;
+          for (let index = 1; index < segments; index += 1) {
+            const progress = index / segments;
+            context.lineTo(
+              effect.x1 + (effect.x2 - effect.x1) * progress + (Math.random() - 0.5) * 14,
+              effect.y1 + (effect.y2 - effect.y1) * progress + (Math.random() - 0.5) * 14
+            );
+          }
+          context.lineTo(effect.x2, effect.y2);
+          context.stroke();
+        } else {
+          context.strokeStyle = "#fdba74";
+          context.shadowColor = "#f97316";
+          context.shadowBlur = 20;
+          context.lineWidth = 5 * alpha + 2;
+          context.beginPath();
+          context.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+          context.stroke();
+        }
+        context.restore();
       }
 
       for (const shockwave of shockwaves) {
