@@ -173,6 +173,10 @@
 
     .hub-panel {
       width: min(64rem, 100%);
+      background:
+        linear-gradient(135deg, rgb(34 211 238 / 8%), transparent 32%),
+        radial-gradient(circle at 88% 8%, rgb(168 85 247 / 12%), transparent 24rem),
+        linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(5 7 17 / 98%));
     }
 
     .eyebrow {
@@ -280,7 +284,10 @@
       padding: 0.9rem;
       border: 1px solid rgb(255 255 255 / 10%);
       border-radius: 0.75rem;
-      background: rgb(255 255 255 / 4%);
+      background:
+        linear-gradient(145deg, rgb(255 255 255 / 6%), transparent),
+        rgb(7 11 23 / 72%);
+      box-shadow: inset 0 1px rgb(255 255 255 / 5%);
     }
 
     .hub-section h2,
@@ -309,6 +316,13 @@
       color: #fef3c7;
       cursor: pointer;
       font-weight: 950;
+      transition: border-color 150ms ease, filter 150ms ease, transform 150ms ease;
+    }
+
+    .chest-button:not(:disabled):hover {
+      border-color: #fde68a;
+      filter: brightness(1.16);
+      transform: translateY(-2px);
     }
 
     .chest-button strong,
@@ -341,6 +355,24 @@
       text-align: center;
     }
 
+    .buy-chest-button {
+      width: 100%;
+      margin-top: 0.55rem;
+      padding: 0.65rem;
+      border: 1px solid rgb(103 232 249 / 30%);
+      border-radius: 0.55rem;
+      background: rgb(8 145 178 / 12%);
+      color: #a5f3fc;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .buy-chest-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     .gear-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -363,6 +395,28 @@
     .mode-card strong,
     .mode-card span {
       display: block;
+    }
+
+    .gear-icon {
+      display: grid;
+      width: 2.2rem;
+      height: 2.2rem;
+      place-items: center;
+      margin-bottom: 0.5rem;
+      border: 1px solid rgb(103 232 249 / 28%);
+      border-radius: 0.55rem;
+      background: rgb(34 211 238 / 8%);
+      color: #67e8f9;
+    }
+
+    .gear-icon svg {
+      width: 1.35rem;
+      height: 1.35rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
     }
 
     .gear-card span,
@@ -558,6 +612,132 @@
       text-align: center;
     }
 
+    .skill-section {
+      margin: 1rem 0;
+      padding: 0.9rem;
+      overflow: hidden;
+      border: 1px solid rgb(167 139 250 / 20%);
+      border-radius: 0.75rem;
+      background:
+        radial-gradient(circle at 50% 50%, rgb(124 58 237 / 12%), transparent 65%),
+        rgb(8 9 22 / 72%);
+      text-align: left;
+    }
+
+    .skill-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+
+    .skill-card {
+      position: relative;
+      min-height: 9.3rem;
+      padding: 0.8rem;
+      border: 1px solid rgb(167 139 250 / 30%);
+      border-radius: 0.7rem;
+      background:
+        radial-gradient(circle at 50% 0%, rgb(167 139 250 / 15%), transparent 55%),
+        #111321;
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 150ms ease, transform 150ms ease, filter 150ms ease;
+    }
+
+    .skill-card:nth-child(4) { grid-column: 1; grid-row: 2; }
+    .skill-card:nth-child(5) { grid-column: 1; grid-row: 3; }
+    .skill-card:nth-child(6) { grid-column: 2; grid-row: 2; }
+    .skill-card:nth-child(7) { grid-column: 2; grid-row: 3; }
+    .skill-card:nth-child(8) { grid-column: 3; grid-row: 2; }
+    .skill-card:nth-child(9) { grid-column: 3; grid-row: 3; }
+
+    .skill-card:nth-child(n + 4)::before {
+      position: absolute;
+      top: -0.7rem;
+      left: 50%;
+      width: 1px;
+      height: 0.7rem;
+      background: rgb(167 139 250 / 45%);
+      content: "";
+    }
+
+    .skill-card:not(:disabled):hover {
+      border-color: #c4b5fd;
+      filter: brightness(1.12);
+      transform: translateY(-2px);
+    }
+
+    .skill-card.locked {
+      filter: grayscale(0.8);
+      opacity: 0.42;
+    }
+
+    .skill-card.maxed {
+      border-color: #fbbf24;
+      background:
+        radial-gradient(circle at 50% 0%, rgb(251 191 36 / 18%), transparent 55%),
+        #171520;
+    }
+
+    .skill-icon,
+    .upgrade-art {
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--accent, #67e8f9) 55%, transparent);
+      background:
+        radial-gradient(circle, color-mix(in srgb, var(--accent, #67e8f9) 24%, transparent), transparent 68%),
+        rgb(255 255 255 / 3%);
+      color: var(--accent, #67e8f9);
+      box-shadow: inset 0 0 1rem color-mix(in srgb, var(--accent, #67e8f9) 10%, transparent);
+    }
+
+    .skill-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-bottom: 0.55rem;
+      border-radius: 50%;
+    }
+
+    .skill-icon svg,
+    .upgrade-art svg {
+      width: 62%;
+      height: 62%;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+    }
+
+    .skill-card strong,
+    .skill-card span,
+    .skill-card em {
+      display: block;
+    }
+
+    .skill-card strong {
+      font-size: 0.82rem;
+    }
+
+    .skill-card span {
+      min-height: 2rem;
+      margin-top: 0.25rem;
+      color: #abb5c8;
+      font-size: 0.66rem;
+      line-height: 1.4;
+    }
+
+    .skill-card em {
+      margin-top: 0.5rem;
+      color: #c4b5fd;
+      font-size: 0.62rem;
+      font-style: normal;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
     .primary {
       min-width: 12rem;
       padding: 0.85rem 1.4rem;
@@ -584,14 +764,18 @@
     }
 
     .upgrade {
-      min-height: 10rem;
-      padding: 1rem;
+      min-height: 16rem;
+      padding: 0.7rem;
+      overflow: hidden;
       border: 1px solid rgb(255 255 255 / 14%);
       border-radius: 0.8rem;
-      background: rgb(255 255 255 / 5%);
+      background:
+        linear-gradient(160deg, color-mix(in srgb, var(--accent, #67e8f9) 13%, transparent), transparent 55%),
+        #0d1320;
       color: white;
       cursor: pointer;
       text-align: left;
+      transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
     }
 
     .upgrade:hover {
@@ -606,8 +790,8 @@
     }
 
     .upgrade strong {
-      margin-bottom: 0.45rem;
-      color: #67e8f9;
+      margin: 0.75rem 0 0.45rem;
+      color: var(--accent, #67e8f9);
       font-size: 1.05rem;
     }
 
@@ -615,6 +799,18 @@
       color: #cbd5e1;
       font-size: 0.82rem;
       line-height: 1.45;
+    }
+
+    .upgrade-art {
+      height: 8rem;
+      border-radius: 0.6rem;
+    }
+
+    .upgrade-art svg {
+      width: 4.5rem;
+      height: 4.5rem;
+      filter: drop-shadow(0 0 0.7rem currentColor);
+      stroke-width: 1.35;
     }
 
     .mobile-controls {
@@ -688,6 +884,7 @@
 
     .run-summary {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 1.5rem;
       margin: 1.2rem 0 1.5rem;
@@ -740,8 +937,18 @@
       .gear-grid,
       .mode-grid,
       .loadout-grid,
-      .inventory-grid {
+      .inventory-grid,
+      .skill-grid {
         grid-template-columns: 1fr;
+      }
+
+      .skill-card:nth-child(n) {
+        grid-column: auto;
+        grid-row: auto;
+      }
+
+      .skill-card:nth-child(n)::before {
+        display: none;
       }
 
       .loot-heading {
@@ -752,6 +959,10 @@
 
       .upgrade {
         min-height: 0;
+      }
+
+      .upgrade-art {
+        height: 5.5rem;
       }
 
       .panel {
@@ -798,6 +1009,7 @@
       <div class="hub-resources">
         <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
         <div class="hub-resource"><small>Scrap</small><strong id="scrapCount">0</strong></div>
+        <div class="hub-resource"><small>Skill cores</small><strong id="skillPointCount">1</strong></div>
       </div>
       <div class="hub-grid">
         <section class="hub-section">
@@ -807,6 +1019,7 @@
             <strong>Open chest</strong>
             <span id="chestHint">Contains equipment + 3-8 scrap</span>
           </button>
+          <button id="buyChestButton" class="buy-chest-button">Buy chest - 25 scrap</button>
           <div id="chestResult" class="chest-result"></div>
         </section>
         <section class="hub-section">
@@ -825,6 +1038,16 @@
         </div>
         <div id="loadoutGrid" class="loadout-grid"></div>
         <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+      <section class="skill-section">
+        <div class="loot-heading">
+          <div>
+            <h2>Core skill tree</h2>
+            <p>Spend skill cores earned from deeper runs. Advanced nodes require their linked core skill.</p>
+          </div>
+          <strong id="skillPointLabel">1 core available</strong>
+        </div>
+        <div id="skillGrid" class="skill-grid"></div>
       </section>
       <section class="mode-section">
         <h2>Choose game mode</h2>
@@ -867,6 +1090,7 @@
         <div><strong id="finalWave">1</strong><span>Wave</span></div>
         <div><strong id="finalKills">0</strong><span>Kills</span></div>
         <div><strong id="earnedChests">0</strong><span>Chests</span></div>
+        <div><strong id="earnedSkillPoints">0</strong><span>Skill cores</span></div>
       </div>
       <button id="restartButton" class="primary">Return to safehouse</button>
     </div>
@@ -893,7 +1117,9 @@
     const joystickKnob = document.querySelector("#joystickKnob");
     const chestCount = document.querySelector("#chestCount");
     const scrapCount = document.querySelector("#scrapCount");
+    const skillPointCount = document.querySelector("#skillPointCount");
     const openChestButton = document.querySelector("#openChestButton");
+    const buyChestButton = document.querySelector("#buyChestButton");
     const chestHint = document.querySelector("#chestHint");
     const chestResult = document.querySelector("#chestResult");
     const gearGrid = document.querySelector("#gearGrid");
@@ -901,6 +1127,8 @@
     const loadoutGrid = document.querySelector("#loadoutGrid");
     const inventoryGrid = document.querySelector("#inventoryGrid");
     const inventoryCount = document.querySelector("#inventoryCount");
+    const skillGrid = document.querySelector("#skillGrid");
+    const skillPointLabel = document.querySelector("#skillPointLabel");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -960,17 +1188,101 @@
       {
         id: "blaster",
         name: "Pulse Blaster",
+        icon: "damage",
         description: level => `Start each run with ${level * 15}% bonus damage.`
       },
       {
         id: "armor",
         name: "Core Armor",
+        icon: "armor",
         description: level => `Start each run with ${level * 20} bonus health.`
       },
       {
         id: "boots",
         name: "Phase Boots",
+        icon: "speed",
         description: level => `Start each run with ${level * 7}% bonus speed.`
+      }
+    ];
+
+    const skillDefinitions = [
+      {
+        id: "force",
+        name: "Force Core",
+        icon: "damage",
+        accent: "#fb7185",
+        maxLevel: 3,
+        description: level => `+${level * 5}% starting damage.`
+      },
+      {
+        id: "vitality",
+        name: "Vitality Core",
+        icon: "health",
+        accent: "#4ade80",
+        maxLevel: 3,
+        description: level => `+${level * 8} starting health.`
+      },
+      {
+        id: "agility",
+        name: "Agility Core",
+        icon: "speed",
+        accent: "#38bdf8",
+        maxLevel: 3,
+        description: level => `+${level * 3}% starting speed.`
+      },
+      {
+        id: "rapidFire",
+        name: "Rapid Cycling",
+        icon: "fireRate",
+        accent: "#f97316",
+        maxLevel: 3,
+        requires: { id: "force", level: 2 },
+        description: level => `+${level * 4}% starting fire rate.`
+      },
+      {
+        id: "precision",
+        name: "Precision Matrix",
+        icon: "crit",
+        accent: "#fbbf24",
+        maxLevel: 3,
+        requires: { id: "force", level: 2 },
+        description: level => `+${level * 2}% critical chance.`
+      },
+      {
+        id: "barrier",
+        name: "Reactive Barrier",
+        icon: "armor",
+        accent: "#a78bfa",
+        maxLevel: 3,
+        requires: { id: "vitality", level: 2 },
+        description: level => `+${level} starting armor.`
+      },
+      {
+        id: "recovery",
+        name: "Recovery Loop",
+        icon: "repair",
+        accent: "#34d399",
+        maxLevel: 3,
+        requires: { id: "vitality", level: 2 },
+        description: level => `+${(level * 0.15).toFixed(2)} health regeneration per second.`
+      },
+      {
+        id: "phaseDrive",
+        name: "Phase Drive",
+        icon: "dash",
+        accent: "#22d3ee",
+        maxLevel: 3,
+        requires: { id: "agility", level: 2 },
+        description: level => `+${level * 5}% dash recharge speed.`
+      },
+      {
+        id: "fortune",
+        name: "Fortune Scanner",
+        icon: "fortune",
+        accent: "#e879f9",
+        maxLevel: 3,
+        requires: { id: "agility", level: 2 },
+        description: level => `+${level * 4}% chance to improve chest rarity.`
       }
     ];
 
@@ -1023,10 +1335,12 @@
     };
 
     const inventoryLimit = 24;
+    const chestCost = 25;
 
     const defaultMeta = {
       chests: 1,
       scrap: 0,
+      skillPoints: 1,
       selectedMode: "survival",
       gear: {
         blaster: 0,
@@ -1038,6 +1352,17 @@
         blaster: null,
         armor: null,
         boots: null
+      },
+      skills: {
+        force: 0,
+        vitality: 0,
+        agility: 0,
+        rapidFire: 0,
+        precision: 0,
+        barrier: 0,
+        recovery: 0,
+        phaseDrive: 0,
+        fortune: 0
       }
     };
 
@@ -1077,6 +1402,9 @@
         return {
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
+          skillPoints: parsed.skillPoints == null && !parsed.skills
+            ? 1
+            : Math.max(0, Math.floor(Number(parsed.skillPoints) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
           gear: {
             blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
@@ -1088,7 +1416,11 @@
             blaster: inventoryIds.has(parsed.equipped?.blaster) ? parsed.equipped.blaster : null,
             armor: inventoryIds.has(parsed.equipped?.armor) ? parsed.equipped.armor : null,
             boots: inventoryIds.has(parsed.equipped?.boots) ? parsed.equipped.boots : null
-          }
+          },
+          skills: Object.fromEntries(skillDefinitions.map(skill => [
+            skill.id,
+            Math.min(skill.maxLevel, Math.max(0, Math.floor(Number(parsed.skills?.[skill.id]) || 0)))
+          ]))
         };
       } catch (error) {
         console.warn("Ignoring invalid MaxGame progression data.", error);
@@ -1107,6 +1439,25 @@
       return gameModes[meta.selectedMode];
     }
 
+    function iconSvg(type) {
+      const paths = {
+        damage: '<path d="M4 12h11M12 7l5 5-5 5"/><circle cx="5" cy="12" r="2"/>',
+        fireRate: '<path d="M13 2 5 13h6l-1 9 9-13h-6z"/>',
+        split: '<path d="M4 12h6m0 0 7-7m-7 7 7 7"/><path d="m15 5 3-1-1 3m0 10 1 3-3-1"/>',
+        pierce: '<path d="M3 12h17m-4-4 4 4-4 4"/><circle cx="8" cy="12" r="3"/>',
+        speed: '<path d="M3 8h8M1 12h10M3 16h8l7-4-7-4"/>',
+        health: '<path d="M20 5c-2-2-5-1-8 2-3-3-6-4-8-2-3 3-1 8 8 15 9-7 11-12 8-15z"/>',
+        repair: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/>',
+        magnet: '<path d="M5 4v9a7 7 0 0 0 14 0V4h-5v9a2 2 0 0 1-4 0V4z"/>',
+        armor: '<path d="M12 2 4 5v6c0 5 3 9 8 11 5-2 8-6 8-11V5z"/><path d="m8 12 3 3 5-6"/>',
+        crit: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
+        projectile: '<path d="m4 18 14-12M9 5l9 1-1 9"/><path d="M4 13v5h5"/>',
+        dash: '<path d="M2 8h7M1 12h8M2 16h7l9-4-9-4"/>',
+        fortune: '<path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><circle cx="12" cy="12" r="2"/>'
+      };
+      return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[type] || paths.damage}</svg>`;
+    }
+
     function equippedLoot() {
       return Object.values(meta.equipped)
         .map(id => meta.inventory.find(item => item.id === id))
@@ -1115,6 +1466,9 @@
 
     function rollLootRarity() {
       let roll = Math.random();
+      if (Math.random() < meta.skills.fortune * 0.04) {
+        roll = Math.max(roll, Math.random());
+      }
       for (const [id, rarity] of Object.entries(lootRarities)) {
         roll -= rarity.chance;
         if (roll <= 0) return id;
@@ -1256,33 +1610,45 @@
     const upgrades = [
       {
         name: "Heavy Rounds",
+        icon: "damage",
+        accent: "#fb7185",
         description: "+35% weapon damage.",
         apply: () => player.damage *= 1.35
       },
       {
         name: "Overclock",
+        icon: "fireRate",
+        accent: "#f97316",
         description: "Fire 20% faster.",
         apply: () => player.fireRate *= 0.8
       },
       {
         name: "Split Shot",
+        icon: "split",
+        accent: "#c084fc",
         description: "Fire one additional projectile.",
         available: () => player.projectiles < 5,
         apply: () => player.projectiles += 1
       },
       {
         name: "Phase Rounds",
+        icon: "pierce",
+        accent: "#60a5fa",
         description: "Projectiles pierce one additional enemy.",
         available: () => player.pierce < 5,
         apply: () => player.pierce += 1
       },
       {
         name: "Kinetic Boots",
+        icon: "speed",
+        accent: "#38bdf8",
         description: "+15% movement speed.",
         apply: () => player.speed *= 1.15
       },
       {
         name: "Reinforced Core",
+        icon: "health",
+        accent: "#4ade80",
         description: "+25 maximum health and heal 25.",
         apply: () => {
           player.maxHealth += 25;
@@ -1291,33 +1657,45 @@
       },
       {
         name: "Repair Nanites",
+        icon: "repair",
+        accent: "#34d399",
         description: "Regenerate 1 health per second.",
         apply: () => player.regen += 1
       },
       {
         name: "Magnetic Field",
+        icon: "magnet",
+        accent: "#22d3ee",
         description: "+55 energy pickup range.",
         apply: () => player.magnet += 55
       },
       {
         name: "Dense Plating",
+        icon: "armor",
+        accent: "#a78bfa",
         description: "Reduce incoming damage by 2.",
         available: () => player.armor < 12,
         apply: () => player.armor += 2
       },
       {
         name: "Critical Systems",
+        icon: "crit",
+        accent: "#fbbf24",
         description: "+10% critical hit chance.",
         available: () => player.critChance < 0.58,
         apply: () => player.critChance += 0.1
       },
       {
         name: "Hypervelocity",
+        icon: "projectile",
+        accent: "#67e8f9",
         description: "+25% projectile speed.",
         apply: () => player.projectileSpeed *= 1.25
       },
       {
         name: "Emergency Repair",
+        icon: "repair",
+        accent: "#f472b6",
         description: "Restore 60 health immediately.",
         available: () => player.health < player.maxHealth,
         apply: () => player.health = Math.min(player.maxHealth, player.health + 60)
@@ -1338,9 +1716,69 @@
       return totals;
     }
 
+    function skillUnlocked(skill) {
+      return !skill.requires || meta.skills[skill.requires.id] >= skill.requires.level;
+    }
+
+    function renderSkills() {
+      skillPointCount.textContent = meta.skillPoints;
+      skillPointLabel.textContent = `${meta.skillPoints} ${meta.skillPoints === 1 ? "core" : "cores"} available`;
+      skillGrid.innerHTML = skillDefinitions.map(skill => {
+        const level = meta.skills[skill.id];
+        const unlocked = skillUnlocked(skill);
+        const maxed = level >= skill.maxLevel;
+        const requirement = skill.requires
+          ? skillDefinitions.find(candidate => candidate.id === skill.requires.id)
+          : null;
+        const status = !unlocked
+          ? `Requires ${requirement.name} level ${skill.requires.level}`
+          : maxed
+            ? "Maximum level"
+            : `Level ${level}/${skill.maxLevel} - spend 1 core`;
+        const shownLevel = maxed ? level : level + 1;
+        return `
+          <button
+            class="skill-card ${!unlocked ? "locked" : ""} ${maxed ? "maxed" : ""}"
+            data-skill="${skill.id}"
+            style="--accent:${skill.accent}"
+            ${!unlocked || maxed || meta.skillPoints < 1 ? "disabled" : ""}
+          >
+            <div class="skill-icon">${iconSvg(skill.icon)}</div>
+            <strong>${skill.name}</strong>
+            <span>${maxed ? skill.description(level) : `Next: ${skill.description(shownLevel)}`}</span>
+            <em>${status}</em>
+          </button>
+        `;
+      }).join("");
+      skillGrid.querySelectorAll("[data-skill]").forEach(button => {
+        button.addEventListener("click", () => buySkill(button.dataset.skill));
+      });
+    }
+
+    function buySkill(id) {
+      const skill = skillDefinitions.find(candidate => candidate.id === id);
+      if (!skill || !skillUnlocked(skill) || meta.skillPoints < 1 || meta.skills[id] >= skill.maxLevel) return;
+      meta.skillPoints -= 1;
+      meta.skills[id] += 1;
+      chestResult.textContent = `${skill.name} increased to level ${meta.skills[id]}.`;
+      saveMeta();
+      renderHub();
+    }
+
+    function buyChest() {
+      if (meta.scrap < chestCost) return;
+      meta.scrap -= chestCost;
+      meta.chests += 1;
+      chestResult.textContent = "Purchased one recovered chest.";
+      saveMeta();
+      renderHub();
+    }
+
     function renderHub() {
       chestCount.textContent = meta.chests;
       scrapCount.textContent = meta.scrap;
+      buyChestButton.disabled = meta.scrap < chestCost;
+      buyChestButton.textContent = `Buy chest - ${chestCost} scrap`;
       const inventoryFull = meta.inventory.length >= inventoryLimit;
       openChestButton.disabled = meta.chests < 1 || inventoryFull;
       chestHint.textContent = inventoryFull ? "Vault full - salvage an item first" : "Contains equipment + 3-8 scrap";
@@ -1349,6 +1787,7 @@
         const cost = gearCost(level);
         return `
           <button class="gear-card" data-gear="${gear.id}" ${level >= 10 || meta.scrap < cost ? "disabled" : ""}>
+            <div class="gear-icon">${iconSvg(gear.icon)}</div>
             <strong>${gear.name} · Level ${level}</strong>
             <span>${gear.description(level)}</span>
             <em>${level >= 10 ? "Maximum level" : `Upgrade: ${cost} scrap`}</em>
@@ -1373,6 +1812,7 @@
         });
       });
       renderLoot();
+      renderSkills();
       document.querySelector("#startButton").textContent = `Start ${activeMode().name}`;
       updateBestRun();
     }
@@ -1429,9 +1869,9 @@
 
     function resetRun() {
       const loot = totalEquippedStats();
-      const damageBonus = 1 + meta.gear.blaster * 0.15 + (loot.damage || 0) / 100;
-      const healthBonus = meta.gear.armor * 20 + (loot.health || 0);
-      const speedBonus = 1 + meta.gear.boots * 0.07 + (loot.speed || 0) / 100;
+      const damageBonus = 1 + meta.gear.blaster * 0.15 + meta.skills.force * 0.05 + (loot.damage || 0) / 100;
+      const healthBonus = meta.gear.armor * 20 + meta.skills.vitality * 8 + (loot.health || 0);
+      const speedBonus = 1 + meta.gear.boots * 0.07 + meta.skills.agility * 0.03 + (loot.speed || 0) / 100;
       enemies.length = 0;
       projectiles.length = 0;
       enemyProjectiles.length = 0;
@@ -1450,19 +1890,19 @@
         health: 100 + healthBonus,
         maxHealth: 100 + healthBonus,
         damage: 18 * damageBonus,
-        fireRate: 0.58 / (1 + (loot.fireRate || 0) / 100),
+        fireRate: 0.58 / (1 + meta.skills.rapidFire * 0.04 + (loot.fireRate || 0) / 100),
         fireTimer: 0,
         projectileSpeed: 560 * (1 + (loot.projectileSpeed || 0) / 100),
         projectiles: 1,
         pierce: 0,
         magnet: 90 + (loot.magnet || 0),
-        armor: loot.armor || 0,
-        critChance: Math.min(0.75, 0.08 + (loot.critChance || 0) / 100),
+        armor: meta.skills.barrier + (loot.armor || 0),
+        critChance: Math.min(0.75, 0.08 + meta.skills.precision * 0.02 + (loot.critChance || 0) / 100),
         level: 1,
         xp: 0,
         xpNeeded: 18,
-        regen: loot.regen || 0,
-        dashCooldown: 2.5 / (1 + (loot.dashCooldown || 0) / 100),
+        regen: meta.skills.recovery * 0.15 + (loot.regen || 0),
+        dashCooldown: 2.5 / (1 + meta.skills.phaseDrive * 0.05 + (loot.dashCooldown || 0) / 100),
         dashTimer: 0,
         invulnerable: 0,
         facing: -Math.PI / 2
@@ -1743,7 +2183,8 @@
       upgradeOverlay.hidden = false;
       const choices = randomUpgradeChoices();
       upgradeGrid.innerHTML = choices.map((upgrade, index) => `
-        <button class="upgrade" data-upgrade="${index}">
+        <button class="upgrade" data-upgrade="${index}" style="--accent:${upgrade.accent}">
+          <div class="upgrade-art">${iconSvg(upgrade.icon)}</div>
           <strong>${upgrade.name}</strong>
           <span>${upgrade.description}</span>
         </button>
@@ -2196,12 +2637,15 @@
       localStorage.setItem("maxGameBest", String(best));
       const baseChests = Math.max(1, Math.floor((wave + 1) / 3));
       const earned = Math.ceil(baseChests * activeMode().chestMultiplier);
+      const earnedSkills = Math.floor(wave / 2);
       meta.chests += earned;
+      meta.skillPoints += earnedSkills;
       saveMeta();
       document.querySelector("#finalTime").textContent = formatTime(elapsed);
       document.querySelector("#finalWave").textContent = wave;
       document.querySelector("#finalKills").textContent = kills;
       document.querySelector("#earnedChests").textContent = earned;
+      document.querySelector("#earnedSkillPoints").textContent = earnedSkills;
       gameOverOverlay.hidden = false;
     }
 
@@ -2300,6 +2744,7 @@
     document.querySelector("#startButton").addEventListener("click", startRun);
     document.querySelector("#restartButton").addEventListener("click", showHub);
     openChestButton.addEventListener("click", openChest);
+    buyChestButton.addEventListener("click", buyChest);
 
     resize();
     renderHub();
