@@ -90,6 +90,11 @@
       background: linear-gradient(90deg, #2563eb, #22d3ee);
     }
 
+    #novaFill {
+      background: linear-gradient(90deg, #f59e0b, #fde047, #f97316);
+      box-shadow: 0 0 1rem rgb(250 204 21 / 42%);
+    }
+
     .bar-label {
       position: absolute;
       inset: 0;
@@ -1050,7 +1055,47 @@
       text-transform: uppercase;
     }
 
-    .dash.cooldown {
+    .ability-buttons {
+      display: flex;
+      align-items: end;
+      gap: 0.7rem;
+      pointer-events: none;
+    }
+
+    .nova {
+      display: grid;
+      width: 4.5rem;
+      height: 4.5rem;
+      place-items: center;
+      border: 1px solid rgb(251 191 36 / 30%);
+      border-radius: 50%;
+      background: rgb(120 53 15 / 62%);
+      color: #fde68a;
+      font-size: 0.68rem;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      opacity: 0.42;
+      pointer-events: auto;
+      text-transform: uppercase;
+    }
+
+    .nova.ready {
+      border-color: #fde047;
+      background: rgb(180 83 9 / 78%);
+      box-shadow: 0 0 1.8rem rgb(250 204 21 / 60%);
+      opacity: 1;
+      animation: nova-ready 900ms ease-in-out infinite alternate;
+    }
+
+    @keyframes nova-ready {
+      to {
+        filter: brightness(1.3);
+        transform: scale(1.05);
+      }
+    }
+
+    .dash.cooldown,
+    .nova:not(.ready) {
       opacity: 0.4;
     }
 
@@ -1163,7 +1208,8 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .brand-logo {
+      .brand-logo,
+      .nova.ready {
         animation: none;
       }
     }
@@ -1182,6 +1228,10 @@
         <div id="xpFill" class="bar-fill"></div>
         <div id="xpLabel" class="bar-label">LEVEL 1</div>
       </div>
+      <div class="bar">
+        <div id="novaFill" class="bar-fill"></div>
+        <div id="novaLabel" class="bar-label">NOVA 0%</div>
+      </div>
     </div>
     <div class="stats">
       <div class="stat"><small>Time</small><strong id="time">0:00</strong></div>
@@ -1199,7 +1249,10 @@
     <div id="joystick" class="joystick" aria-label="Movement joystick">
       <div id="joystickKnob" class="joystick-knob"></div>
     </div>
-    <button id="dashButton" class="dash">Dash</button>
+    <div class="ability-buttons">
+      <button id="novaButton" class="nova">Nova</button>
+      <button id="dashButton" class="dash">Dash</button>
+    </div>
   </div>
 
   <div id="titleOverlay" class="overlay">
@@ -1258,7 +1311,7 @@
       <div class="controls-copy">
         <div class="control-card"><strong>Move</strong>WASD, arrow keys, or joystick</div>
         <div class="control-card"><strong>Dash</strong>Space or the Dash button</div>
-        <div class="control-card"><strong>Attack</strong>Automatic targeting</div>
+        <div class="control-card"><strong>Combat</strong>Automatic fire; press Q when Nova is charged</div>
         <div class="control-card"><strong>Supplies</strong>Break gold caches for repair, shield, or overdrive pickups</div>
       </div>
       <button id="startButton" class="primary">Start run</button>
@@ -1325,6 +1378,8 @@
     const healthLabel = document.querySelector("#healthLabel");
     const xpFill = document.querySelector("#xpFill");
     const xpLabel = document.querySelector("#xpLabel");
+    const novaFill = document.querySelector("#novaFill");
+    const novaLabel = document.querySelector("#novaLabel");
     const timeDisplay = document.querySelector("#time");
     const waveDisplay = document.querySelector("#wave");
     const killsDisplay = document.querySelector("#kills");
@@ -1338,6 +1393,7 @@
     const upgradeGrid = document.querySelector("#upgradeGrid");
     const pauseButton = document.querySelector("#pauseButton");
     const dashButton = document.querySelector("#dashButton");
+    const novaButton = document.querySelector("#novaButton");
     const joystick = document.querySelector("#joystick");
     const joystickKnob = document.querySelector("#joystickKnob");
     const chestCount = document.querySelector("#chestCount");
@@ -1362,6 +1418,7 @@
     const supplyCrates = [];
     const pickups = [];
     const particles = [];
+    const shockwaves = [];
     const backgroundStars = [];
 
     let width = 0;
@@ -2077,6 +2134,7 @@
       dashTimer: 0,
       invulnerable: 0,
       overdriveTimer: 0,
+      novaCharge: 0,
       facing: -Math.PI / 2,
       moving: false
     };
@@ -2391,6 +2449,7 @@
       supplyCrates.length = 0;
       pickups.length = 0;
       particles.length = 0;
+      shockwaves.length = 0;
       elapsed = 0;
       wave = 1;
       kills = 0;
@@ -2426,6 +2485,7 @@
         dashTimer: 0,
         invulnerable: 0,
         overdriveTimer: 0,
+        novaCharge: 0,
         facing: -Math.PI / 2,
         moving: false
       });
@@ -2468,6 +2528,9 @@
       waveDisplay.textContent = `${wave} / ${nextGoal}`;
       killsDisplay.textContent = kills;
       comboDisplay.textContent = `x${combo}`;
+      novaFill.style.width = `${player.novaCharge}%`;
+      novaLabel.textContent = player.novaCharge >= 100 ? "NOVA READY - Q" : `NOVA ${Math.floor(player.novaCharge)}%`;
+      novaButton.classList.toggle("ready", player.novaCharge >= 100);
       const activePowers = [];
       if (player.invulnerable > 1) activePowers.push(`Shield ${player.invulnerable.toFixed(1)}s`);
       if (player.overdriveTimer > 0) activePowers.push(`Overdrive ${player.overdriveTimer.toFixed(1)}s`);
@@ -2722,6 +2785,41 @@
       burst(player.x, player.y, "#67e8f9", 14);
     }
 
+    function useNova() {
+      if (state !== "playing" || player.novaCharge < 100) return;
+      player.novaCharge = 0;
+      const radius = 285;
+      const damage = Math.max(140, player.damage * 8);
+      shockwaves.push({
+        x: player.x,
+        y: player.y,
+        radius: 20,
+        maxRadius: radius,
+        life: 0.65,
+        maxLife: 0.65
+      });
+      for (let index = enemies.length - 1; index >= 0; index -= 1) {
+        const enemy = enemies[index];
+        if (Math.hypot(enemy.x - player.x, enemy.y - player.y) > radius + enemy.radius) continue;
+        enemy.health -= enemy.boss ? damage * 0.55 : damage;
+        if (enemy.health <= 0) defeatEnemy(index);
+      }
+      for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
+        const projectile = enemyProjectiles[index];
+        if (Math.hypot(projectile.x - player.x, projectile.y - player.y) <= radius) {
+          enemyProjectiles.splice(index, 1);
+        }
+      }
+      for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
+        const crate = supplyCrates[index];
+        if (Math.hypot(crate.x - player.x, crate.y - player.y) <= radius) breakSupplyCrate(index);
+      }
+      player.invulnerable = Math.max(player.invulnerable, 0.7);
+      shake = 18;
+      burst(player.x, player.y, "#fde047", 45);
+      updateHud();
+    }
+
     function fireWeapon() {
       const nearbyEnemies = enemies.filter(enemy => Math.hypot(enemy.x - player.x, enemy.y - player.y) < 320);
       const targets = nearbyEnemies.length > 0 ? nearbyEnemies : [...enemies, ...supplyCrates];
@@ -2836,6 +2934,7 @@
       combo = comboTimer > 0 ? combo + 1 : 1;
       bestCombo = Math.max(bestCombo, combo);
       comboTimer = 3;
+      player.novaCharge = Math.min(100, player.novaCharge + (enemy.boss ? 40 : enemy.elite ? 18 : 8));
       const gemCount = enemy.boss ? 12 : enemy.elite ? 5 : 1;
       for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
         gems.push({
@@ -3121,6 +3220,13 @@
         particle.vy *= 0.96;
         particle.life -= delta;
         if (particle.life <= 0) particles.splice(index, 1);
+      }
+
+      for (let index = shockwaves.length - 1; index >= 0; index -= 1) {
+        const shockwave = shockwaves[index];
+        shockwave.life -= delta;
+        shockwave.radius = shockwave.maxRadius * (1 - shockwave.life / shockwave.maxLife);
+        if (shockwave.life <= 0) shockwaves.splice(index, 1);
       }
 
       shake = Math.max(0, shake - 35 * delta);
@@ -3655,6 +3761,25 @@
         context.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
       }
 
+      for (const shockwave of shockwaves) {
+        const alpha = Math.max(0, shockwave.life / shockwave.maxLife);
+        context.save();
+        context.globalAlpha = alpha;
+        context.strokeStyle = "#fde047";
+        context.shadowColor = "#f59e0b";
+        context.shadowBlur = 25;
+        context.lineWidth = 7 * alpha + 2;
+        context.beginPath();
+        context.arc(shockwave.x, shockwave.y, shockwave.radius, 0, Math.PI * 2);
+        context.stroke();
+        context.strokeStyle = "#e0f2fe";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(shockwave.x, shockwave.y, shockwave.radius * 0.82, 0, Math.PI * 2);
+        context.stroke();
+        context.restore();
+      }
+
       for (const gem of gems) {
         context.save();
         context.translate(gem.x, gem.y);
@@ -3826,6 +3951,7 @@
       }
       keys.add(key);
       if (key === " ") dash();
+      if (key === "q") useNova();
       if (key === "escape") togglePause();
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
@@ -3873,6 +3999,10 @@
     dashButton.addEventListener("pointerdown", event => {
       event.preventDefault();
       dash();
+    });
+    novaButton.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      useNova();
     });
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
