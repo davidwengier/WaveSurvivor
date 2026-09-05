@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MaxGame</title>
+  <title>WaveSurvivor</title>
   <style>
     :root {
       color-scheme: dark;
@@ -1178,7 +1178,7 @@
   <div id="titleOverlay" class="overlay">
     <div class="panel hub-panel">
       <div class="eyebrow">Safehouse</div>
-      <h1>Max<span>Game</span></h1>
+      <h1>Wave<span>Survivor</span></h1>
       <p>Prepare between expeditions. Open recovered chests, permanently improve your equipment, then choose how you want to enter the arena.</p>
       <div class="hub-resources">
         <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
@@ -1822,7 +1822,9 @@
     }
 
     function loadMeta() {
-      const saved = localStorage.getItem("maxGameMeta");
+      const storageKey = "waveSurvivorMeta";
+      const legacyStorageKey = "maxGameMeta";
+      const saved = localStorage.getItem(storageKey) ?? localStorage.getItem(legacyStorageKey);
       if (!saved) return structuredClone(defaultMeta);
       try {
         const parsed = JSON.parse(saved);
@@ -1837,7 +1839,7 @@
         if (parsed.skills?.nexus == null && Object.entries(skills).some(([id, level]) => id !== "nexus" && level > 0)) {
           skills.nexus = 1;
         }
-        return {
+        const normalized = {
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
@@ -1854,9 +1856,13 @@
           },
           skills
         };
+        if (!localStorage.getItem(storageKey)) {
+          localStorage.setItem(storageKey, JSON.stringify(normalized));
+        }
+        return normalized;
       } catch (error) {
-        console.warn("Ignoring invalid MaxGame progression data.", error);
-        localStorage.removeItem("maxGameMeta");
+        console.warn("Ignoring invalid WaveSurvivor progression data.", error);
+        localStorage.removeItem(storageKey);
         return structuredClone(defaultMeta);
       }
     }
@@ -1864,7 +1870,7 @@
     const meta = loadMeta();
 
     function saveMeta() {
-      localStorage.setItem("maxGameMeta", JSON.stringify(meta));
+      localStorage.setItem("waveSurvivorMeta", JSON.stringify(meta));
     }
 
     function activeMode() {
@@ -2412,6 +2418,14 @@
     function formatTime(seconds) {
       const whole = Math.floor(seconds);
       return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+    }
+
+    function storedBestRun() {
+      const current = localStorage.getItem("waveSurvivorBest");
+      if (current !== null) return Number(current) || 0;
+      const legacy = Number(localStorage.getItem("maxGameBest") || 0);
+      if (legacy > 0) localStorage.setItem("waveSurvivorBest", String(legacy));
+      return legacy;
     }
 
     function updateHud() {
@@ -3706,8 +3720,8 @@
       runRewardClaimed = true;
       state = "gameover";
       milestoneOverlay.hidden = true;
-      const best = Math.max(Number(localStorage.getItem("maxGameBest") || 0), elapsed);
-      localStorage.setItem("maxGameBest", String(best));
+      const best = Math.max(storedBestRun(), elapsed);
+      localStorage.setItem("waveSurvivorBest", String(best));
       const mode = activeMode();
       const completedWaves = Math.max(1, wave - 1);
       const reachedGoal = completedWaves >= mode.goalWaves;
@@ -3772,7 +3786,7 @@
     }
 
     function updateBestRun() {
-      const best = Number(localStorage.getItem("maxGameBest") || 0);
+      const best = storedBestRun();
       document.querySelector("#bestRun").textContent = `Best survival: ${formatTime(best)}`;
     }
 
