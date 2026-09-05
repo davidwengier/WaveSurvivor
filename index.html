@@ -202,6 +202,7 @@
     }
 
     .shop-grid,
+    .challenge-grid,
     .crew-grid,
     .relic-grid {
       display: grid;
@@ -210,6 +211,7 @@
     }
 
     .unit-card,
+    .challenge-card,
     .relic-card {
       position: relative;
       min-width: 0;
@@ -223,11 +225,13 @@
     }
 
     button.unit-card,
+    button.challenge-card,
     button.relic-card {
       cursor: pointer;
     }
 
     button.unit-card:hover,
+    button.challenge-card:hover,
     button.relic-card:hover {
       filter: brightness(1.15);
       transform: translateY(-2px);
@@ -295,7 +299,35 @@
     }
 
     .crew-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .challenge-card.selected {
+      border-color: #facc15;
+      background:
+        radial-gradient(circle at 50% 0%, rgb(250 204 21 / 14%), transparent 12rem),
+        #171522;
+      box-shadow: inset 0 0 0 1px rgb(250 204 21 / 35%);
+    }
+
+    .challenge-card h3 {
+      margin: 0.25rem 0 0.35rem;
+    }
+
+    .challenge-card .danger {
+      color: #fb7185;
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .challenge-reward {
+      display: block;
+      margin-top: 0.7rem;
+      color: #fde68a;
+      font-size: 0.76rem;
+      font-weight: 900;
     }
 
     .crew-empty {
@@ -481,8 +513,12 @@
         scroll-snap-align: center;
       }
 
+      .challenge-grid {
+        grid-template-columns: 1fr;
+      }
+
       .crew-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .how-to,
@@ -516,11 +552,10 @@
       <div class="panel-head">
         <div>
           <h2>Recruit bay</h2>
-          <p>Buy fighters. Three matching ranks automatically fuse into a stronger unit.</p>
+          <p>Build an army of up to 24 fighters. Three matching ranks automatically fuse.</p>
         </div>
         <div class="actions">
           <button id="rerollButton" class="secondary">Reroll - 1 coin</button>
-          <button id="battleButton" class="primary">Start battle</button>
         </div>
       </div>
       <div id="shopGrid" class="shop-grid"></div>
@@ -529,7 +564,20 @@
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Your crew <span id="crewCount">0 / 8</span></h2>
+          <h2>Choose a challenge</h2>
+          <p>Pick the enemy force and reward that best fits your current build.</p>
+        </div>
+        <div class="actions">
+          <button id="battleButton" class="primary">Enter battle</button>
+        </div>
+      </div>
+      <div id="challengeGrid" class="challenge-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Your crew <span id="crewCount">0 / 24</span></h2>
           <p>Faction bonuses activate when at least two matching fighters join the crew.</p>
         </div>
       </div>
@@ -542,11 +590,11 @@
     <div class="modal">
       <div class="eyebrow">An original squad-building roguelite</div>
       <h1>Crewforge</h1>
-      <p>Recruit an unlikely crew, fuse matching fighters, discover faction combinations, and watch your build collide with increasingly dangerous enemy squads.</p>
+      <p>Recruit a growing army, focus its fighter and faction pools, choose your next challenge, and watch your build collide with increasingly dangerous enemy forces.</p>
       <div class="how-to">
-        <div><strong>Recruit</strong>Spend coins on a rotating selection of fighters.</div>
+        <div><strong>Recruit</strong>Grow a large army from a rotating fighter pool.</div>
         <div><strong>Combine</strong>Three matching units fuse into a higher rank.</div>
-        <div><strong>Adapt</strong>Choose powerful relics and survive with three lives.</div>
+        <div><strong>Choose</strong>Pick battles and relics that suit your build.</div>
       </div>
       <button id="startButton" class="primary">Begin a run</button>
       <p id="bestStage">Best stage: 0</p>
@@ -583,6 +631,7 @@
     const battleBanner = document.querySelector("#battleBanner");
     const battleLog = document.querySelector("#battleLog");
     const shopGrid = document.querySelector("#shopGrid");
+    const challengeGrid = document.querySelector("#challengeGrid");
     const crewGrid = document.querySelector("#crewGrid");
     const crewCount = document.querySelector("#crewCount");
     const synergiesDisplay = document.querySelector("#synergies");
@@ -756,6 +805,40 @@
       }
     ];
 
+    const challengeDefinitions = [
+      {
+        id: "horde",
+        name: "The Overflow",
+        danger: "Crowd battle",
+        description: "A huge force of weaker enemies. Area damage and fast attacks thrive here.",
+        countMultiplier: 1.65,
+        healthMultiplier: 0.78,
+        damageMultiplier: 0.82,
+        reward: 7
+      },
+      {
+        id: "elite",
+        name: "The Heavy Hand",
+        danger: "Elite battle",
+        description: "A smaller force with greatly increased health and damage.",
+        countMultiplier: 0.7,
+        healthMultiplier: 1.75,
+        damageMultiplier: 1.3,
+        reward: 10
+      },
+      {
+        id: "siege",
+        name: "The Red Engine",
+        danger: "Boss battle",
+        description: "A dangerous commander enters early with a reinforced escort.",
+        countMultiplier: 1,
+        healthMultiplier: 1.15,
+        damageMultiplier: 1.1,
+        reward: 13,
+        boss: true
+      }
+    ];
+
     const run = {
       stage: 1,
       coins: 12,
@@ -764,12 +847,15 @@
       recruits: 0,
       crew: [],
       shop: [],
+      challenges: [],
+      selectedChallenge: null,
       damageMultiplier: 1,
       healthMultiplier: 1,
       speedMultiplier: 1,
       critChance: 0.05,
       bonusIncome: 0,
-      lossRefund: 0
+      lossRefund: 0,
+      typeBonuses: {}
     };
 
     const combat = {
@@ -807,12 +893,15 @@
         recruits: 0,
         crew: [],
         shop: [],
+        challenges: [],
+        selectedChallenge: null,
         damageMultiplier: 1,
         healthMultiplier: 1,
         speedMultiplier: 1,
         critChance: 0.05,
         bonusIncome: 0,
-        lossRefund: 0
+        lossRefund: 0,
+        typeBonuses: {}
       });
       combat.state = "recruit";
       combat.allies = [];
@@ -820,6 +909,7 @@
       combat.projectiles = [];
       combat.particles = [];
       rollShop(false);
+      rollChallenges();
       render();
     }
 
@@ -837,6 +927,17 @@
       render();
     }
 
+    function rollChallenges() {
+      run.challenges = [...challengeDefinitions].sort(() => Math.random() - 0.5);
+      run.selectedChallenge = null;
+    }
+
+    function selectChallenge(id) {
+      if (combat.state !== "recruit") return;
+      run.selectedChallenge = id;
+      render();
+    }
+
     function unitDefinition(id) {
       return unitDefinitions.find(unit => unit.id === id);
     }
@@ -846,7 +947,7 @@
       const id = run.shop[index];
       if (!id) return;
       const definition = unitDefinition(id);
-      if (run.coins < definition.cost || run.crew.length >= 8) return;
+      if (run.coins < definition.cost || run.crew.length >= 24) return;
       run.coins -= definition.cost;
       run.recruits += 1;
       run.crew.push({ id, rank: 1 });
@@ -908,7 +1009,7 @@
       const definition = unitDefinition(shop ? unit : unit.id);
       const rank = shop ? 1 : unit.rank;
       const rankMultiplier = Math.pow(1.75, rank - 1);
-      const disabled = shop && (run.coins < definition.cost || run.crew.length >= 8);
+      const disabled = shop && (run.coins < definition.cost || run.crew.length >= 24);
       return `
         <${shop ? "button" : "button"}
           class="unit-card"
@@ -936,8 +1037,20 @@
       stageDisplay.textContent = run.stage;
       coinDisplay.textContent = run.coins;
       lifeDisplay.textContent = run.lives;
-      crewCount.textContent = `${run.crew.length} / 8`;
+      crewCount.textContent = `${run.crew.length} / 24`;
       shopGrid.innerHTML = run.shop.map((unit, index) => unitCard(unit, index, true)).join("");
+      challengeGrid.innerHTML = run.challenges.map(challenge => `
+        <button
+          class="challenge-card ${run.selectedChallenge === challenge.id ? "selected" : ""}"
+          data-challenge="${challenge.id}"
+          style="--unit-color:${challenge.boss ? "#f43f5e" : "#fb923c"}"
+        >
+          <span class="danger">${challenge.danger}</span>
+          <h3>${challenge.name}</h3>
+          <p>${challenge.description}</p>
+          <span class="challenge-reward">Reward: ${challenge.reward + run.stage} coins</span>
+        </button>
+      `).join("");
       crewGrid.innerHTML = run.crew.length
         ? run.crew.map((unit, index) => unitCard(unit, index, false)).join("")
         : `<div class="crew-empty">Your crew is empty. Recruit at least one fighter.</div>`;
@@ -954,17 +1067,28 @@
       shopGrid.querySelectorAll("[data-buy]").forEach(button => {
         button.addEventListener("click", () => buyUnit(Number(button.dataset.buy)));
       });
+      challengeGrid.querySelectorAll("[data-challenge]").forEach(button => {
+        button.addEventListener("click", () => selectChallenge(button.dataset.challenge));
+      });
       crewGrid.querySelectorAll("[data-sell]").forEach(button => {
         button.addEventListener("click", () => sellUnit(Number(button.dataset.sell)));
       });
       rerollButton.disabled = combat.state !== "recruit" || run.coins < 1;
-      battleButton.disabled = combat.state !== "recruit" || run.crew.length === 0;
+      battleButton.disabled =
+        combat.state !== "recruit" ||
+        run.crew.length === 0 ||
+        !run.selectedChallenge;
       draw();
     }
 
     function makeFighter(definition, rank, side, index, total) {
       const rankMultiplier = Math.pow(1.75, rank - 1);
-      const laneHeight = height / (total + 1);
+      const columns = Math.ceil(total / 8);
+      const rows = Math.ceil(total / columns);
+      const column = Math.floor(index / rows);
+      const row = index % rows;
+      const xStep = Math.min(48, width * 0.055);
+      const startX = side === "ally" ? width * 0.12 : width * 0.88;
       return {
         id: definition.id,
         name: definition.name,
@@ -972,9 +1096,9 @@
         symbol: definition.symbol,
         color: families[definition.family]?.color || definition.color,
         side,
-        x: side === "ally" ? width * 0.2 : width * 0.8,
-        y: laneHeight * (index + 1),
-        radius: 13 + rank * 2,
+        x: startX + (side === "ally" ? column : -column) * xStep,
+        y: height / (rows + 1) * (row + 1),
+        radius: (total > 14 ? 9 : 12) + rank * 1.5,
         maxHealth: definition.health * rankMultiplier,
         health: definition.health * rankMultiplier,
         damage: definition.damage * rankMultiplier,
@@ -989,8 +1113,8 @@
       };
     }
 
-    function enemyDefinition(index) {
-      const bossStage = run.stage % 5 === 0;
+    function enemyDefinition(index, challenge) {
+      const bossStage = challenge.boss || run.stage % 5 === 0;
       if (bossStage && index === 0) {
         return {
           id: "siege-core",
@@ -1050,7 +1174,7 @@
     }
 
     function startBattle() {
-      if (combat.state !== "recruit" || run.crew.length === 0) return;
+      if (combat.state !== "recruit" || run.crew.length === 0 || !run.selectedChallenge) return;
       combat.state = "battle";
       combat.elapsed = 0;
       combat.projectiles = [];
@@ -1059,10 +1183,18 @@
       const counts = familyCounts();
       combat.allies = run.crew.map((unit, index) => {
         const fighter = makeFighter(unitDefinition(unit.id), unit.rank, "ally", index, run.crew.length);
+        const typeBonus = run.typeBonuses[unit.id] || {
+          damage: 1,
+          health: 1,
+          speed: 1
+        };
         fighter.maxHealth *= run.healthMultiplier;
+        fighter.maxHealth *= typeBonus.health;
         fighter.health = fighter.maxHealth;
         fighter.damage *= run.damageMultiplier;
+        fighter.damage *= typeBonus.damage;
         fighter.cooldown *= run.speedMultiplier;
+        fighter.cooldown *= typeBonus.speed;
         if ((counts.Steel || 0) >= 2) fighter.damageReduction = 0.18;
         if ((counts.Spark || 0) >= 2) fighter.cooldown *= 0.78;
         if ((counts.Bloom || 0) >= 2) fighter.regen = fighter.maxHealth * 0.012;
@@ -1070,13 +1202,19 @@
         return fighter;
       });
 
-      const enemyCount = Math.min(8, 2 + Math.floor(run.stage * 0.75));
+      const challenge = challengeDefinitions.find(item => item.id === run.selectedChallenge);
+      const baseEnemyCount = 3 + Math.floor(run.stage * 0.9);
+      const enemyCount = Math.min(28, Math.ceil(baseEnemyCount * challenge.countMultiplier));
       combat.enemies = Array.from({ length: enemyCount }, (_, index) => {
-        const definition = enemyDefinition(index);
-        return makeFighter(definition, 1, "enemy", index, enemyCount);
+        const definition = enemyDefinition(index, challenge);
+        const fighter = makeFighter(definition, 1, "enemy", index, enemyCount);
+        fighter.maxHealth *= challenge.healthMultiplier;
+        fighter.health = fighter.maxHealth;
+        fighter.damage *= challenge.damageMultiplier;
+        return fighter;
       });
 
-      battleBanner.textContent = run.stage % 5 === 0 ? `Boss stage ${run.stage}` : `Stage ${run.stage}`;
+      battleBanner.textContent = `${challenge.name} - stage ${run.stage}`;
       battleBanner.classList.add("fighting");
       battleLog.textContent = "The crews collide.";
       rerollButton.disabled = true;
@@ -1246,12 +1384,14 @@
       combat.state = "recruit";
       battleBanner.classList.remove("fighting");
       if (won) {
-        const reward = 5 + Math.ceil(run.stage * 1.5) + run.bonusIncome;
+        const challenge = challengeDefinitions.find(item => item.id === run.selectedChallenge);
+        const reward = challenge.reward + run.stage + run.bonusIncome;
         run.coins += reward;
         run.wins += 1;
         battleLog.textContent = `Victory. The crew recovered ${reward} coins.`;
         run.stage += 1;
         rollShop(false);
+        rollChallenges();
         if ((run.stage - 1) % 3 === 0) {
           showRelics();
         }
@@ -1265,13 +1405,38 @@
           endRun();
           return;
         }
+        rollChallenges();
       }
       battleBanner.textContent = "Recruit your crew";
       render();
     }
 
     function showRelics() {
-      const choices = [...relics].sort(() => Math.random() - 0.5).slice(0, 3);
+      const recruitedTypes = [...new Set(run.crew.map(unit => unit.id))];
+      const typeRelics = recruitedTypes.flatMap(id => {
+        const definition = unitDefinition(id);
+        return [
+          {
+            name: `${definition.name} Drill`,
+            description: `All ${definition.name}s deal 35% more damage.`,
+            apply: currentRun => {
+              const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
+              bonus.damage *= 1.35;
+              currentRun.typeBonuses[id] = bonus;
+            }
+          },
+          {
+            name: `${definition.name} Plating`,
+            description: `All ${definition.name}s gain 40% maximum health.`,
+            apply: currentRun => {
+              const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
+              bonus.health *= 1.4;
+              currentRun.typeBonuses[id] = bonus;
+            }
+          }
+        ];
+      });
+      const choices = [...relics, ...typeRelics].sort(() => Math.random() - 0.5).slice(0, 3);
       relicGrid.innerHTML = choices.map((relic, index) => `
         <button class="relic-card" data-relic="${index}" style="--unit-color:#fb923c">
           <h3>${relic.name}</h3>
