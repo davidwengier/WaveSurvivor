@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MaxGame - Crewforge</title>
+  <title>MaxGame - Wild Assembly</title>
   <style>
     :root {
       color-scheme: dark;
@@ -533,29 +533,29 @@
     <header>
       <div class="brand">
         <small>Working title</small>
-        <strong>MaxGame: Crewforge</strong>
+        <strong>MaxGame: Wild Assembly</strong>
       </div>
       <div class="stats">
         <div class="stat"><small>Stage</small><strong id="stageDisplay">1</strong></div>
-        <div class="stat"><small>Coins</small><strong id="coinDisplay">12</strong></div>
+        <div class="stat"><small>Food</small><strong id="coinDisplay">12</strong></div>
         <div class="stat"><small>Lives</small><strong id="lifeDisplay">3</strong></div>
       </div>
     </header>
 
     <section class="arena-shell">
       <canvas id="arena"></canvas>
-      <div id="battleBanner" class="battle-banner">Recruit your crew</div>
-      <div id="battleLog" class="battle-log">Choose fighters, then start the battle.</div>
+      <div id="battleBanner" class="battle-banner">Gather your pack</div>
+      <div id="battleLog" class="battle-log">Choose animals and an encounter, then start the battle.</div>
     </section>
 
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Recruit bay</h2>
-          <p>Build an army of up to 24 fighters. Three matching ranks automatically fuse.</p>
+          <h2>Recruit trail</h2>
+          <p>Build a pack of up to 24 animals. Three matching ranks evolve into a stronger animal.</p>
         </div>
         <div class="actions">
-          <button id="rerollButton" class="secondary">Reroll - 1 coin</button>
+          <button id="rerollButton" class="secondary">Reroll - 1 food</button>
         </div>
       </div>
       <div id="shopGrid" class="shop-grid"></div>
@@ -565,7 +565,7 @@
       <div class="panel-head">
         <div>
           <h2>Choose a challenge</h2>
-          <p>Pick the enemy force and reward that best fits your current build.</p>
+          <p>Pick the rival animal force and reward that best fits your current pack.</p>
         </div>
         <div class="actions">
           <button id="battleButton" class="primary">Enter battle</button>
@@ -577,8 +577,8 @@
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2>Your crew <span id="crewCount">0 / 24</span></h2>
-          <p>Faction bonuses activate when at least two matching fighters join the crew.</p>
+          <h2>Your pack <span id="crewCount">0 / 24</span></h2>
+          <p>Habitat bonuses activate at two animals. Tap an animal to release it for food.</p>
         </div>
       </div>
       <div id="crewGrid" class="crew-grid"></div>
@@ -588,13 +588,13 @@
 
   <div id="titleOverlay" class="overlay">
     <div class="modal">
-      <div class="eyebrow">An original squad-building roguelite</div>
-      <h1>Crewforge</h1>
-      <p>Recruit a growing army, focus its fighter and faction pools, choose your next challenge, and watch your build collide with increasingly dangerous enemy forces.</p>
+      <div class="eyebrow">An original animal army roguelite</div>
+      <h1>Wild Assembly</h1>
+      <p>Gather a growing animal army, focus its species and habitat pools, choose your next encounter, and watch your build collide with increasingly dangerous rival packs.</p>
       <div class="how-to">
-        <div><strong>Recruit</strong>Grow a large army from a rotating fighter pool.</div>
-        <div><strong>Combine</strong>Three matching units fuse into a higher rank.</div>
-        <div><strong>Choose</strong>Pick battles and relics that suit your build.</div>
+        <div><strong>Gather</strong>Grow a large pack from a rotating selection of animals.</div>
+        <div><strong>Evolve</strong>Three matching animals combine into a higher rank.</div>
+        <div><strong>Adapt</strong>Pick encounters and instincts that suit your pack.</div>
       </div>
       <button id="startButton" class="primary">Begin a run</button>
       <p id="bestStage">Best stage: 0</p>
@@ -603,20 +603,20 @@
 
   <div id="relicOverlay" class="overlay" hidden>
     <div class="modal">
-      <div class="eyebrow">Relic found</div>
-      <h2>Choose a run modifier</h2>
+      <div class="eyebrow">New instinct</div>
+      <h2>Choose an adaptation</h2>
       <div id="relicGrid" class="relic-grid"></div>
     </div>
   </div>
 
   <div id="gameOverOverlay" class="overlay" hidden>
     <div class="modal">
-      <div class="eyebrow">Crew defeated</div>
+      <div class="eyebrow">Pack defeated</div>
       <h2>Run over</h2>
       <div class="result-stats">
         <div><strong id="finalStage">1</strong><span>Stage</span></div>
         <div><strong id="finalWins">0</strong><span>Wins</span></div>
-        <div><strong id="finalUnits">0</strong><span>Recruits</span></div>
+        <div><strong id="finalUnits">0</strong><span>Animals</span></div>
       </div>
       <button id="restartButton" class="primary">Start another run</button>
     </div>
@@ -643,164 +643,351 @@
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
 
     const families = {
-      Steel: {
-        color: "#94a3b8",
-        bonus: "2+: crew takes 18% less damage"
-      },
-      Spark: {
-        color: "#22d3ee",
-        bonus: "2+: crew attacks 22% faster"
-      },
-      Bloom: {
+      Woodland: {
         color: "#4ade80",
-        bonus: "2+: crew regenerates health"
+        bonus: "2+: pack steadily regenerates health"
       },
-      Rogue: {
+      Savanna: {
+        color: "#fbbf24",
+        bonus: "2+: pack gains 20% critical chance"
+      },
+      Tundra: {
+        color: "#67e8f9",
+        bonus: "2+: pack takes 18% less damage"
+      },
+      Jungle: {
+        color: "#a3e635",
+        bonus: "2+: pack attacks 22% faster"
+      },
+      Wetland: {
+        color: "#38bdf8",
+        bonus: "2+: pack gains extra health and recovery"
+      },
+      Night: {
+        color: "#c084fc",
+        bonus: "2+: pack deals 18% more damage"
+      },
+      Desert: {
         color: "#fb923c",
-        bonus: "2+: crew gains 20% critical chance"
+        bonus: "2+: pack moves 18% faster"
       }
     };
 
     const unitDefinitions = [
       {
-        id: "bulwark",
-        name: "Bulwark",
-        family: "Steel",
-        symbol: "B",
+        id: "badger",
+        name: "Badger",
+        family: "Woodland",
+        symbol: "🦡",
         cost: 3,
         health: 145,
         damage: 13,
         range: 34,
         speed: 50,
         cooldown: 0.9,
-        description: "A durable front-line defender."
+        knockback: true,
+        description: "A stubborn front-line digger that shoves enemies back."
       },
       {
-        id: "riveter",
-        name: "Riveter",
-        family: "Steel",
-        symbol: "R",
+        id: "fox",
+        name: "Fox",
+        family: "Woodland",
+        symbol: "🦊",
         cost: 4,
-        health: 105,
-        damage: 23,
-        range: 48,
-        speed: 58,
-        cooldown: 1.05,
-        description: "Crushing hits that shove targets back."
-      },
-      {
-        id: "coilshot",
-        name: "Coilshot",
-        family: "Spark",
-        symbol: "C",
-        cost: 3,
-        health: 68,
-        damage: 16,
-        range: 245,
-        speed: 52,
-        cooldown: 0.7,
-        description: "Rapid ranged electric bolts."
-      },
-      {
-        id: "voltwisp",
-        name: "Voltwisp",
-        family: "Spark",
-        symbol: "V",
-        cost: 5,
-        health: 60,
-        damage: 30,
-        range: 210,
-        speed: 64,
-        cooldown: 1.15,
-        description: "Powerful blasts that chain to a second foe."
-      },
-      {
-        id: "mossguard",
-        name: "Mossguard",
-        family: "Bloom",
-        symbol: "M",
-        cost: 3,
-        health: 115,
-        damage: 12,
-        range: 38,
-        speed: 48,
-        cooldown: 0.8,
-        description: "Steady fighter with natural recovery."
-      },
-      {
-        id: "sunseed",
-        name: "Sunseed",
-        family: "Bloom",
-        symbol: "S",
-        cost: 5,
-        health: 74,
-        damage: 10,
-        range: 190,
-        speed: 48,
-        cooldown: 1.35,
-        healer: true,
-        description: "Restores the most wounded ally."
-      },
-      {
-        id: "quickjack",
-        name: "Quickjack",
-        family: "Rogue",
-        symbol: "Q",
-        cost: 3,
         health: 72,
-        damage: 18,
+        damage: 21,
         range: 38,
-        speed: 92,
-        cooldown: 0.58,
-        description: "A fast striker built for critical hits."
+        speed: 91,
+        cooldown: 0.62,
+        description: "A nimble hunter with rapid close-range strikes."
       },
       {
-        id: "longwink",
-        name: "Longwink",
-        family: "Rogue",
-        symbol: "L",
-        cost: 4,
-        health: 62,
+        id: "stag",
+        name: "Stag",
+        family: "Woodland",
+        symbol: "🦌",
+        cost: 5,
+        health: 125,
+        damage: 28,
+        range: 48,
+        speed: 64,
+        cooldown: 1.05,
+        knockback: true,
+        description: "Charges through the front line with heavy antler blows."
+      },
+      {
+        id: "lion",
+        name: "Lion",
+        family: "Savanna",
+        symbol: "🦁",
+        cost: 5,
+        health: 118,
         damage: 32,
+        range: 42,
+        speed: 67,
+        cooldown: 0.95,
+        splash: true,
+        description: "A proud brawler whose roar damages nearby rivals."
+      },
+      {
+        id: "cheetah",
+        name: "Cheetah",
+        family: "Savanna",
+        symbol: "🐆",
+        cost: 3,
+        health: 62,
+        damage: 18,
+        range: 34,
+        speed: 118,
+        cooldown: 0.52,
+        description: "The fastest attacker in the pack."
+      },
+      {
+        id: "elephant",
+        name: "Elephant",
+        family: "Savanna",
+        symbol: "🐘",
+        cost: 5,
+        health: 205,
+        damage: 20,
+        range: 45,
+        speed: 35,
+        cooldown: 1.15,
+        knockback: true,
+        description: "A massive protector that scatters the enemy line."
+      },
+      {
+        id: "polar-bear",
+        name: "Polar Bear",
+        family: "Tundra",
+        symbol: "🐻‍❄️",
+        cost: 5,
+        health: 190,
+        damage: 25,
+        range: 40,
+        speed: 41,
+        cooldown: 1.05,
+        description: "An icy wall of fur and muscle."
+      },
+      {
+        id: "arctic-fox",
+        name: "Arctic Fox",
+        family: "Tundra",
+        symbol: "🦊",
+        cost: 4,
+        health: 76,
+        damage: 21,
+        range: 180,
+        speed: 77,
+        cooldown: 0.78,
+        description: "Throws shards of ice while darting around danger."
+      },
+      {
+        id: "snowy-owl",
+        name: "Snowy Owl",
+        family: "Tundra",
+        symbol: "🦉",
+        cost: 4,
+        health: 58,
+        damage: 27,
         range: 280,
+        speed: 58,
+        cooldown: 1.12,
+        description: "A patient long-range hunter."
+      },
+      {
+        id: "gorilla",
+        name: "Gorilla",
+        family: "Jungle",
+        symbol: "🦍",
+        cost: 5,
+        health: 165,
+        damage: 29,
+        range: 42,
+        speed: 48,
+        cooldown: 0.95,
+        splash: true,
+        description: "Ground-pounding attacks strike clustered enemies."
+      },
+      {
+        id: "poison-frog",
+        name: "Poison Frog",
+        family: "Jungle",
+        symbol: "🐸",
+        cost: 3,
+        health: 55,
+        damage: 15,
+        range: 220,
+        speed: 61,
+        cooldown: 0.64,
+        description: "Rapid venom shots wear down distant targets."
+      },
+      {
+        id: "toucan",
+        name: "Toucan",
+        family: "Jungle",
+        symbol: "🦜",
+        cost: 5,
+        health: 70,
+        damage: 12,
+        range: 195,
         speed: 55,
         cooldown: 1.25,
-        description: "Slow, precise shots from extreme range."
+        healer: true,
+        description: "Delivers restorative fruit to wounded allies."
+      },
+      {
+        id: "crocodile",
+        name: "Crocodile",
+        family: "Wetland",
+        symbol: "🐊",
+        cost: 4,
+        health: 170,
+        damage: 24,
+        range: 36,
+        speed: 39,
+        cooldown: 1.05,
+        description: "A heavily armored ambush predator."
+      },
+      {
+        id: "otter",
+        name: "Otter",
+        family: "Wetland",
+        symbol: "🦦",
+        cost: 3,
+        health: 82,
+        damage: 17,
+        range: 42,
+        speed: 88,
+        cooldown: 0.6,
+        description: "A playful skirmisher that attacks relentlessly."
+      },
+      {
+        id: "heron",
+        name: "Heron",
+        family: "Wetland",
+        symbol: "🪿",
+        cost: 4,
+        health: 66,
+        damage: 29,
+        range: 250,
+        speed: 50,
+        cooldown: 1.15,
+        description: "Precise beak strikes reach across the battlefield."
+      },
+      {
+        id: "bat",
+        name: "Bat",
+        family: "Night",
+        symbol: "🦇",
+        cost: 4,
+        health: 55,
+        damage: 22,
+        range: 205,
+        speed: 84,
+        cooldown: 0.82,
+        chain: true,
+        description: "Sonic attacks echo into a second target."
+      },
+      {
+        id: "wolf",
+        name: "Wolf",
+        family: "Night",
+        symbol: "🐺",
+        cost: 4,
+        health: 96,
+        damage: 25,
+        range: 38,
+        speed: 82,
+        cooldown: 0.72,
+        description: "A relentless hunter that excels in a large pack."
+      },
+      {
+        id: "hedgehog",
+        name: "Hedgehog",
+        family: "Night",
+        symbol: "🦔",
+        cost: 3,
+        health: 128,
+        damage: 14,
+        range: 34,
+        speed: 43,
+        cooldown: 0.78,
+        description: "A compact defender with surprising staying power."
+      },
+      {
+        id: "camel",
+        name: "Camel",
+        family: "Desert",
+        symbol: "🐪",
+        cost: 4,
+        health: 138,
+        damage: 19,
+        range: 160,
+        speed: 53,
+        cooldown: 0.92,
+        description: "A hardy ranged fighter built for long battles."
+      },
+      {
+        id: "cobra",
+        name: "Cobra",
+        family: "Desert",
+        symbol: "🐍",
+        cost: 4,
+        health: 68,
+        damage: 31,
+        range: 60,
+        speed: 79,
+        cooldown: 0.88,
+        description: "A fragile striker with a devastating bite."
+      },
+      {
+        id: "fennec",
+        name: "Fennec",
+        family: "Desert",
+        symbol: "🦊",
+        cost: 3,
+        health: 64,
+        damage: 16,
+        range: 215,
+        speed: 93,
+        cooldown: 0.62,
+        description: "A quick desert scout that peppers enemies from range."
       }
     ];
 
     const relics = [
       {
-        name: "Hot Forge",
-        description: "All crew damage is increased by 22%.",
+        name: "Predator's Moon",
+        description: "All animals deal 22% more damage.",
         apply: run => run.damageMultiplier *= 1.22
       },
       {
-        name: "Layered Hull",
-        description: "All crew maximum health is increased by 25%.",
+        name: "Thick Hide",
+        description: "All animals gain 25% maximum health.",
         apply: run => run.healthMultiplier *= 1.25
       },
       {
-        name: "Clockwork Heart",
-        description: "All crew attacks are 18% faster.",
+        name: "Feeding Frenzy",
+        description: "All animals attack 18% faster.",
         apply: run => run.speedMultiplier *= 0.82
       },
       {
-        name: "Lucky Rivet",
-        description: "All crew gains 15% critical hit chance.",
+        name: "Hunter's Instinct",
+        description: "All animals gain 15% critical hit chance.",
         apply: run => run.critChance += 0.15
       },
       {
-        name: "Loaded Purse",
-        description: "Gain 8 coins immediately and 2 extra after every win.",
+        name: "Full Trough",
+        description: "Gain 8 food immediately and 2 extra after every win.",
         apply: run => {
           run.coins += 8;
           run.bonusIncome += 2;
         }
       },
       {
-        name: "Spare Parts",
-        description: "Losing a battle refunds 5 coins.",
+        name: "Safe Burrow",
+        description: "Losing a battle recovers 5 food.",
         apply: run => run.lossRefund += 5
       }
     ];
@@ -808,9 +995,9 @@
     const challengeDefinitions = [
       {
         id: "horde",
-        name: "The Overflow",
-        danger: "Crowd battle",
-        description: "A huge force of weaker enemies. Area damage and fast attacks thrive here.",
+        name: "Goose Stampede",
+        danger: "Swarm encounter",
+        description: "A huge flock of weaker rivals. Splash damage and fast attacks thrive here.",
         countMultiplier: 1.65,
         healthMultiplier: 0.78,
         damageMultiplier: 0.82,
@@ -818,9 +1005,9 @@
       },
       {
         id: "elite",
-        name: "The Heavy Hand",
+        name: "Armored Crabs",
         danger: "Elite battle",
-        description: "A smaller force with greatly increased health and damage.",
+        description: "A smaller colony with greatly increased health and crushing claws.",
         countMultiplier: 0.7,
         healthMultiplier: 1.75,
         damageMultiplier: 1.3,
@@ -828,9 +1015,9 @@
       },
       {
         id: "siege",
-        name: "The Red Engine",
+        name: "Ancient Mammoth",
         danger: "Boss battle",
-        description: "A dangerous commander enters early with a reinforced escort.",
+        description: "A colossal mammoth enters early with a reinforced tundra herd.",
         countMultiplier: 1,
         healthMultiplier: 1.15,
         damageMultiplier: 1.1,
@@ -1019,7 +1206,7 @@
           <div class="unit-top">
             <span class="unit-icon">${definition.symbol}</span>
             <span class="${shop ? "unit-cost" : "unit-level"}">
-              ${shop ? `${definition.cost} coins` : `Rank ${rank}`}
+              ${shop ? `${definition.cost} food` : `Rank ${rank}`}
             </span>
           </div>
           <h3>${definition.name}</h3>
@@ -1048,12 +1235,12 @@
           <span class="danger">${challenge.danger}</span>
           <h3>${challenge.name}</h3>
           <p>${challenge.description}</p>
-          <span class="challenge-reward">Reward: ${challenge.reward + run.stage} coins</span>
+          <span class="challenge-reward">Reward: ${challenge.reward + run.stage} food</span>
         </button>
       `).join("");
       crewGrid.innerHTML = run.crew.length
         ? run.crew.map((unit, index) => unitCard(unit, index, false)).join("")
-        : `<div class="crew-empty">Your crew is empty. Recruit at least one fighter.</div>`;
+        : `<div class="crew-empty">Your pack is empty. Recruit at least one animal.</div>`;
 
       const synergies = activeSynergies();
       synergiesDisplay.innerHTML = synergies.length
@@ -1107,8 +1294,9 @@
         cooldown: definition.cooldown,
         attackTimer: Math.random() * 0.5,
         healer: definition.healer,
-        chain: definition.id === "voltwisp",
-        knockback: definition.id === "riveter",
+        chain: definition.chain,
+        knockback: definition.knockback,
+        splash: definition.splash,
         critChance: side === "ally" ? run.critChance : 0.03
       };
     }
@@ -1117,10 +1305,10 @@
       const bossStage = challenge.boss || run.stage % 5 === 0;
       if (bossStage && index === 0) {
         return {
-          id: "siege-core",
-          name: "Siege Core",
+          id: "ancient-mammoth",
+          name: "Ancient Mammoth",
           family: "Enemy",
-          symbol: "X",
+          symbol: "🐘",
           color: "#f43f5e",
           health: 320 + run.stage * 48,
           damage: 20 + run.stage * 2.2,
@@ -1131,9 +1319,9 @@
       }
       const types = [
         {
-          id: "scrapling",
-          name: "Scrapling",
-          symbol: "s",
+          id: "wild-goose",
+          name: "Wild Goose",
+          symbol: "🪿",
           color: "#a78bfa",
           health: 55,
           damage: 10,
@@ -1142,9 +1330,9 @@
           cooldown: 0.8
         },
         {
-          id: "gloom-eye",
-          name: "Gloom Eye",
-          symbol: "o",
+          id: "spitting-cobra",
+          name: "Spitting Cobra",
+          symbol: "🐍",
           color: "#38bdf8",
           health: 42,
           damage: 13,
@@ -1153,9 +1341,9 @@
           cooldown: 1.1
         },
         {
-          id: "stonejaw",
-          name: "Stonejaw",
-          symbol: "J",
+          id: "iron-crab",
+          name: "Iron Crab",
+          symbol: "🦀",
           color: "#f472b6",
           health: 105,
           damage: 16,
@@ -1195,10 +1383,17 @@
         fighter.damage *= typeBonus.damage;
         fighter.cooldown *= run.speedMultiplier;
         fighter.cooldown *= typeBonus.speed;
-        if ((counts.Steel || 0) >= 2) fighter.damageReduction = 0.18;
-        if ((counts.Spark || 0) >= 2) fighter.cooldown *= 0.78;
-        if ((counts.Bloom || 0) >= 2) fighter.regen = fighter.maxHealth * 0.012;
-        if ((counts.Rogue || 0) >= 2) fighter.critChance += 0.2;
+        if ((counts.Tundra || 0) >= 2) fighter.damageReduction = 0.18;
+        if ((counts.Jungle || 0) >= 2) fighter.cooldown *= 0.78;
+        if ((counts.Woodland || 0) >= 2) fighter.regen = fighter.maxHealth * 0.012;
+        if ((counts.Savanna || 0) >= 2) fighter.critChance += 0.2;
+        if ((counts.Wetland || 0) >= 2) {
+          fighter.maxHealth *= 1.15;
+          fighter.health = fighter.maxHealth;
+          fighter.regen = (fighter.regen || 0) + fighter.maxHealth * 0.006;
+        }
+        if ((counts.Night || 0) >= 2) fighter.damage *= 1.18;
+        if ((counts.Desert || 0) >= 2) fighter.speed *= 1.18;
         return fighter;
       });
 
@@ -1216,7 +1411,7 @@
 
       battleBanner.textContent = `${challenge.name} - stage ${run.stage}`;
       battleBanner.classList.add("fighting");
-      battleLog.textContent = "The crews collide.";
+      battleLog.textContent = "The rival packs collide.";
       rerollButton.disabled = true;
       battleButton.disabled = true;
     }
@@ -1275,6 +1470,19 @@
       if (attacker.knockback) {
         const direction = attacker.side === "ally" ? 1 : -1;
         target.x += direction * 16;
+      }
+      if (attacker.splash) {
+        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
+        targets
+          .filter(unit =>
+            unit !== target &&
+            unit.health > 0 &&
+            Math.hypot(unit.x - target.x, unit.y - target.y) < 75
+          )
+          .forEach(unit => {
+            unit.health -= damage * 0.35;
+            burst(unit.x, unit.y, attacker.color, 2);
+          });
       }
       if (attacker.chain) {
         const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
@@ -1388,7 +1596,7 @@
         const reward = challenge.reward + run.stage + run.bonusIncome;
         run.coins += reward;
         run.wins += 1;
-        battleLog.textContent = `Victory. The crew recovered ${reward} coins.`;
+        battleLog.textContent = `Victory. The pack gathered ${reward} food.`;
         run.stage += 1;
         rollShop(false);
         rollChallenges();
@@ -1399,15 +1607,15 @@
         run.lives -= 1;
         run.coins += run.lossRefund;
         battleLog.textContent = run.lossRefund
-          ? `Defeat. Spare Parts refunded ${run.lossRefund} coins.`
-          : "Defeat. Adjust the crew and try the stage again.";
+          ? `Defeat. The Safe Burrow recovered ${run.lossRefund} food.`
+          : "Defeat. Adjust the pack and try the encounter again.";
         if (run.lives <= 0) {
           endRun();
           return;
         }
         rollChallenges();
       }
-      battleBanner.textContent = "Recruit your crew";
+      battleBanner.textContent = "Gather your pack";
       render();
     }
 
@@ -1417,8 +1625,8 @@
         const definition = unitDefinition(id);
         return [
           {
-            name: `${definition.name} Drill`,
-            description: `All ${definition.name}s deal 35% more damage.`,
+            name: `${definition.name} Hunting Instinct`,
+            description: `Every ${definition.name} deals 35% more damage.`,
             apply: currentRun => {
               const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
               bonus.damage *= 1.35;
@@ -1426,8 +1634,8 @@
             }
           },
           {
-            name: `${definition.name} Plating`,
-            description: `All ${definition.name}s gain 40% maximum health.`,
+            name: `${definition.name} Thick Coat`,
+            description: `Every ${definition.name} gains 40% maximum health.`,
             apply: currentRun => {
               const bonus = currentRun.typeBonuses[id] || { damage: 1, health: 1, speed: 1 };
               bonus.health *= 1.4;
@@ -1455,8 +1663,8 @@
 
     function endRun() {
       combat.state = "gameover";
-      const best = Math.max(Number(localStorage.getItem("crewforgeBest") || 0), run.stage);
-      localStorage.setItem("crewforgeBest", String(best));
+      const best = Math.max(Number(localStorage.getItem("wildAssemblyBest") || 0), run.stage);
+      localStorage.setItem("wildAssemblyBest", String(best));
       document.querySelector("#finalStage").textContent = run.stage;
       document.querySelector("#finalWins").textContent = run.wins;
       document.querySelector("#finalUnits").textContent = run.recruits;
@@ -1465,7 +1673,7 @@
     }
 
     function updateBestStage() {
-      const best = Number(localStorage.getItem("crewforgeBest") || 0);
+      const best = Number(localStorage.getItem("wildAssemblyBest") || 0);
       document.querySelector("#bestStage").textContent = `Best stage: ${best}`;
     }
 
@@ -1528,7 +1736,7 @@
     function drawRecruitPreview() {
       const preview = run.crew.length
         ? run.crew
-        : [{ id: "bulwark", rank: 1 }, { id: "coilshot", rank: 1 }, { id: "sunseed", rank: 1 }];
+        : [{ id: "badger", rank: 1 }, { id: "lion", rank: 1 }, { id: "toucan", rank: 1 }];
       preview.forEach((unit, index) => {
         const definition = unitDefinition(unit.id);
         const x = width / 2 + (index - (preview.length - 1) / 2) * Math.min(72, width / 8);
