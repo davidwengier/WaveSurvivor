@@ -3,26 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MaxGame - Ashfall Protocol</title>
+  <title>MaxGame</title>
   <style>
     :root {
       color-scheme: dark;
       font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      background: #0d0b0a;
+      background: #050711;
       color: #f8fafc;
     }
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
+    html,
     body {
-      min-height: 100vh;
+      width: 100%;
+      height: 100%;
       margin: 0;
-      background:
-        radial-gradient(circle at 15% 0%, rgb(234 88 12 / 14%), transparent 28rem),
-        radial-gradient(circle at 85% 10%, rgb(14 116 144 / 12%), transparent 30rem),
-        #0d0b0a;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #050711;
+      touch-action: none;
+      user-select: none;
     }
 
     button {
@@ -30,58 +34,83 @@
       font: inherit;
     }
 
-    .app {
-      width: min(82rem, 100%);
-      margin: auto;
-      padding: 0.8rem;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.8rem;
-      padding: 0.8rem 1rem;
-      border: 1px solid #4a3427;
-      border-radius: 0.8rem;
-      background: rgb(23 19 17 / 92%);
-      box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
-    }
-
-    .brand small,
-    .brand strong {
+    #game {
       display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
     }
 
-    .brand small {
-      color: #fb923c;
-      font-size: 0.62rem;
+    .hud {
+      position: fixed;
+      top: max(0.75rem, env(safe-area-inset-top));
+      right: 0.75rem;
+      left: 0.75rem;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.65rem;
+      pointer-events: none;
+    }
+
+    .bars {
+      display: grid;
+      max-width: 34rem;
+      gap: 0.4rem;
+    }
+
+    .bar {
+      position: relative;
+      height: 1.15rem;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 18%);
+      border-radius: 999px;
+      background: rgb(7 10 22 / 82%);
+      box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 35%);
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      transition: width 100ms linear;
+    }
+
+    #healthFill {
+      background: linear-gradient(90deg, #dc2626, #fb7185);
+    }
+
+    #xpFill {
+      background: linear-gradient(90deg, #2563eb, #22d3ee);
+    }
+
+    .bar-label {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 0.68rem;
       font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .brand strong {
-      font-size: clamp(1.4rem, 5vw, 2.35rem);
-      font-weight: 950;
-      letter-spacing: -0.055em;
-      line-height: 1;
-      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 3px #000;
     }
 
     .stats {
       display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
       gap: 0.45rem;
     }
 
     .stat {
-      min-width: 5.4rem;
-      padding: 0.45rem 0.65rem;
-      border: 1px solid #45352d;
-      border-radius: 0.55rem;
-      background: #151312;
+      min-width: 5.3rem;
+      padding: 0.48rem 0.65rem;
+      border: 1px solid rgb(255 255 255 / 14%);
+      border-radius: 0.65rem;
+      background: rgb(7 10 22 / 82%);
+      box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 35%);
       text-align: center;
+      backdrop-filter: blur(0.5rem);
     }
 
     .stat small,
@@ -90,1060 +119,1040 @@
     }
 
     .stat small {
-      color: #9d928c;
-      font-size: 0.56rem;
-      font-weight: 900;
+      color: #94a3b8;
+      font-size: 0.58rem;
+      font-weight: 800;
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
     .stat strong {
       margin-top: 0.05rem;
-      color: #fed7aa;
-      font-size: 1rem;
-    }
-
-    .arena-shell {
-      position: relative;
-      overflow: hidden;
-      border: 0.25rem solid #53331f;
-      border-radius: 0.8rem;
-      background: #9a6a45;
-      box-shadow:
-        0 1.4rem 4rem rgb(0 0 0 / 32%),
-        inset 0 0 0 0.15rem #9a5b2e;
-    }
-
-    #arena {
-      display: block;
-      width: 100%;
-      height: min(53vh, 35rem);
-      min-height: 23rem;
-    }
-
-    .arena-label,
-    .battle-log {
-      position: absolute;
-      z-index: 2;
-      border: 1px solid rgb(255 255 255 / 14%);
-      background: rgb(28 20 16 / 82%);
-      color: #ffedd5;
-      backdrop-filter: blur(0.35rem);
-    }
-
-    .arena-label {
-      top: 0.7rem;
-      left: 50%;
-      padding: 0.38rem 0.7rem;
-      border-radius: 999px;
-      font-size: 0.68rem;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      transform: translateX(-50%);
-    }
-
-    .battle-log {
-      right: 0.6rem;
-      bottom: 0.6rem;
-      max-width: min(28rem, calc(100% - 1.2rem));
-      padding: 0.45rem 0.65rem;
-      border-radius: 0.45rem;
-      font-size: 0.68rem;
-    }
-
-    .commander-health {
-      position: absolute;
-      top: 3.1rem;
-      left: 50%;
-      width: min(22rem, calc(100% - 2rem));
-      height: 0.9rem;
-      overflow: hidden;
-      border: 1px solid rgb(255 255 255 / 22%);
-      border-radius: 999px;
-      background: rgb(28 20 16 / 72%);
-      transform: translateX(-50%);
-    }
-
-    .commander-health[hidden] {
-      display: none;
-    }
-
-    .commander-health span {
-      display: block;
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #dc2626, #fb7185);
-      transition: width 100ms linear;
-    }
-
-    .mobile-controls {
-      position: absolute;
-      right: 0;
-      bottom: 0.7rem;
-      left: 0;
-      z-index: 4;
-      display: none;
-      align-items: end;
-      justify-content: space-between;
-      padding: 0 0.8rem;
-      pointer-events: none;
-    }
-
-    .mobile-controls[hidden] {
-      display: none !important;
-    }
-
-    .joystick {
-      position: relative;
-      width: 6.2rem;
-      height: 6.2rem;
-      border: 1px solid rgb(255 255 255 / 25%);
-      border-radius: 50%;
-      background: rgb(28 20 16 / 50%);
-      pointer-events: auto;
-      touch-action: none;
-    }
-
-    .joystick-knob {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
-      background: rgb(34 211 238 / 76%);
-      box-shadow: 0 0 1.2rem rgb(34 211 238 / 45%);
-      transform: translate(-50%, -50%);
-    }
-
-    .dash-button {
-      width: 5rem;
-      height: 5rem;
-      border: 1px solid rgb(255 255 255 / 24%);
-      border-radius: 50%;
-      background: rgb(194 65 12 / 78%);
-      color: white;
-      font-size: 0.72rem;
-      font-weight: 950;
-      letter-spacing: 0.08em;
-      pointer-events: auto;
-      text-transform: uppercase;
-      touch-action: none;
-    }
-
-    .dash-button.cooldown {
-      opacity: 0.4;
-    }
-
-    .panel {
-      margin-top: 0.8rem;
-      padding: 0.9rem;
-      border: 1px solid #3c302b;
-      border-radius: 0.75rem;
-      background: rgb(22 19 18 / 94%);
-    }
-
-    .panel-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.7rem;
-    }
-
-    .panel h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      letter-spacing: -0.03em;
-    }
-
-    .panel p {
-      margin: 0.15rem 0 0;
-      color: #a8a09c;
-      font-size: 0.78rem;
-    }
-
-    .actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .primary,
-    .secondary {
-      padding: 0.65rem 0.9rem;
-      border-radius: 0.55rem;
-      color: white;
-      cursor: pointer;
-      font-weight: 900;
-    }
-
-    .primary {
-      background: linear-gradient(135deg, #c2410c, #f97316);
-    }
-
-    .secondary {
-      border: 1px solid #4b3d36;
-      background: #292321;
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      filter: grayscale(0.8);
-      opacity: 0.42;
-    }
-
-    .hand,
-    .challenge-grid,
-    .warband,
-    .reward-grid {
-      display: grid;
-      gap: 0.65rem;
-    }
-
-    .hand {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .challenge-grid,
-    .reward-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .warband {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .card,
-    .challenge,
-    .unit {
-      min-width: 0;
-      border: 1px solid var(--accent, #5b463b);
-      border-radius: 0.65rem;
-      background:
-        linear-gradient(145deg, color-mix(in srgb, var(--accent) 10%, #211c1a), #12100f);
-      color: white;
-      text-align: left;
-    }
-
-    .card,
-    .challenge {
-      padding: 0.75rem;
-    }
-
-    button.card,
-    button.challenge {
-      cursor: pointer;
-    }
-
-    button.card:hover,
-    button.challenge:hover {
-      filter: brightness(1.14);
-      transform: translateY(-2px);
-    }
-
-    .card-top,
-    .unit-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.4rem;
-    }
-
-    .card-cost {
-      display: grid;
-      width: 1.8rem;
-      height: 1.8rem;
-      place-items: center;
-      border-radius: 50%;
-      background: #0e7490;
-      color: white;
-      font-weight: 950;
-    }
-
-    .card-kind,
-    .unit-faction,
-    .danger {
-      color: var(--accent);
-      font-size: 0.6rem;
-      font-weight: 900;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-    }
-
-    .card h3,
-    .challenge h3,
-    .unit h3 {
-      margin: 0.55rem 0 0.2rem;
+      color: #f8fafc;
       font-size: 0.95rem;
-    }
-
-    .card p,
-    .challenge p,
-    .unit p {
-      margin: 0.35rem 0 0;
-      color: #afa6a0;
-      font-size: 0.72rem;
-      line-height: 1.4;
-    }
-
-    .card p {
-      min-height: 3rem;
-    }
-
-    .challenge.selected {
-      border-color: #facc15;
-      box-shadow: inset 0 0 0 1px rgb(250 204 21 / 45%);
-    }
-
-    .challenge-reward {
-      display: block;
-      margin-top: 0.6rem;
-      color: #fde68a;
-      font-size: 0.7rem;
-      font-weight: 900;
-    }
-
-    .unit {
-      padding: 0.55rem;
-    }
-
-    .unit-icon {
-      display: grid;
-      width: 2rem;
-      height: 2rem;
-      place-items: center;
-      border-radius: 0.35rem;
-      background: var(--accent);
-      color: #0f0d0c;
-      font-weight: 950;
-    }
-
-    .unit-rank {
-      color: #fde68a;
-      font-size: 0.65rem;
-      font-weight: 900;
-    }
-
-    .unit p {
-      min-height: 2rem;
-    }
-
-    .synergies {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.7rem;
-    }
-
-    .synergy {
-      padding: 0.3rem 0.5rem;
-      border: 1px solid var(--accent);
-      border-radius: 999px;
-      color: #ddd6d3;
-      font-size: 0.65rem;
-      font-weight: 800;
-    }
-
-    .empty {
-      grid-column: 1 / -1;
-      padding: 1.2rem;
-      border: 1px dashed #4b3d36;
-      border-radius: 0.6rem;
-      color: #786e69;
-      text-align: center;
     }
 
     .overlay {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 10;
       display: grid;
       place-items: center;
       padding: 1rem;
-      background: rgb(8 6 5 / 86%);
-      backdrop-filter: blur(0.8rem);
+      background: rgb(2 4 12 / 78%);
+      backdrop-filter: blur(0.75rem);
     }
 
     .overlay[hidden] {
       display: none;
     }
 
-    .modal {
-      width: min(52rem, 100%);
+    .panel {
+      width: min(46rem, 100%);
       max-height: calc(100vh - 2rem);
       overflow: auto;
-      padding: clamp(1.2rem, 4vw, 2.4rem);
-      border: 1px solid #7c4928;
-      border-radius: 0.9rem;
+      padding: clamp(1.25rem, 4vw, 2.5rem);
+      border: 1px solid rgb(103 232 249 / 30%);
+      border-radius: 1.25rem;
       background:
-        radial-gradient(circle at 50% 0%, rgb(234 88 12 / 13%), transparent 20rem),
-        #171311;
-      box-shadow: 0 2rem 7rem #000;
+        radial-gradient(circle at 50% 0%, rgb(34 211 238 / 13%), transparent 18rem),
+        linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(5 7 17 / 98%));
+      box-shadow:
+        0 2rem 7rem #000,
+        0 0 4rem rgb(34 211 238 / 10%);
       text-align: center;
+      touch-action: pan-y;
+    }
+
+    .hub-panel {
+      width: min(64rem, 100%);
     }
 
     .eyebrow {
-      color: #fb923c;
-      font-size: 0.65rem;
+      color: #67e8f9;
+      font-size: 0.72rem;
       font-weight: 900;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
     }
 
-    .modal h1,
-    .modal h2 {
-      margin: 0.35rem 0 0.65rem;
-      font-size: clamp(2rem, 8vw, 4.6rem);
-      letter-spacing: -0.06em;
+    h1,
+    h2 {
+      margin: 0.35rem 0 0.6rem;
+      font-weight: 950;
+      letter-spacing: -0.05em;
       line-height: 0.95;
     }
 
-    .modal > p {
-      max-width: 38rem;
-      margin: 0.8rem auto 1.2rem;
-      color: #b8aea8;
-      line-height: 1.55;
+    h1 {
+      font-size: clamp(3.4rem, 13vw, 7rem);
+      text-transform: uppercase;
     }
 
-    .how-to {
+    h1 span {
+      color: #22d3ee;
+      text-shadow: 0 0 2rem rgb(34 211 238 / 50%);
+    }
+
+    h2 {
+      font-size: clamp(2rem, 7vw, 3.5rem);
+    }
+
+    .panel > p {
+      max-width: 34rem;
+      margin: 0.8rem auto 1.4rem;
+      color: #b8c3d6;
+      line-height: 1.6;
+    }
+
+    .controls-copy {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.6rem;
-      margin: 1.1rem 0;
+      gap: 0.65rem;
+      margin: 1.2rem 0;
     }
 
-    .how-to div {
-      padding: 0.75rem;
-      border: 1px solid #3d322d;
-      border-radius: 0.55rem;
-      background: #211c1a;
-      color: #aaa09a;
-      font-size: 0.76rem;
+    .control-card {
+      padding: 0.8rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.7rem;
+      background: rgb(255 255 255 / 4%);
+      color: #cbd5e1;
+      font-size: 0.8rem;
     }
 
-    .how-to strong {
+    .control-card strong {
       display: block;
       margin-bottom: 0.2rem;
       color: white;
     }
 
-    .result-stats {
+    .hub-resources {
       display: flex;
       justify-content: center;
-      gap: 2rem;
-      margin: 1.1rem 0;
+      gap: 0.6rem;
+      margin: 1rem 0;
     }
 
-    .result-stats strong,
-    .result-stats span {
+    .hub-resource {
+      min-width: 8rem;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 0.65rem;
+      background: rgb(255 255 255 / 5%);
+    }
+
+    .hub-resource small,
+    .hub-resource strong {
       display: block;
     }
 
-    .result-stats strong {
-      color: #fdba74;
-      font-size: 1.7rem;
+    .hub-resource small {
+      color: #94a3b8;
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .result-stats span {
-      color: #8f8580;
-      font-size: 0.62rem;
+    .hub-resource strong {
+      margin-top: 0.15rem;
+      color: #fde68a;
+      font-size: 1.25rem;
+    }
+
+    .hub-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.4fr;
+      gap: 0.8rem;
+      margin: 1rem 0;
+      text-align: left;
+    }
+
+    .hub-section {
+      padding: 0.9rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.75rem;
+      background: rgb(255 255 255 / 4%);
+    }
+
+    .hub-section h2,
+    .mode-section h2 {
+      margin: 0 0 0.3rem;
+      font-size: 1.15rem;
+    }
+
+    .hub-section p,
+    .mode-section p {
+      margin: 0 0 0.75rem;
+      color: #aeb8ca;
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .chest-button {
+      display: block;
+      width: 100%;
+      min-height: 7.5rem;
+      border: 1px solid #facc15;
+      border-radius: 0.7rem;
+      background:
+        linear-gradient(145deg, rgb(250 204 21 / 18%), transparent),
+        #1b1720;
+      color: #fef3c7;
+      cursor: pointer;
+      font-weight: 950;
+    }
+
+    .chest-button strong,
+    .chest-button span {
+      display: block;
+    }
+
+    .chest-button strong {
+      font-size: 1.2rem;
+    }
+
+    .chest-button span {
+      margin-top: 0.25rem;
+      color: #d6d3d1;
+      font-size: 0.72rem;
+    }
+
+    .chest-button:disabled,
+    .gear-card:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .chest-result {
+      min-height: 1.2rem;
+      margin-top: 0.55rem;
+      color: #fde68a;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .gear-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .gear-card,
+    .mode-card {
+      padding: 0.7rem;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 0.65rem;
+      background: #151923;
+      color: white;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .gear-card strong,
+    .gear-card span,
+    .mode-card strong,
+    .mode-card span {
+      display: block;
+    }
+
+    .gear-card span,
+    .mode-card span {
+      margin-top: 0.25rem;
+      color: #aeb8ca;
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+
+    .gear-card em {
+      display: block;
+      margin-top: 0.45rem;
+      color: #67e8f9;
+      font-size: 0.68rem;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    .mode-section {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    .mode-card.active {
+      border-color: #67e8f9;
+      background: rgb(8 145 178 / 18%);
+      box-shadow: inset 0 0 0 1px rgb(103 232 249 / 24%);
+    }
+
+    .mode-card em {
+      display: block;
+      margin-top: 0.45rem;
+      color: #fde68a;
+      font-size: 0.65rem;
+      font-style: normal;
       font-weight: 900;
       text-transform: uppercase;
     }
 
-    @media (max-width: 760px) {
-      header,
-      .panel-head {
-        align-items: stretch;
-        flex-direction: column;
+    .primary {
+      min-width: 12rem;
+      padding: 0.85rem 1.4rem;
+      border-radius: 0.7rem;
+      background: linear-gradient(135deg, #0891b2, #2563eb);
+      color: white;
+      cursor: pointer;
+      font-weight: 900;
+      box-shadow: 0 0.7rem 2rem rgb(8 145 178 / 24%);
+    }
+
+    .primary:hover {
+      filter: brightness(1.15);
+    }
+
+    .upgrade-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1.25rem;
+    }
+
+    .upgrade {
+      min-height: 10rem;
+      padding: 1rem;
+      border: 1px solid rgb(255 255 255 / 14%);
+      border-radius: 0.8rem;
+      background: rgb(255 255 255 / 5%);
+      color: white;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .upgrade:hover {
+      border-color: #67e8f9;
+      background: rgb(34 211 238 / 10%);
+      transform: translateY(-2px);
+    }
+
+    .upgrade strong,
+    .upgrade span {
+      display: block;
+    }
+
+    .upgrade strong {
+      margin-bottom: 0.45rem;
+      color: #67e8f9;
+      font-size: 1.05rem;
+    }
+
+    .upgrade span {
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .mobile-controls {
+      position: fixed;
+      inset: auto 0 max(1rem, env(safe-area-inset-bottom));
+      z-index: 4;
+      display: none;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 1rem;
+      pointer-events: none;
+    }
+
+    .joystick {
+      position: relative;
+      width: 7rem;
+      height: 7rem;
+      border: 1px solid rgb(255 255 255 / 18%);
+      border-radius: 50%;
+      background: rgb(15 23 42 / 48%);
+      box-shadow: inset 0 0 2rem rgb(0 0 0 / 35%);
+      pointer-events: auto;
+    }
+
+    .joystick-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      background: rgb(103 232 249 / 65%);
+      box-shadow: 0 0 1.5rem rgb(34 211 238 / 45%);
+      transform: translate(-50%, -50%);
+    }
+
+    .dash {
+      display: grid;
+      width: 5.5rem;
+      height: 5.5rem;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 22%);
+      border-radius: 50%;
+      background: rgb(37 99 235 / 58%);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      pointer-events: auto;
+      text-transform: uppercase;
+    }
+
+    .dash.cooldown {
+      opacity: 0.4;
+    }
+
+    .pause {
+      position: fixed;
+      right: 0.75rem;
+      bottom: max(0.75rem, env(safe-area-inset-bottom));
+      z-index: 3;
+      width: 2.8rem;
+      height: 2.8rem;
+      border: 1px solid rgb(255 255 255 / 16%);
+      border-radius: 50%;
+      background: rgb(7 10 22 / 78%);
+      color: white;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .run-summary {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1.2rem 0 1.5rem;
+    }
+
+    .run-summary strong,
+    .run-summary span {
+      display: block;
+    }
+
+    .run-summary strong {
+      color: #67e8f9;
+      font-size: 1.7rem;
+    }
+
+    .run-summary span {
+      color: #94a3b8;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    @media (pointer: coarse), (max-width: 700px) {
+      .mobile-controls {
+        display: flex;
+      }
+
+      .pause {
+        right: 50%;
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        transform: translateX(50%);
+      }
+
+      .hud {
+        grid-template-columns: 1fr;
       }
 
       .stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        justify-content: stretch;
       }
 
       .stat {
         min-width: 0;
+        flex: 1;
       }
 
-      #arena {
-        height: 45vh;
-        min-height: 20rem;
-      }
-
-      .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .hand {
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-        scroll-snap-type: x mandatory;
-      }
-
-      .hand .card {
-        min-width: min(76vw, 17rem);
-        scroll-snap-align: center;
-      }
-
-      .challenge-grid,
-      .reward-grid,
-      .how-to {
+      .controls-copy,
+      .upgrade-grid,
+      .hub-grid,
+      .gear-grid,
+      .mode-grid {
         grid-template-columns: 1fr;
       }
 
-      .warband {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+      .upgrade {
+        min-height: 0;
       }
-    }
 
-    @media (pointer: coarse) {
-      .mobile-controls {
-        display: flex;
+      .panel {
+        padding: 1.2rem;
       }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <div class="brand">
-        <small>Working title</small>
-        <strong>Ashfall Protocol</strong>
-      </div>
-      <div class="stats">
-        <div class="stat"><small>Sector</small><strong id="stageDisplay">1</strong></div>
-        <div class="stat"><small>Energy</small><strong id="energyDisplay">3 / 3</strong></div>
-        <div class="stat"><small>Lives</small><strong id="lifeDisplay">3</strong></div>
-      </div>
-    </header>
+  <canvas id="game"></canvas>
 
-    <section class="arena-shell">
-      <canvas id="arena"></canvas>
-      <div id="arenaLabel" class="arena-label">Planning phase</div>
-      <div id="commanderHealth" class="commander-health" hidden><span></span></div>
-      <div id="battleLog" class="battle-log">Play command cards, choose a route, then deploy.</div>
-      <div id="mobileControls" class="mobile-controls" hidden>
-        <div id="joystick" class="joystick" aria-label="Movement joystick">
-          <div id="joystickKnob" class="joystick-knob"></div>
-        </div>
-        <button id="dashButton" class="dash-button">Dash</button>
+  <div class="hud">
+    <div class="bars">
+      <div class="bar">
+        <div id="healthFill" class="bar-fill"></div>
+        <div id="healthLabel" class="bar-label">HP 100 / 100</div>
       </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>Command hand</h2>
-          <p>Spend energy to recruit survivors or permanently modify your build.</p>
-        </div>
-        <div class="actions">
-          <button id="mulliganButton" class="secondary">Mulligan (1)</button>
-          <button id="deployButton" class="primary">Deploy</button>
-        </div>
+      <div class="bar">
+        <div id="xpFill" class="bar-fill"></div>
+        <div id="xpLabel" class="bar-label">LEVEL 1</div>
       </div>
-      <div id="hand" class="hand"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>Choose a route</h2>
-          <p>Harder encounters improve the card reward after victory.</p>
-        </div>
-      </div>
-      <div id="challengeGrid" class="challenge-grid"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>Warband <span id="warbandCount">0 / 20</span></h2>
-          <p>Three matching rank-one units combine into rank two. Faction bonuses activate at three units.</p>
-        </div>
-      </div>
-      <div id="warband" class="warband"></div>
-      <div id="synergies" class="synergies"></div>
-    </section>
-  </main>
-
-  <div id="titleOverlay" class="overlay">
-    <div class="modal">
-      <div class="eyebrow">Deck-building army roguelite</div>
-      <h1>Ashfall Protocol</h1>
-      <p>The old world is gone. Build a command deck, gather a warband, create faction engines, and send your survivors into automatic battles across the ashlands.</p>
-      <div class="how-to">
-        <div><strong>Play cards</strong>Recruit units and stack permanent upgrades.</div>
-        <div><strong>Lead the fight</strong>Move with WASD or the joystick. Dash with Space.</div>
-        <div><strong>Build engines</strong>Focus your deck to find matching factions and unit mods.</div>
-      </div>
-      <button id="startButton" class="primary">Start expedition</button>
-      <p id="bestSector">Best sector: 0</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><small>Time</small><strong id="time">0:00</strong></div>
+      <div class="stat"><small>Wave</small><strong id="wave">1</strong></div>
+      <div class="stat"><small>Kills</small><strong id="kills">0</strong></div>
     </div>
   </div>
 
-  <div id="rewardOverlay" class="overlay" hidden>
-    <div class="modal">
-      <div class="eyebrow">Salvage recovered</div>
-      <h2>Add one card to your deck</h2>
-      <div id="rewardGrid" class="reward-grid"></div>
+  <button id="pauseButton" class="pause" aria-label="Pause game">II</button>
+
+  <div class="mobile-controls">
+    <div id="joystick" class="joystick" aria-label="Movement joystick">
+      <div id="joystickKnob" class="joystick-knob"></div>
+    </div>
+    <button id="dashButton" class="dash">Dash</button>
+  </div>
+
+  <div id="titleOverlay" class="overlay">
+    <div class="panel hub-panel">
+      <div class="eyebrow">Safehouse</div>
+      <h1>Max<span>Game</span></h1>
+      <p>Prepare between expeditions. Open recovered chests, permanently improve your equipment, then choose how you want to enter the arena.</p>
+      <div class="hub-resources">
+        <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
+        <div class="hub-resource"><small>Scrap</small><strong id="scrapCount">0</strong></div>
+      </div>
+      <div class="hub-grid">
+        <section class="hub-section">
+          <h2>Recovered chests</h2>
+          <p>Runs award chests. Open them for scrap used on permanent gear.</p>
+          <button id="openChestButton" class="chest-button">
+            <strong>Open chest</strong>
+            <span>Contains 12-24 scrap</span>
+          </button>
+          <div id="chestResult" class="chest-result"></div>
+        </section>
+        <section class="hub-section">
+          <h2>Gear workshop</h2>
+          <p>Gear upgrades apply at the start of every future run.</p>
+          <div id="gearGrid" class="gear-grid"></div>
+        </section>
+      </div>
+      <section class="mode-section">
+        <h2>Choose game mode</h2>
+        <p>Each mode changes pacing, bosses, and chest rewards.</p>
+        <div id="modeGrid" class="mode-grid"></div>
+      </section>
+      <div class="controls-copy">
+        <div class="control-card"><strong>Move</strong>WASD, arrow keys, or joystick</div>
+        <div class="control-card"><strong>Dash</strong>Space or the Dash button</div>
+        <div class="control-card"><strong>Attack</strong>Automatic targeting</div>
+      </div>
+      <button id="startButton" class="primary">Start run</button>
+      <p id="bestRun">Best survival: 0:00</p>
+    </div>
+  </div>
+
+  <div id="upgradeOverlay" class="overlay" hidden>
+    <div class="panel">
+      <div class="eyebrow">Level up</div>
+      <h2>Choose your upgrade</h2>
+      <div id="upgradeGrid" class="upgrade-grid"></div>
+    </div>
+  </div>
+
+  <div id="pauseOverlay" class="overlay" hidden>
+    <div class="panel">
+      <div class="eyebrow">Run paused</div>
+      <h2>Take a breath</h2>
+      <p>The arena is frozen until you are ready.</p>
+      <button id="resumeButton" class="primary">Resume</button>
     </div>
   </div>
 
   <div id="gameOverOverlay" class="overlay" hidden>
-    <div class="modal">
-      <div class="eyebrow">Expedition lost</div>
-      <h2>The ashlands win</h2>
-      <div class="result-stats">
-        <div><strong id="finalSector">1</strong><span>Sector</span></div>
-        <div><strong id="finalWins">0</strong><span>Victories</span></div>
-        <div><strong id="finalCards">0</strong><span>Deck size</span></div>
+    <div class="panel">
+      <div class="eyebrow">Run over</div>
+      <h2>The void wins this time</h2>
+      <div class="run-summary">
+        <div><strong id="finalTime">0:00</strong><span>Survived</span></div>
+        <div><strong id="finalWave">1</strong><span>Wave</span></div>
+        <div><strong id="finalKills">0</strong><span>Kills</span></div>
+        <div><strong id="earnedChests">0</strong><span>Chests</span></div>
       </div>
-      <button id="restartButton" class="primary">New expedition</button>
+      <button id="restartButton" class="primary">Return to safehouse</button>
     </div>
   </div>
 
   <script>
-    const canvas = document.querySelector("#arena");
+    const canvas = document.querySelector("#game");
     const context = canvas.getContext("2d");
-    const stageDisplay = document.querySelector("#stageDisplay");
-    const energyDisplay = document.querySelector("#energyDisplay");
-    const lifeDisplay = document.querySelector("#lifeDisplay");
-    const arenaLabel = document.querySelector("#arenaLabel");
-    const battleLog = document.querySelector("#battleLog");
-    const handDisplay = document.querySelector("#hand");
-    const challengeGrid = document.querySelector("#challengeGrid");
-    const warbandDisplay = document.querySelector("#warband");
-    const warbandCount = document.querySelector("#warbandCount");
-    const synergiesDisplay = document.querySelector("#synergies");
-    const mulliganButton = document.querySelector("#mulliganButton");
-    const deployButton = document.querySelector("#deployButton");
+    const healthFill = document.querySelector("#healthFill");
+    const healthLabel = document.querySelector("#healthLabel");
+    const xpFill = document.querySelector("#xpFill");
+    const xpLabel = document.querySelector("#xpLabel");
+    const timeDisplay = document.querySelector("#time");
+    const waveDisplay = document.querySelector("#wave");
+    const killsDisplay = document.querySelector("#kills");
     const titleOverlay = document.querySelector("#titleOverlay");
-    const rewardOverlay = document.querySelector("#rewardOverlay");
-    const rewardGrid = document.querySelector("#rewardGrid");
+    const upgradeOverlay = document.querySelector("#upgradeOverlay");
+    const pauseOverlay = document.querySelector("#pauseOverlay");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
-    const commanderHealth = document.querySelector("#commanderHealth");
-    const commanderHealthFill = commanderHealth.querySelector("span");
-    const mobileControls = document.querySelector("#mobileControls");
+    const upgradeGrid = document.querySelector("#upgradeGrid");
+    const pauseButton = document.querySelector("#pauseButton");
+    const dashButton = document.querySelector("#dashButton");
     const joystick = document.querySelector("#joystick");
     const joystickKnob = document.querySelector("#joystickKnob");
-    const dashButton = document.querySelector("#dashButton");
+    const chestCount = document.querySelector("#chestCount");
+    const scrapCount = document.querySelector("#scrapCount");
+    const openChestButton = document.querySelector("#openChestButton");
+    const chestResult = document.querySelector("#chestResult");
+    const gearGrid = document.querySelector("#gearGrid");
+    const modeGrid = document.querySelector("#modeGrid");
+
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
+    const enemies = [];
+    const projectiles = [];
+    const enemyProjectiles = [];
+    const gems = [];
+    const particles = [];
 
-    const factions = {
-      Wardens: { color: "#94a3b8", bonus: "3+: 22% damage reduction" },
-      Raiders: { color: "#fb923c", bonus: "3+: 24% critical chance" },
-      Tech: { color: "#22d3ee", bonus: "3+: 25% faster attacks" },
-      Mutants: { color: "#c084fc", bonus: "3+: regeneration and 15% more health" }
+    let width = 0;
+    let height = 0;
+    let state = "title";
+    let lastFrame = performance.now();
+    let elapsed = 0;
+    let wave = 1;
+    let kills = 0;
+    let spawnTimer = 0;
+    let pendingLevels = 0;
+    let shake = 0;
+
+    const gameModes = {
+      survival: {
+        name: "Survival",
+        description: "The standard endless run with a boss every fifth wave.",
+        reward: "Normal chest rewards",
+        waveSeconds: 25,
+        spawnRate: 1,
+        enemyScale: 1,
+        bossEvery: 5,
+        chestMultiplier: 1
+      },
+      rush: {
+        name: "Rush",
+        description: "Shorter waves and faster spawns for quick, aggressive runs.",
+        reward: "50% more chests",
+        waveSeconds: 16,
+        spawnRate: 1.3,
+        enemyScale: 0.9,
+        bossEvery: 5,
+        chestMultiplier: 1.5
+      },
+      bossHunt: {
+        name: "Boss Hunt",
+        description: "A boss arrives every wave alongside a smaller escort.",
+        reward: "Double chest rewards",
+        waveSeconds: 28,
+        spawnRate: 0.72,
+        enemyScale: 1.12,
+        bossEvery: 1,
+        chestMultiplier: 2
+      }
     };
 
-    const units = [
-      { id: "scrapguard", name: "Scrapguard", faction: "Wardens", symbol: "G", hp: 160, damage: 13, range: 34, speed: 46, cooldown: 0.9, ability: "Shielded front-line survivor." },
-      { id: "crusher", name: "Crusher", faction: "Wardens", symbol: "C", hp: 125, damage: 25, range: 42, speed: 52, cooldown: 1.05, knockback: true, ability: "Heavy strikes shove enemies back." },
-      { id: "marshal", name: "Marshal", faction: "Wardens", symbol: "M", hp: 110, damage: 19, range: 170, speed: 48, cooldown: 0.95, ability: "Reliable mid-range support." },
-      { id: "razor", name: "Razor", faction: "Raiders", symbol: "R", hp: 72, damage: 23, range: 36, speed: 94, cooldown: 0.58, ability: "Extremely fast melee attacker." },
-      { id: "firebug", name: "Firebug", faction: "Raiders", symbol: "F", hp: 70, damage: 20, range: 150, speed: 58, cooldown: 0.82, splash: true, ability: "Firebombs damage clustered enemies." },
-      { id: "longshot", name: "Longshot", faction: "Raiders", symbol: "L", hp: 58, damage: 36, range: 285, speed: 46, cooldown: 1.3, ability: "High damage from extreme range." },
-      { id: "drone", name: "Sentry Drone", faction: "Tech", symbol: "D", hp: 62, damage: 15, range: 220, speed: 65, cooldown: 0.6, ability: "Rapid automatic fire." },
-      { id: "arc", name: "Arc Caster", faction: "Tech", symbol: "A", hp: 68, damage: 27, range: 205, speed: 52, cooldown: 1.05, chain: true, ability: "Electric shots chain to another target." },
-      { id: "medic", name: "Field Medic", faction: "Tech", symbol: "+", hp: 75, damage: 12, range: 180, speed: 51, cooldown: 1.2, healer: true, ability: "Repairs the most wounded ally." },
-      { id: "brute", name: "Ash Brute", faction: "Mutants", symbol: "B", hp: 205, damage: 24, range: 38, speed: 37, cooldown: 1.05, ability: "Massive health and crushing attacks." },
-      { id: "spitter", name: "Spitter", faction: "Mutants", symbol: "S", hp: 76, damage: 19, range: 225, speed: 56, cooldown: 0.75, ability: "Fast corrosive projectiles." },
-      { id: "seer", name: "Glow Seer", faction: "Mutants", symbol: "E", hp: 82, damage: 30, range: 195, speed: 50, cooldown: 1.15, splash: true, ability: "Psychic bursts strike a small area." }
-    ];
-
-    const globalCards = [
-      { id: "battle-drill", name: "Battle Drill", kind: "Protocol", cost: 1, description: "All units deal 12% more damage.", play: run => run.damage *= 1.12 },
-      { id: "body-armor", name: "Body Armor", kind: "Protocol", cost: 1, description: "All units gain 15% maximum health.", play: run => run.health *= 1.15 },
-      { id: "combat-stims", name: "Combat Stims", kind: "Protocol", cost: 1, description: "All units attack 10% faster.", play: run => run.attackSpeed *= 0.9 },
-      { id: "field-rations", name: "Field Rations", kind: "Protocol", cost: 1, description: "Gain one maximum energy for this expedition.", play: run => { run.maxEnergy += 1; run.energy += 1; } }
-    ];
-
-    const unitCards = units.map(unit => ({
-      id: `recruit-${unit.id}`,
-      name: unit.name,
-      kind: `${unit.faction} recruit`,
-      faction: unit.faction,
-      cost: unit.id === "brute" || unit.id === "longshot" ? 2 : 1,
-      description: unit.ability,
-      unitId: unit.id,
-      play: run => recruitUnit(run, unit.id)
-    }));
-
-    const typeCards = units.flatMap(unit => [
+    const gearDefinitions = [
       {
-        id: `damage-${unit.id}`,
-        name: `${unit.name}: Kill Order`,
-        kind: "Unit mod",
-        faction: unit.faction,
-        cost: 1,
-        description: `Every ${unit.name} deals 35% more damage.`,
-        play: run => boostType(run, unit.id, "damage", 1.35)
+        id: "blaster",
+        name: "Pulse Blaster",
+        description: level => `Start each run with ${level * 15}% bonus damage.`
       },
       {
-        id: `health-${unit.id}`,
-        name: `${unit.name}: Reinforced`,
-        kind: "Unit mod",
-        faction: unit.faction,
-        cost: 1,
-        description: `Every ${unit.name} gains 40% maximum health.`,
-        play: run => boostType(run, unit.id, "health", 1.4)
+        id: "armor",
+        name: "Core Armor",
+        description: level => `Start each run with ${level * 20} bonus health.`
+      },
+      {
+        id: "boots",
+        name: "Phase Boots",
+        description: level => `Start each run with ${level * 7}% bonus speed.`
       }
-    ]);
-
-    const cards = [...unitCards, ...globalCards, ...typeCards];
-
-    const encounters = [
-      { id: "swarm", name: "Dust Mob", danger: "Crowd", description: "Many weak raiders. Splash and attack-speed builds excel.", count: 1.65, hp: 0.78, damage: 0.82, reward: "standard" },
-      { id: "elite", name: "Iron Patrol", danger: "Elite", description: "A small armored squad with increased health and damage.", count: 0.72, hp: 1.7, damage: 1.3, reward: "focused" },
-      { id: "boss", name: "War Rig", danger: "Boss", description: "A roaming fortress and its escort. The reward includes a powerful protocol.", count: 1, hp: 1.2, damage: 1.12, reward: "protocol", boss: true }
     ];
 
-    const run = {
-      stage: 1,
-      lives: 3,
-      wins: 0,
-      maxEnergy: 3,
-      energy: 3,
-      mulligans: 1,
-      deck: [],
-      drawPile: [],
-      discard: [],
-      hand: [],
-      warband: [],
-      selectedEncounter: null,
-      damage: 1,
-      health: 1,
-      attackSpeed: 1,
-      crit: 0.05,
-      typeBoosts: {}
+    const defaultMeta = {
+      chests: 1,
+      scrap: 0,
+      selectedMode: "survival",
+      gear: {
+        blaster: 0,
+        armor: 0,
+        boots: 0
+      }
     };
 
-    const combat = {
-      state: "title",
-      allies: [],
-      enemies: [],
-      projectiles: [],
-      particles: [],
-      commander: null,
-      elapsed: 0
+    function loadMeta() {
+      const saved = localStorage.getItem("maxGameMeta");
+      if (!saved) return structuredClone(defaultMeta);
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
+          scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
+          selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
+          gear: {
+            blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
+            armor: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.armor) || 0))),
+            boots: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.boots) || 0)))
+          }
+        };
+      } catch (error) {
+        console.warn("Ignoring invalid MaxGame progression data.", error);
+        localStorage.removeItem("maxGameMeta");
+        return structuredClone(defaultMeta);
+      }
+    }
+
+    const meta = loadMeta();
+
+    function saveMeta() {
+      localStorage.setItem("maxGameMeta", JSON.stringify(meta));
+    }
+
+    function activeMode() {
+      return gameModes[meta.selectedMode];
+    }
+
+    const player = {
+      x: 0,
+      y: 0,
+      radius: 14,
+      speed: 230,
+      health: 100,
+      maxHealth: 100,
+      damage: 18,
+      fireRate: 0.58,
+      fireTimer: 0,
+      projectileSpeed: 560,
+      projectiles: 1,
+      pierce: 0,
+      magnet: 90,
+      armor: 0,
+      critChance: 0.08,
+      level: 1,
+      xp: 0,
+      xpNeeded: 18,
+      regen: 0,
+      dashCooldown: 2.5,
+      dashTimer: 0,
+      invulnerable: 0
     };
 
-    let width = 900;
-    let height = 500;
-    let lastFrame = performance.now();
-
-    function cardById(id) {
-      return cards.find(card => card.id === id);
-    }
-
-    function unitById(id) {
-      return units.find(unit => unit.id === id);
-    }
-
-    function shuffle(values) {
-      const result = [...values];
-      for (let index = result.length - 1; index > 0; index -= 1) {
-        const swap = Math.floor(Math.random() * (index + 1));
-        [result[index], result[swap]] = [result[swap], result[index]];
-      }
-      return result;
-    }
-
-    function startingDeck() {
-      return [
-        "recruit-scrapguard",
-        "recruit-scrapguard",
-        "recruit-razor",
-        "recruit-drone",
-        "recruit-medic",
-        "recruit-spitter",
-        "battle-drill",
-        "body-armor",
-        "combat-stims",
-        "field-rations"
-      ];
-    }
-
-    function resetRun() {
-      Object.assign(run, {
-        stage: 1,
-        lives: 3,
-        wins: 0,
-        maxEnergy: 3,
-        energy: 3,
-        mulligans: 1,
-        deck: startingDeck(),
-        drawPile: [],
-        discard: [],
-        hand: [],
-        warband: [],
-        selectedEncounter: null,
-        damage: 1,
-        health: 1,
-        attackSpeed: 1,
-        crit: 0.05,
-        typeBoosts: {}
-      });
-      combat.state = "planning";
-      combat.allies = [];
-      combat.enemies = [];
-      combat.projectiles = [];
-      combat.particles = [];
-      combat.commander = null;
-      startPlanning();
-    }
-
-    function startPlanning() {
-      run.energy = run.maxEnergy;
-      run.mulligans = 1;
-      run.selectedEncounter = null;
-      run.hand.forEach(id => id && run.discard.push(id));
-      run.hand = [];
-      drawCards(5);
-      arenaLabel.textContent = "Planning phase";
-      battleLog.textContent = "Play cards, choose a route, then deploy.";
-      commanderHealth.hidden = true;
-      mobileControls.hidden = true;
-      render();
-    }
-
-    function drawCards(count) {
-      while (run.hand.length < count) {
-        if (run.drawPile.length === 0) {
-          if (run.discard.length === 0) {
-            run.drawPile = shuffle(run.deck);
-          } else {
-            run.drawPile = shuffle(run.discard);
-            run.discard = [];
-          }
+    const upgrades = [
+      {
+        name: "Heavy Rounds",
+        description: "+35% weapon damage.",
+        apply: () => player.damage *= 1.35
+      },
+      {
+        name: "Overclock",
+        description: "Fire 20% faster.",
+        apply: () => player.fireRate *= 0.8
+      },
+      {
+        name: "Split Shot",
+        description: "Fire one additional projectile.",
+        available: () => player.projectiles < 5,
+        apply: () => player.projectiles += 1
+      },
+      {
+        name: "Phase Rounds",
+        description: "Projectiles pierce one additional enemy.",
+        available: () => player.pierce < 5,
+        apply: () => player.pierce += 1
+      },
+      {
+        name: "Kinetic Boots",
+        description: "+15% movement speed.",
+        apply: () => player.speed *= 1.15
+      },
+      {
+        name: "Reinforced Core",
+        description: "+25 maximum health and heal 25.",
+        apply: () => {
+          player.maxHealth += 25;
+          player.health = Math.min(player.maxHealth, player.health + 25);
         }
-        const card = run.drawPile.pop();
-        if (!card) break;
-        run.hand.push(card);
+      },
+      {
+        name: "Repair Nanites",
+        description: "Regenerate 1 health per second.",
+        apply: () => player.regen += 1
+      },
+      {
+        name: "Magnetic Field",
+        description: "+55 energy pickup range.",
+        apply: () => player.magnet += 55
+      },
+      {
+        name: "Dense Plating",
+        description: "Reduce incoming damage by 2.",
+        available: () => player.armor < 12,
+        apply: () => player.armor += 2
+      },
+      {
+        name: "Critical Systems",
+        description: "+10% critical hit chance.",
+        available: () => player.critChance < 0.58,
+        apply: () => player.critChance += 0.1
+      },
+      {
+        name: "Hypervelocity",
+        description: "+25% projectile speed.",
+        apply: () => player.projectileSpeed *= 1.25
+      },
+      {
+        name: "Emergency Repair",
+        description: "Restore 60 health immediately.",
+        available: () => player.health < player.maxHealth,
+        apply: () => player.health = Math.min(player.maxHealth, player.health + 60)
       }
+    ];
+
+    function gearCost(level) {
+      return 10 + level * 15;
     }
 
-    function boostType(currentRun, id, property, multiplier) {
-      const boost = currentRun.typeBoosts[id] || { damage: 1, health: 1, speed: 1 };
-      boost[property] *= multiplier;
-      currentRun.typeBoosts[id] = boost;
-    }
-
-    function recruitUnit(currentRun, id) {
-      if (currentRun.warband.length >= 20) return false;
-      currentRun.warband.push({ id, rank: 1 });
-      fuseUnits();
-      return true;
-    }
-
-    function fuseUnits() {
-      let changed = true;
-      while (changed) {
-        changed = false;
-        for (const unit of units) {
-          const matches = run.warband
-            .map((entry, index) => ({ entry, index }))
-            .filter(item => item.entry.id === unit.id && item.entry.rank === 1);
-          if (matches.length >= 3) {
-            matches.slice(0, 3).map(item => item.index).sort((a, b) => b - a)
-              .forEach(index => run.warband.splice(index, 1));
-            run.warband.push({ id: unit.id, rank: 2 });
-            changed = true;
-            break;
-          }
-        }
-      }
-    }
-
-    function playCard(index) {
-      if (combat.state !== "planning") return;
-      const id = run.hand[index];
-      const card = cardById(id);
-      if (!card || run.energy < card.cost) return;
-      if (card.unitId && run.warband.length >= 20) return;
-      run.energy -= card.cost;
-      const result = card.play(run);
-      if (result === false) {
-        run.energy += card.cost;
-        return;
-      }
-      run.discard.push(id);
-      run.hand[index] = null;
-      render();
-    }
-
-    function mulligan() {
-      if (combat.state !== "planning" || run.mulligans < 1) return;
-      run.hand.forEach(id => id && run.discard.push(id));
-      run.hand = [];
-      run.mulligans -= 1;
-      drawCards(5);
-      render();
-    }
-
-    function factionCounts() {
-      return run.warband.reduce((counts, entry) => {
-        const faction = unitById(entry.id).faction;
-        counts[faction] = (counts[faction] || 0) + 1;
-        return counts;
-      }, {});
-    }
-
-    function chooseEncounter(id) {
-      if (combat.state !== "planning") return;
-      run.selectedEncounter = id;
-      render();
-    }
-
-    function cardMarkup(id, index, reward = false) {
-      const card = cardById(id);
-      const accent = card.faction ? factions[card.faction].color : "#fb923c";
-      return `
-        <button
-          class="card"
-          style="--accent:${accent}"
-          ${reward ? `data-reward="${index}"` : `data-card="${index}"`}
-          ${!reward && (run.energy < card.cost || (card.unitId && run.warband.length >= 20)) ? "disabled" : ""}
-        >
-          <div class="card-top">
-            <span class="card-kind">${card.kind}</span>
-            <span class="card-cost">${card.cost}</span>
-          </div>
-          <h3>${card.name}</h3>
-          <p>${card.description}</p>
-        </button>
-      `;
-    }
-
-    function render() {
-      stageDisplay.textContent = run.stage;
-      energyDisplay.textContent = `${run.energy} / ${run.maxEnergy}`;
-      lifeDisplay.textContent = run.lives;
-      warbandCount.textContent = `${run.warband.length} / 20`;
-
-      handDisplay.innerHTML = run.hand.map((id, index) =>
-        id ? cardMarkup(id, index) : `<div class="empty">Card played</div>`
-      ).join("");
-      handDisplay.querySelectorAll("[data-card]").forEach(button => {
-        button.addEventListener("click", () => playCard(Number(button.dataset.card)));
-      });
-
-      challengeGrid.innerHTML = encounters.map(encounter => `
-        <button
-          class="challenge ${run.selectedEncounter === encounter.id ? "selected" : ""}"
-          style="--accent:${encounter.boss ? "#ef4444" : "#fb923c"}"
-          data-encounter="${encounter.id}"
-        >
-          <span class="danger">${encounter.danger}</span>
-          <h3>${encounter.name}</h3>
-          <p>${encounter.description}</p>
-          <span class="challenge-reward">Reward: ${encounter.reward} card draft</span>
+    function renderHub() {
+      chestCount.textContent = meta.chests;
+      scrapCount.textContent = meta.scrap;
+      openChestButton.disabled = meta.chests < 1;
+      gearGrid.innerHTML = gearDefinitions.map(gear => {
+        const level = meta.gear[gear.id];
+        const cost = gearCost(level);
+        return `
+          <button class="gear-card" data-gear="${gear.id}" ${level >= 10 || meta.scrap < cost ? "disabled" : ""}>
+            <strong>${gear.name} · Level ${level}</strong>
+            <span>${gear.description(level)}</span>
+            <em>${level >= 10 ? "Maximum level" : `Upgrade: ${cost} scrap`}</em>
+          </button>
+        `;
+      }).join("");
+      modeGrid.innerHTML = Object.entries(gameModes).map(([id, mode]) => `
+        <button class="mode-card ${meta.selectedMode === id ? "active" : ""}" data-mode="${id}">
+          <strong>${mode.name}</strong>
+          <span>${mode.description}</span>
+          <em>${mode.reward}</em>
         </button>
       `).join("");
-      challengeGrid.querySelectorAll("[data-encounter]").forEach(button => {
-        button.addEventListener("click", () => chooseEncounter(button.dataset.encounter));
+      gearGrid.querySelectorAll("[data-gear]").forEach(button => {
+        button.addEventListener("click", () => upgradeGear(button.dataset.gear));
       });
-
-      warbandDisplay.innerHTML = run.warband.length
-        ? run.warband.map(entry => {
-            const unit = unitById(entry.id);
-            return `
-              <article class="unit" style="--accent:${factions[unit.faction].color}">
-                <div class="unit-top">
-                  <span class="unit-icon">${unit.symbol}</span>
-                  <span class="unit-rank">Rank ${entry.rank}</span>
-                </div>
-                <h3>${unit.name}</h3>
-                <span class="unit-faction">${unit.faction}</span>
-                <p>${unit.ability}</p>
-              </article>
-            `;
-          }).join("")
-        : `<div class="empty">Your warband is empty. Play a recruit card.</div>`;
-
-      const active = Object.entries(factionCounts()).filter(([, count]) => count >= 3);
-      synergiesDisplay.innerHTML = active.length
-        ? active.map(([faction, count]) => `
-            <span class="synergy" style="--accent:${factions[faction].color}">
-              ${faction} ${count}: ${factions[faction].bonus}
-            </span>
-          `).join("")
-        : `<span class="synergy" style="--accent:#4b3d36">No faction protocol active</span>`;
-
-      mulliganButton.textContent = `Mulligan (${run.mulligans})`;
-      mulliganButton.disabled = combat.state !== "planning" || run.mulligans < 1;
-      deployButton.disabled =
-        combat.state !== "planning" ||
-        run.warband.length === 0 ||
-        !run.selectedEncounter;
-      draw();
+      modeGrid.querySelectorAll("[data-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+          meta.selectedMode = button.dataset.mode;
+          saveMeta();
+          renderHub();
+        });
+      });
+      document.querySelector("#startButton").textContent = `Start ${activeMode().name}`;
+      updateBestRun();
     }
 
-    function resizeCanvas() {
-      const bounds = canvas.getBoundingClientRect();
+    function openChest() {
+      if (meta.chests < 1) return;
+      meta.chests -= 1;
+      const scrap = 12 + Math.floor(Math.random() * 13);
+      meta.scrap += scrap;
+      chestResult.textContent = `Found ${scrap} scrap.`;
+      saveMeta();
+      renderHub();
+    }
+
+    function upgradeGear(id) {
+      const level = meta.gear[id];
+      if (level >= 10) return;
+      const cost = gearCost(level);
+      if (meta.scrap < cost) return;
+      meta.scrap -= cost;
+      meta.gear[id] += 1;
+      chestResult.textContent = `${gearDefinitions.find(gear => gear.id === id).name} upgraded.`;
+      saveMeta();
+      renderHub();
+    }
+
+    function resize() {
       const ratio = Math.min(devicePixelRatio || 1, 2);
-      width = bounds.width;
-      height = bounds.height;
+      width = innerWidth;
+      height = innerHeight;
       canvas.width = Math.floor(width * ratio);
       canvas.height = Math.floor(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      draw();
-    }
-
-    function makeFighter(definition, rank, side, index, total) {
-      const rankScale = rank === 2 ? 1.9 : 1;
-      const columns = Math.ceil(total / 7);
-      const rows = Math.ceil(total / columns);
-      const column = Math.floor(index / rows);
-      const row = index % rows;
-      const startX = side === "ally" ? width * 0.12 : width * 0.88;
-      const xStep = Math.min(46, width * 0.05);
-      const battleTop = height * 0.48;
-      const battleHeight = height * 0.38;
-      return {
-        id: definition.id,
-        name: definition.name,
-        faction: definition.faction,
-        symbol: definition.symbol,
-        color: factions[definition.faction]?.color || definition.color,
-        rank,
-        side,
-        x: startX + (side === "ally" ? column : -column) * xStep,
-        y: battleTop + battleHeight / (rows + 1) * (row + 1),
-        radius: (total > 14 ? 9 : 12) + rank * 1.5,
-        maxHealth: definition.hp * rankScale,
-        health: definition.hp * rankScale,
-        damage: definition.damage * rankScale,
-        range: definition.range,
-        speed: definition.speed,
-        cooldown: definition.cooldown,
-        timer: Math.random() * 0.5,
-        healer: definition.healer,
-        chain: definition.chain,
-        splash: definition.splash,
-        knockback: definition.knockback,
-        crit: side === "ally" ? run.crit : 0.03
-      };
-    }
-
-    function enemyDefinition(index, encounter) {
-      if ((encounter.boss || run.stage % 5 === 0) && index === 0) {
-        return { id: "war-rig", name: "War Rig", faction: "Enemy", symbol: "W", color: "#ef4444", hp: 420 + run.stage * 55, damage: 25 + run.stage * 2.2, range: 190, speed: 30, cooldown: 0.95, splash: true };
+      if (state === "title") {
+        player.x = width / 2;
+        player.y = height / 2;
       }
-      const pool = [
-        { id: "marauder", name: "Marauder", faction: "Enemy", symbol: "m", color: "#f87171", hp: 58, damage: 11, range: 34, speed: 66, cooldown: 0.78 },
-        { id: "gunner", name: "Dust Gunner", faction: "Enemy", symbol: "g", color: "#fbbf24", hp: 44, damage: 14, range: 215, speed: 45, cooldown: 1.05 },
-        { id: "hulk", name: "Wasteland Hulk", faction: "Enemy", symbol: "H", color: "#a78bfa", hp: 112, damage: 17, range: 38, speed: 37, cooldown: 1.05 }
-      ];
-      const base = pool[Math.floor(Math.random() * pool.length)];
-      const scale = 1 + run.stage * 0.13;
-      return { ...base, hp: base.hp * scale, damage: base.damage * (1 + run.stage * 0.08) };
+    }
+
+    function resetRun() {
+      const damageBonus = 1 + meta.gear.blaster * 0.15;
+      const healthBonus = meta.gear.armor * 20;
+      const speedBonus = 1 + meta.gear.boots * 0.07;
+      enemies.length = 0;
+      projectiles.length = 0;
+      enemyProjectiles.length = 0;
+      gems.length = 0;
+      particles.length = 0;
+      elapsed = 0;
+      wave = 1;
+      kills = 0;
+      spawnTimer = 0.4;
+      pendingLevels = 0;
+      Object.assign(player, {
+        x: width / 2,
+        y: height / 2,
+        speed: 230 * speedBonus,
+        health: 100 + healthBonus,
+        maxHealth: 100 + healthBonus,
+        damage: 18 * damageBonus,
+        fireRate: 0.58,
+        fireTimer: 0,
+        projectileSpeed: 560,
+        projectiles: 1,
+        pierce: 0,
+        magnet: 90,
+        armor: 0,
+        critChance: 0.08,
+        level: 1,
+        xp: 0,
+        xpNeeded: 18,
+        regen: 0,
+        dashCooldown: 2.5,
+        dashTimer: 0,
+        invulnerable: 0
+      });
+      updateHud();
+    }
+
+    function startRun() {
+      resetRun();
+      titleOverlay.hidden = true;
+      gameOverOverlay.hidden = true;
+      pauseOverlay.hidden = true;
+      upgradeOverlay.hidden = true;
+      state = "playing";
+      if (activeMode().bossEvery === 1) {
+        spawnEnemy("boss");
+      }
+      lastFrame = performance.now();
+    }
+
+    function formatTime(seconds) {
+      const whole = Math.floor(seconds);
+      return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+    }
+
+    function updateHud() {
+      const healthPercent = Math.max(0, player.health / player.maxHealth * 100);
+      healthFill.style.width = `${healthPercent}%`;
+      healthLabel.textContent = `HP ${Math.ceil(player.health)} / ${player.maxHealth}`;
+      xpFill.style.width = `${player.xp / player.xpNeeded * 100}%`;
+      xpLabel.textContent = `LEVEL ${player.level} - ${player.xp} / ${player.xpNeeded}`;
+      timeDisplay.textContent = formatTime(elapsed);
+      waveDisplay.textContent = wave;
+      killsDisplay.textContent = kills;
+      dashButton.classList.toggle("cooldown", player.dashTimer > 0);
+    }
+
+    function randomEdgePosition() {
+      const padding = 60;
+      const side = Math.floor(Math.random() * 4);
+      if (side === 0) return { x: Math.random() * width, y: -padding };
+      if (side === 1) return { x: width + padding, y: Math.random() * height };
+      if (side === 2) return { x: Math.random() * width, y: height + padding };
+      return { x: -padding, y: Math.random() * height };
+    }
+
+    function spawnEnemy(type) {
+      const position = randomEdgePosition();
+      const scale = (1 + wave * 0.12) * activeMode().enemyScale;
+      const enemy = {
+        x: position.x,
+        y: position.y,
+        radius: 13,
+        speed: 62 + wave * 2,
+        health: 28 * scale,
+        maxHealth: 28 * scale,
+        damage: 10 + wave * 0.7,
+        color: "#fb7185",
+        xp: 5,
+        shootTimer: 0
+      };
+
+      if (type === "swift") {
+        Object.assign(enemy, {
+          radius: 9,
+          speed: 105 + wave * 3,
+          health: 15 * scale,
+          maxHealth: 15 * scale,
+          damage: 7 + wave * 0.5,
+          color: "#facc15",
+          xp: 4
+        });
+      } else if (type === "tank") {
+        Object.assign(enemy, {
+          radius: 22,
+          speed: 38 + wave,
+          health: 90 * scale,
+          maxHealth: 90 * scale,
+          damage: 18 + wave,
+          color: "#c084fc",
+          xp: 12
+        });
+      } else if (type === "shooter") {
+        Object.assign(enemy, {
+          radius: 14,
+          speed: 45 + wave,
+          health: 38 * scale,
+          maxHealth: 38 * scale,
+          damage: 9 + wave * 0.6,
+          color: "#38bdf8",
+          xp: 8,
+          shootTimer: 1.5
+        });
+      } else if (type === "boss") {
+        Object.assign(enemy, {
+          radius: 42,
+          speed: 32 + wave,
+          health: 700 * (1 + wave * 0.18),
+          maxHealth: 700 * (1 + wave * 0.18),
+          damage: 25 + wave,
+          color: "#f472b6",
+          xp: 100,
+          shootTimer: 0.8,
+          boss: true
+        });
+      }
+      enemies.push(enemy);
+    }
+
+    function chooseEnemyType() {
+      const roll = Math.random();
+      if (wave >= 4 && roll < 0.13) return "shooter";
+      if (wave >= 3 && roll < 0.3) return "tank";
+      if (wave >= 2 && roll < 0.55) return "swift";
+      return "grunt";
     }
 
     function movementVector() {
@@ -1157,507 +1166,440 @@
       return length > 1 ? { x: x / length, y: y / length } : { x, y };
     }
 
-    function createCommander() {
-      return {
-        id: "commander",
-        name: "Commander",
-        faction: "Commander",
-        symbol: "P",
-        color: "#f8fafc",
-        rank: 1,
-        side: "ally",
-        commander: true,
-        x: width * 0.25,
-        y: height * 0.68,
-        radius: 16,
-        maxHealth: 180 * run.health,
-        health: 180 * run.health,
-        damage: 24 * run.damage,
-        range: 230,
-        speed: 205,
-        cooldown: 0.58 * run.attackSpeed,
-        timer: 0,
-        crit: run.crit,
-        invulnerable: 0,
-        dashTimer: 0
-      };
-    }
-
     function dash() {
-      const commander = combat.commander;
-      if (combat.state !== "battle" || !commander || commander.dashTimer > 0) return;
+      if (state !== "playing" || player.dashTimer > 0) return;
       const move = movementVector();
       if (Math.hypot(move.x, move.y) < 0.1) return;
-      commander.x += move.x * 120;
-      commander.y += move.y * 120;
-      commander.x = Math.max(commander.radius, Math.min(width - commander.radius, commander.x));
-      commander.y = Math.max(height * 0.46, Math.min(height * 0.94, commander.y));
-      commander.invulnerable = 0.35;
-      commander.dashTimer = 2.4;
-      burst(commander.x, commander.y, "#67e8f9", 14);
+      player.x += move.x * 120;
+      player.y += move.y * 120;
+      player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
+      player.dashTimer = player.dashCooldown;
+      player.invulnerable = 0.35;
+      burst(player.x, player.y, "#67e8f9", 14);
     }
 
-    function startBattle() {
-      if (combat.state !== "planning" || !run.selectedEncounter || run.warband.length === 0) return;
-      run.hand.forEach(id => id && run.discard.push(id));
-      run.hand = [];
-      combat.state = "battle";
-      combat.elapsed = 0;
-      combat.projectiles = [];
-      combat.particles = [];
-      const counts = factionCounts();
-
-      combat.commander = createCommander();
-      combat.allies = [combat.commander, ...run.warband.map((entry, index) => {
-        const unit = unitById(entry.id);
-        const fighter = makeFighter(unit, entry.rank, "ally", index, run.warband.length);
-        fighter.formationIndex = index;
-        const boost = run.typeBoosts[entry.id] || { damage: 1, health: 1, speed: 1 };
-        fighter.maxHealth *= run.health * boost.health;
-        fighter.health = fighter.maxHealth;
-        fighter.damage *= run.damage * boost.damage;
-        fighter.cooldown *= run.attackSpeed * boost.speed;
-        if ((counts.Wardens || 0) >= 3) fighter.reduction = 0.22;
-        if ((counts.Raiders || 0) >= 3) fighter.crit += 0.24;
-        if ((counts.Tech || 0) >= 3) fighter.cooldown *= 0.75;
-        if ((counts.Mutants || 0) >= 3) {
-          fighter.maxHealth *= 1.15;
-          fighter.health = fighter.maxHealth;
-          fighter.regen = fighter.maxHealth * 0.012;
-        }
-        return fighter;
-      })];
-
-      const encounter = encounters.find(item => item.id === run.selectedEncounter);
-      const baseCount = 3 + Math.floor(run.stage * 0.85);
-      const count = Math.min(26, Math.ceil(baseCount * encounter.count));
-      combat.enemies = Array.from({ length: count }, (_, index) => {
-        const fighter = makeFighter(enemyDefinition(index, encounter), 1, "enemy", index, count);
-        fighter.maxHealth *= encounter.hp;
-        fighter.health = fighter.maxHealth;
-        fighter.damage *= encounter.damage;
-        return fighter;
-      });
-      arenaLabel.textContent = `${encounter.name} - sector ${run.stage}`;
-      battleLog.textContent = "Move to lead your warband. Your commander and units fire automatically.";
-      commanderHealth.hidden = false;
-      mobileControls.hidden = false;
-      render();
-    }
-
-    function nearest(fighter, targets) {
-      let target = null;
-      let distance = Infinity;
-      for (const candidate of targets) {
-        const current = Math.hypot(candidate.x - fighter.x, candidate.y - fighter.y);
-        if (current < distance) {
-          target = candidate;
-          distance = current;
+    function fireWeapon() {
+      if (enemies.length === 0) return;
+      let target = enemies[0];
+      let nearest = Infinity;
+      for (const enemy of enemies) {
+        const distance = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+        if (distance < nearest) {
+          nearest = distance;
+          target = enemy;
         }
       }
-      return { target, distance };
+      const baseAngle = Math.atan2(target.y - player.y, target.x - player.x);
+      const spread = 0.16;
+      for (let index = 0; index < player.projectiles; index += 1) {
+        const offset = (index - (player.projectiles - 1) / 2) * spread;
+        const angle = baseAngle + offset;
+        projectiles.push({
+          x: player.x,
+          y: player.y,
+          vx: Math.cos(angle) * player.projectileSpeed,
+          vy: Math.sin(angle) * player.projectileSpeed,
+          radius: 4,
+          damage: player.damage,
+          remainingPierce: player.pierce,
+          life: 1.5
+        });
+      }
+    }
+
+    function enemyShoot(enemy) {
+      const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+      const count = enemy.boss ? 7 : 1;
+      for (let index = 0; index < count; index += 1) {
+        const offset = enemy.boss ? (index - 3) * 0.18 : 0;
+        enemyProjectiles.push({
+          x: enemy.x,
+          y: enemy.y,
+          vx: Math.cos(angle + offset) * (enemy.boss ? 190 : 150),
+          vy: Math.sin(angle + offset) * (enemy.boss ? 190 : 150),
+          radius: enemy.boss ? 6 : 5,
+          damage: enemy.damage,
+          life: 5
+        });
+      }
+    }
+
+    function circleHit(left, right) {
+      return Math.hypot(left.x - right.x, left.y - right.y) < left.radius + right.radius;
+    }
+
+    function damagePlayer(amount) {
+      if (player.invulnerable > 0) return;
+      player.health -= Math.max(1, amount - player.armor);
+      player.invulnerable = 0.45;
+      shake = 9;
+      burst(player.x, player.y, "#fb7185", 10);
+      if (player.health <= 0) {
+        endRun();
+      }
+    }
+
+    function defeatEnemy(index) {
+      const enemy = enemies[index];
+      enemies.splice(index, 1);
+      kills += 1;
+      const gemCount = enemy.boss ? 12 : 1;
+      for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
+        gems.push({
+          x: enemy.x + (Math.random() - 0.5) * enemy.radius,
+          y: enemy.y + (Math.random() - 0.5) * enemy.radius,
+          radius: 5,
+          value: Math.ceil(enemy.xp / gemCount)
+        });
+      }
+      burst(enemy.x, enemy.y, enemy.color, enemy.boss ? 36 : 9);
+    }
+
+    function gainXp(amount) {
+      player.xp += amount;
+      while (player.xp >= player.xpNeeded) {
+        player.xp -= player.xpNeeded;
+        player.level += 1;
+        player.xpNeeded = Math.floor(player.xpNeeded * 1.28 + 5);
+        pendingLevels += 1;
+      }
+      if (pendingLevels > 0 && state === "playing") {
+        showUpgradeChoices();
+      }
+    }
+
+    function randomUpgradeChoices() {
+      const available = upgrades.filter(upgrade => !upgrade.available || upgrade.available());
+      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, Math.min(3, shuffled.length));
+    }
+
+    function showUpgradeChoices() {
+      state = "upgrade";
+      upgradeOverlay.hidden = false;
+      const choices = randomUpgradeChoices();
+      upgradeGrid.innerHTML = choices.map((upgrade, index) => `
+        <button class="upgrade" data-upgrade="${index}">
+          <strong>${upgrade.name}</strong>
+          <span>${upgrade.description}</span>
+        </button>
+      `).join("");
+      upgradeGrid.querySelectorAll("[data-upgrade]").forEach(button => {
+        button.addEventListener("click", () => {
+          choices[Number(button.dataset.upgrade)].apply();
+          pendingLevels -= 1;
+          upgradeOverlay.hidden = true;
+          if (pendingLevels > 0) {
+            showUpgradeChoices();
+          } else {
+            state = "playing";
+            lastFrame = performance.now();
+          }
+          updateHud();
+        }, { once: true });
+      });
     }
 
     function burst(x, y, color, count) {
       for (let index = 0; index < count; index += 1) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 25 + Math.random() * 90;
-        combat.particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.45 });
+        const speed = 40 + Math.random() * 140;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0.35 + Math.random() * 0.45,
+          maxLife: 0.8,
+          color
+        });
       }
     }
 
-    function damageTarget(target, amount, attacker) {
-      if (target.commander && target.invulnerable > 0) return;
-      target.health -= amount * (1 - (target.reduction || 0));
-      if (target.commander) target.invulnerable = 0.45;
-      burst(target.x, target.y, attacker.color, 4);
-      if (attacker.knockback) target.x += attacker.side === "ally" ? 16 : -16;
-      if (attacker.splash) {
-        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
-        targets.filter(unit => unit !== target && unit.health > 0 && Math.hypot(unit.x - target.x, unit.y - target.y) < 72)
-          .forEach(unit => unit.health -= amount * 0.35);
+    function update(delta) {
+      elapsed += delta;
+      const mode = activeMode();
+      const nextWave = Math.floor(elapsed / mode.waveSeconds) + 1;
+      if (nextWave !== wave) {
+        wave = nextWave;
+        burst(width / 2, height / 2, "#67e8f9", 28);
+        if (wave % mode.bossEvery === 0) spawnEnemy("boss");
       }
-      if (attacker.chain) {
-        const targets = attacker.side === "ally" ? combat.enemies : combat.allies;
-        const second = targets.filter(unit => unit !== target && unit.health > 0)
-          .sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y))[0];
-        if (second) {
-          second.health -= amount * 0.45;
-          burst(second.x, second.y, attacker.color, 3);
-        }
-      }
-    }
 
-    function attack(fighter, target) {
-      if (fighter.healer) {
-        const allies = fighter.side === "ally" ? combat.allies : combat.enemies;
-        const wounded = [...allies].filter(unit => unit.health < unit.maxHealth)
-          .sort((a, b) => a.health / a.maxHealth - b.health / b.maxHealth)[0];
-        if (wounded) {
-          wounded.health = Math.min(wounded.maxHealth, wounded.health + fighter.damage * 1.8);
-          burst(wounded.x, wounded.y, "#4ade80", 6);
-          return;
-        }
-      }
-      const amount = fighter.damage * (Math.random() < fighter.crit ? 2 : 1);
-      if (fighter.range > 80) {
-        const angle = Math.atan2(target.y - fighter.y, target.x - fighter.x);
-        combat.projectiles.push({ x: fighter.x, y: fighter.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: 4, side: fighter.side, amount, attacker: fighter });
-      } else {
-        damageTarget(target, amount, fighter);
-      }
-    }
-
-    function updateCommander(delta) {
-      const commander = combat.commander;
-      if (!commander || commander.health <= 0) return;
       const move = movementVector();
-      commander.x += move.x * commander.speed * delta;
-      commander.y += move.y * commander.speed * delta;
-      commander.x = Math.max(commander.radius, Math.min(width - commander.radius, commander.x));
-      commander.y = Math.max(height * 0.46, Math.min(height * 0.94, commander.y));
-      commander.timer -= delta;
-      commander.invulnerable = Math.max(0, commander.invulnerable - delta);
-      commander.dashTimer = Math.max(0, commander.dashTimer - delta);
-      const target = nearest(commander, combat.enemies);
-      if (target.target && commander.timer <= 0) {
-        attack(commander, target.target);
-        commander.timer = commander.cooldown;
-      }
-      commanderHealthFill.style.width =
-        `${Math.max(0, commander.health / commander.maxHealth * 100)}%`;
-      dashButton.classList.toggle("cooldown", commander.dashTimer > 0);
-    }
+      player.x += move.x * player.speed * delta;
+      player.y += move.y * player.speed * delta;
+      player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
+      player.health = Math.min(player.maxHealth, player.health + player.regen * delta);
+      player.fireTimer -= delta;
+      player.dashTimer = Math.max(0, player.dashTimer - delta);
+      player.invulnerable = Math.max(0, player.invulnerable - delta);
 
-    function updateSquad(delta) {
-      const commander = combat.commander;
-      if (!commander) return;
-      const squad = combat.allies.filter(unit => !unit.commander);
-      squad.forEach((fighter, index) => {
-        if (fighter.regen) {
-          fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta);
+      if (player.fireTimer <= 0) {
+        fireWeapon();
+        player.fireTimer = player.fireRate;
+      }
+
+      spawnTimer -= delta;
+      if (spawnTimer <= 0) {
+        spawnEnemy(chooseEnemyType());
+        spawnTimer = Math.max(0.13, (0.82 - wave * 0.045) / mode.spawnRate);
+      }
+
+      for (const enemy of enemies) {
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const preferredDistance = enemy.shootTimer > 0 && !enemy.boss ? 210 : 0;
+        if (distance > preferredDistance) {
+          enemy.x += dx / distance * enemy.speed * delta;
+          enemy.y += dy / distance * enemy.speed * delta;
         }
-        fighter.timer -= delta;
-        const target = nearest(fighter, combat.enemies);
-        const engagementRange = Math.max(220, fighter.range + 50);
-        if (target.target && target.distance <= engagementRange) {
-          const attackRange = fighter.range + fighter.radius + target.target.radius;
-          if (target.distance > attackRange) {
-            fighter.x += (target.target.x - fighter.x) / target.distance * fighter.speed * delta;
-            fighter.y += (target.target.y - fighter.y) / target.distance * fighter.speed * delta;
-          } else if (fighter.timer <= 0) {
-            attack(fighter, target.target);
-            fighter.timer = fighter.cooldown;
+        if (enemy.shootTimer > 0 || enemy.boss) {
+          enemy.shootTimer -= delta;
+          if (enemy.shootTimer <= 0) {
+            enemyShoot(enemy);
+            enemy.shootTimer = enemy.boss ? 1.15 : 2.1;
           }
-          return;
         }
-
-        const columns = 5;
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        const anchorX = commander.x - 55 - row * 30;
-        const anchorY = commander.y + (column - 2) * 34;
-        const distance = Math.hypot(anchorX - fighter.x, anchorY - fighter.y);
-        if (distance > 8) {
-          fighter.x += (anchorX - fighter.x) / distance * fighter.speed * 1.45 * delta;
-          fighter.y += (anchorY - fighter.y) / distance * fighter.speed * 1.45 * delta;
-        }
-      });
-    }
-
-    function updateFighters(fighters, targets, delta) {
-      for (const fighter of fighters) {
-        if (fighter.regen) fighter.health = Math.min(fighter.maxHealth, fighter.health + fighter.regen * delta);
-        fighter.timer -= delta;
-        const result = nearest(fighter, targets);
-        if (!result.target) continue;
-        const range = fighter.range + fighter.radius + result.target.radius;
-        if (result.distance > range) {
-          fighter.x += (result.target.x - fighter.x) / result.distance * fighter.speed * delta;
-          fighter.y += (result.target.y - fighter.y) / result.distance * fighter.speed * delta;
-        } else if (fighter.timer <= 0) {
-          attack(fighter, result.target);
-          fighter.timer = fighter.cooldown;
+        if (circleHit(player, enemy)) {
+          damagePlayer(enemy.damage);
+          enemy.x -= dx / distance * 20;
+          enemy.y -= dy / distance * 20;
         }
       }
-    }
 
-    function updateBattle(delta) {
-      combat.elapsed += delta;
-      updateCommander(delta);
-      updateSquad(delta);
-      updateFighters(combat.enemies, combat.allies, delta);
-
-      for (let index = combat.projectiles.length - 1; index >= 0; index -= 1) {
-        const projectile = combat.projectiles[index];
+      for (let projectileIndex = projectiles.length - 1; projectileIndex >= 0; projectileIndex -= 1) {
+        const projectile = projectiles[projectileIndex];
         projectile.x += projectile.vx * delta;
         projectile.y += projectile.vy * delta;
-        const targets = projectile.side === "ally" ? combat.enemies : combat.allies;
-        const hit = targets.find(target => target.health > 0 && Math.hypot(projectile.x - target.x, projectile.y - target.y) < projectile.radius + target.radius);
-        if (hit) {
-          damageTarget(hit, projectile.amount, projectile.attacker);
-          combat.projectiles.splice(index, 1);
-        } else if (projectile.x < -30 || projectile.x > width + 30 || projectile.y < -30 || projectile.y > height + 30) {
-          combat.projectiles.splice(index, 1);
+        projectile.life -= delta;
+        let removed = projectile.life <= 0;
+        for (let enemyIndex = enemies.length - 1; enemyIndex >= 0 && !removed; enemyIndex -= 1) {
+          const enemy = enemies[enemyIndex];
+          if (!circleHit(projectile, enemy)) continue;
+          const critical = Math.random() < player.critChance;
+          enemy.health -= projectile.damage * (critical ? 2 : 1);
+          burst(projectile.x, projectile.y, critical ? "#facc15" : "#67e8f9", critical ? 7 : 3);
+          if (enemy.health <= 0) defeatEnemy(enemyIndex);
+          if (projectile.remainingPierce > 0) {
+            projectile.remainingPierce -= 1;
+            projectile.x += projectile.vx * 0.02;
+            projectile.y += projectile.vy * 0.02;
+          } else {
+            removed = true;
+          }
+        }
+        if (removed) projectiles.splice(projectileIndex, 1);
+      }
+
+      for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
+        const projectile = enemyProjectiles[index];
+        projectile.x += projectile.vx * delta;
+        projectile.y += projectile.vy * delta;
+        projectile.life -= delta;
+        if (circleHit(projectile, player)) {
+          damagePlayer(projectile.damage);
+          enemyProjectiles.splice(index, 1);
+        } else if (projectile.life <= 0) {
+          enemyProjectiles.splice(index, 1);
         }
       }
 
-      combat.allies = combat.allies.filter(unit => unit.health > 0);
-      combat.enemies = combat.enemies.filter(unit => unit.health > 0);
-      for (let index = combat.particles.length - 1; index >= 0; index -= 1) {
-        const particle = combat.particles[index];
+      for (let index = gems.length - 1; index >= 0; index -= 1) {
+        const gem = gems[index];
+        const dx = player.x - gem.x;
+        const dy = player.y - gem.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        if (distance < player.magnet) {
+          const pull = 240 + (player.magnet - distance) * 5;
+          gem.x += dx / distance * pull * delta;
+          gem.y += dy / distance * pull * delta;
+        }
+        if (distance < player.radius + gem.radius + 4) {
+          gainXp(gem.value);
+          gems.splice(index, 1);
+        }
+      }
+
+      for (let index = particles.length - 1; index >= 0; index -= 1) {
+        const particle = particles[index];
         particle.x += particle.vx * delta;
         particle.y += particle.vy * delta;
+        particle.vx *= 0.96;
+        particle.vy *= 0.96;
         particle.life -= delta;
-        if (particle.life <= 0) combat.particles.splice(index, 1);
+        if (particle.life <= 0) particles.splice(index, 1);
       }
-      if (combat.enemies.length === 0) finishBattle(true);
-      else if (!combat.allies.some(unit => unit.commander) || combat.elapsed > 55) finishBattle(false);
+
+      shake = Math.max(0, shake - 35 * delta);
+      updateHud();
     }
 
-    function rewardPool(encounter) {
-      const owned = [...new Set(run.warband.map(unit => unit.id))];
-      const recruits = unitCards;
-      const focused = typeCards.filter(card => owned.some(id => card.id.endsWith(id)));
-      if (encounter.reward === "protocol") return [...globalCards, ...focused];
-      if (encounter.reward === "focused") return [...focused, ...globalCards, ...recruits];
-      return [...recruits, ...globalCards, ...focused];
-    }
-
-    function showReward(encounter) {
-      const pool = rewardPool(encounter);
-      const choices = shuffle(pool).slice(0, 3);
-      rewardGrid.innerHTML = choices.map((card, index) => cardMarkup(card.id, index, true)).join("");
-      rewardOverlay.hidden = false;
-      rewardGrid.querySelectorAll("[data-reward]").forEach(button => {
-        button.addEventListener("click", () => {
-          const card = choices[Number(button.dataset.reward)];
-          run.deck.push(card.id);
-          run.discard.push(card.id);
-          rewardOverlay.hidden = true;
-          run.stage += 1;
-          startPlanning();
-        }, { once: true });
-      });
-    }
-
-    function finishBattle(won) {
-      const encounter = encounters.find(item => item.id === run.selectedEncounter);
-      commanderHealth.hidden = true;
-      mobileControls.hidden = true;
-      if (won) {
-        run.wins += 1;
-        combat.state = "reward";
-        battleLog.textContent = "Victory. Choose one card from the recovered cache.";
-        showReward(encounter);
-      } else {
-        run.lives -= 1;
-        if (run.lives <= 0) {
-          endRun();
-          return;
-        }
-        combat.state = "planning";
-        battleLog.textContent = "Defeat. The convoy regroups and attempts the sector again.";
-        startPlanning();
-      }
-      render();
-    }
-
-    function endRun() {
-      combat.state = "gameover";
-      commanderHealth.hidden = true;
-      mobileControls.hidden = true;
-      const best = Math.max(Number(localStorage.getItem("ashfallBest") || 0), run.stage);
-      localStorage.setItem("ashfallBest", String(best));
-      document.querySelector("#finalSector").textContent = run.stage;
-      document.querySelector("#finalWins").textContent = run.wins;
-      document.querySelector("#finalCards").textContent = run.deck.length;
-      gameOverOverlay.hidden = false;
-      updateBest();
-    }
-
-    function updateBest() {
-      document.querySelector("#bestSector").textContent =
-        `Best sector: ${Number(localStorage.getItem("ashfallBest") || 0)}`;
-    }
-
-    function drawBackground() {
-      const sky = context.createLinearGradient(0, 0, 0, height);
-      sky.addColorStop(0, "#4b3830");
-      sky.addColorStop(0.5, "#c47a46");
-      sky.addColorStop(0.51, "#82603f");
-      sky.addColorStop(1, "#3d3028");
-      context.fillStyle = sky;
+    function drawGrid() {
+      context.fillStyle = "#050711";
       context.fillRect(0, 0, width, height);
-
-      context.fillStyle = "rgba(255, 190, 100, 0.5)";
-      context.beginPath();
-      context.arc(width * 0.82, height * 0.16, Math.min(42, width * 0.05), 0, Math.PI * 2);
-      context.fill();
-
-      context.fillStyle = "#49382f";
-      context.beginPath();
-      context.moveTo(0, height * 0.52);
-      context.lineTo(width * 0.14, height * 0.32);
-      context.lineTo(width * 0.3, height * 0.52);
-      context.lineTo(width * 0.53, height * 0.27);
-      context.lineTo(width * 0.7, height * 0.52);
-      context.lineTo(width * 0.88, height * 0.35);
-      context.lineTo(width, height * 0.52);
-      context.closePath();
-      context.fill();
-
-      context.fillStyle = "#6b4b35";
-      context.fillRect(0, height * 0.48, width, height * 0.52);
-      context.strokeStyle = "rgba(35, 24, 18, 0.35)";
-      context.lineWidth = 2;
-      for (let row = 0; row < 5; row += 1) {
-        const y = height * (0.58 + row * 0.085);
+      context.strokeStyle = "rgba(56, 189, 248, 0.07)";
+      context.lineWidth = 1;
+      const size = 48;
+      const offsetX = (elapsed * 8) % size;
+      const offsetY = (elapsed * 5) % size;
+      for (let x = -size + offsetX; x < width + size; x += size) {
         context.beginPath();
-        context.moveTo(0, y);
-        context.quadraticCurveTo(width / 2, y + 12, width, y);
+        context.moveTo(x, 0);
+        context.lineTo(x, height);
         context.stroke();
       }
-
-      context.setLineDash([7, 8]);
-      context.strokeStyle = "rgba(255, 220, 180, 0.38)";
-      context.beginPath();
-      context.moveTo(width / 2, height * 0.48);
-      context.lineTo(width / 2, height);
-      context.stroke();
-      context.setLineDash([]);
-
-      context.fillStyle = "rgba(14, 116, 144, 0.72)";
-      context.fillRect(0, height * 0.39, width * 0.18, 24);
-      context.fillStyle = "rgba(153, 27, 27, 0.72)";
-      context.fillRect(width * 0.82, height * 0.39, width * 0.18, 24);
-      context.fillStyle = "#fff7ed";
-      context.font = "900 10px Inter, sans-serif";
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText("CONVOY", width * 0.09, height * 0.39 + 12);
-      context.fillText("HOSTILES", width * 0.91, height * 0.39 + 12);
-    }
-
-    function drawFighter(fighter) {
-      context.save();
-      context.translate(fighter.x, fighter.y);
-      const depth = Math.max(0.8, Math.min(1.15, 0.8 + (fighter.y - height * 0.42) / height * 0.8));
-      const bob = Math.sin(combat.elapsed * 8 + fighter.x * 0.03) * 1.5;
-      context.scale(depth, depth);
-      context.fillStyle = "rgba(20, 12, 8, 0.35)";
-      context.beginPath();
-      context.ellipse(0, fighter.radius + 7, fighter.radius * 1.1, fighter.radius * 0.34, 0, 0, Math.PI * 2);
-      context.fill();
-      context.translate(0, bob);
-
-      context.strokeStyle = "#231815";
-      context.lineWidth = 3;
-      context.beginPath();
-      context.moveTo(-fighter.radius * 0.35, fighter.radius * 0.55);
-      context.lineTo(-fighter.radius * 0.45, fighter.radius * 1.05);
-      context.moveTo(fighter.radius * 0.35, fighter.radius * 0.55);
-      context.lineTo(fighter.radius * 0.45, fighter.radius * 1.05);
-      context.stroke();
-
-      context.shadowColor = fighter.color;
-      context.shadowBlur = 12;
-      context.fillStyle = fighter.color;
-      context.beginPath();
-      context.arc(0, 0, fighter.radius, 0, Math.PI * 2);
-      context.fill();
-      context.shadowBlur = 0;
-      context.strokeStyle = "#f5e7dc";
-      context.lineWidth = 2;
-      context.stroke();
-      context.fillStyle = "#17110f";
-      context.font = `950 ${fighter.radius}px Inter, sans-serif`;
-      context.fillText(fighter.symbol, 0, 1);
-      if (fighter.rank > 1) {
-        context.fillStyle = "#fde68a";
-        context.font = "900 9px Inter, sans-serif";
-        context.fillText("II", 0, fighter.radius + 14);
+      for (let y = -size + offsetY; y < height + size; y += size) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+        context.stroke();
       }
-      context.fillStyle = "rgba(0,0,0,0.65)";
-      context.fillRect(-fighter.radius, -fighter.radius - 10, fighter.radius * 2, 4);
-      context.fillStyle = fighter.side === "ally" ? "#4ade80" : "#fb7185";
-      context.fillRect(-fighter.radius, -fighter.radius - 10, fighter.radius * 2 * Math.max(0, fighter.health / fighter.maxHealth), 4);
-      context.restore();
     }
 
-    function drawPreview() {
-      const preview = run.warband.length
-        ? run.warband
-        : [{ id: "scrapguard", rank: 1 }, { id: "razor", rank: 1 }, { id: "drone", rank: 1 }];
-      const columns = Math.min(8, preview.length);
-      const rows = Math.ceil(preview.length / columns);
-      const spacing = Math.min(58, width / (columns + 1));
-      preview.forEach((entry, index) => {
-        const row = Math.floor(index / columns);
-        const rowCount = Math.min(columns, preview.length - row * columns);
-        const column = index % columns;
-        const unit = unitById(entry.id);
-        drawFighter({
-          x: width / 2 + (column - (rowCount - 1) / 2) * spacing,
-          y: height * 0.62 + row * Math.min(55, height * 0.11),
-          radius: 12 + entry.rank * 1.5,
-          rank: entry.rank,
-          color: factions[unit.faction].color,
-          symbol: unit.symbol,
-          side: "ally",
-          health: 1,
-          maxHealth: 1
-        });
-      });
+    function drawCircle(entity, color) {
+      context.beginPath();
+      context.arc(entity.x, entity.y, entity.radius, 0, Math.PI * 2);
+      context.fillStyle = color;
+      context.fill();
     }
 
     function draw() {
-      drawBackground();
-      if (combat.state === "battle") {
-        [...combat.allies, ...combat.enemies].sort((a, b) => a.y - b.y).forEach(drawFighter);
-        for (const projectile of combat.projectiles) {
-          context.strokeStyle = projectile.attacker.color;
-          context.lineWidth = 2;
-          context.beginPath();
-          context.moveTo(projectile.x - projectile.vx * 0.025, projectile.y - projectile.vy * 0.025);
-          context.lineTo(projectile.x, projectile.y);
-          context.stroke();
-          context.beginPath();
-          context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
-          context.fillStyle = projectile.attacker.color;
-          context.fill();
+      drawGrid();
+      context.save();
+      if (shake > 0) {
+        context.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+      }
+
+      for (const gem of gems) {
+        context.save();
+        context.translate(gem.x, gem.y);
+        context.rotate(elapsed * 3);
+        context.fillStyle = "#22d3ee";
+        context.shadowColor = "#22d3ee";
+        context.shadowBlur = 12;
+        context.fillRect(-4, -4, 8, 8);
+        context.restore();
+      }
+
+      for (const projectile of projectiles) {
+        context.save();
+        context.shadowColor = "#67e8f9";
+        context.shadowBlur = 12;
+        drawCircle(projectile, "#e0f2fe");
+        context.restore();
+      }
+
+      for (const projectile of enemyProjectiles) {
+        context.save();
+        context.shadowColor = "#fb7185";
+        context.shadowBlur = 10;
+        drawCircle(projectile, "#fb7185");
+        context.restore();
+      }
+
+      for (const enemy of enemies) {
+        context.save();
+        context.shadowColor = enemy.color;
+        context.shadowBlur = enemy.boss ? 25 : 10;
+        drawCircle(enemy, enemy.color);
+        context.strokeStyle = "rgba(255,255,255,0.65)";
+        context.lineWidth = enemy.boss ? 3 : 1;
+        context.stroke();
+        if (enemy.health < enemy.maxHealth) {
+          const barWidth = enemy.radius * 2;
+          context.fillStyle = "rgba(0,0,0,0.6)";
+          context.fillRect(enemy.x - enemy.radius, enemy.y - enemy.radius - 9, barWidth, 4);
+          context.fillStyle = enemy.color;
+          context.fillRect(
+            enemy.x - enemy.radius,
+            enemy.y - enemy.radius - 9,
+            barWidth * Math.max(0, enemy.health / enemy.maxHealth),
+            4
+          );
         }
-        for (const particle of combat.particles) {
-          context.globalAlpha = Math.max(0, particle.life / 0.45);
-          context.fillStyle = particle.color;
-          context.beginPath();
-          context.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
-          context.fill();
-        }
-        context.globalAlpha = 1;
-      } else {
-        drawPreview();
+        context.restore();
+      }
+
+      context.save();
+      context.globalAlpha = player.invulnerable > 0 && Math.floor(elapsed * 20) % 2 ? 0.35 : 1;
+      context.shadowColor = "#22d3ee";
+      context.shadowBlur = 20;
+      drawCircle(player, "#67e8f9");
+      context.strokeStyle = "#ffffff";
+      context.lineWidth = 2;
+      context.stroke();
+      context.restore();
+
+      for (const particle of particles) {
+        context.globalAlpha = Math.max(0, particle.life / particle.maxLife);
+        context.fillStyle = particle.color;
+        context.fillRect(particle.x - 2, particle.y - 2, 4, 4);
+      }
+      context.globalAlpha = 1;
+      context.restore();
+
+      if (state === "playing" && wave % activeMode().bossEvery === 0 && enemies.some(enemy => enemy.boss)) {
+        context.fillStyle = "rgba(244,114,182,0.9)";
+        context.font = "900 12px Inter, sans-serif";
+        context.textAlign = "center";
+        context.fillText("BOSS WAVE", width / 2, 92);
+      }
+    }
+
+    function endRun() {
+      state = "gameover";
+      const best = Math.max(Number(localStorage.getItem("maxGameBest") || 0), elapsed);
+      localStorage.setItem("maxGameBest", String(best));
+      const baseChests = Math.max(1, Math.floor((wave + 1) / 3));
+      const earned = Math.ceil(baseChests * activeMode().chestMultiplier);
+      meta.chests += earned;
+      saveMeta();
+      document.querySelector("#finalTime").textContent = formatTime(elapsed);
+      document.querySelector("#finalWave").textContent = wave;
+      document.querySelector("#finalKills").textContent = kills;
+      document.querySelector("#earnedChests").textContent = earned;
+      gameOverOverlay.hidden = false;
+    }
+
+    function showHub() {
+      state = "title";
+      gameOverOverlay.hidden = true;
+      pauseOverlay.hidden = true;
+      upgradeOverlay.hidden = true;
+      titleOverlay.hidden = false;
+      chestResult.textContent = "";
+      renderHub();
+    }
+
+    function togglePause() {
+      if (state === "playing") {
+        state = "paused";
+        pauseOverlay.hidden = false;
+      } else if (state === "paused") {
+        state = "playing";
+        pauseOverlay.hidden = true;
+        lastFrame = performance.now();
       }
     }
 
     function frame(now) {
       const delta = Math.min(0.033, (now - lastFrame) / 1000);
       lastFrame = now;
-      if (combat.state === "battle") updateBattle(delta);
+      if (state === "playing") update(delta);
       draw();
       requestAnimationFrame(frame);
     }
 
-    mulliganButton.addEventListener("click", mulligan);
-    deployButton.addEventListener("click", startBattle);
-    document.querySelector("#startButton").addEventListener("click", () => {
-      titleOverlay.hidden = true;
-      resetRun();
-    });
-    document.querySelector("#restartButton").addEventListener("click", () => {
-      gameOverOverlay.hidden = true;
-      resetRun();
-    });
+    function updateBestRun() {
+      const best = Number(localStorage.getItem("maxGameBest") || 0);
+      document.querySelector("#bestRun").textContent = `Best survival: ${formatTime(best)}`;
+    }
+
+    window.addEventListener("resize", resize);
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
@@ -1665,9 +1607,13 @@
       }
       keys.add(key);
       if (key === " ") dash();
+      if (key === "escape") togglePause();
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
-    window.addEventListener("blur", () => keys.clear());
+    window.addEventListener("blur", () => {
+      keys.clear();
+      if (state === "playing") togglePause();
+    });
 
     let joystickPointer = null;
     function updateJoystick(event) {
@@ -1704,15 +1650,20 @@
     }
     joystick.addEventListener("pointerup", releaseJoystick);
     joystick.addEventListener("pointercancel", releaseJoystick);
+
     dashButton.addEventListener("pointerdown", event => {
       event.preventDefault();
       dash();
     });
-    window.addEventListener("resize", resizeCanvas);
+    pauseButton.addEventListener("click", togglePause);
+    document.querySelector("#resumeButton").addEventListener("click", togglePause);
+    document.querySelector("#startButton").addEventListener("click", startRun);
+    document.querySelector("#restartButton").addEventListener("click", showHub);
+    openChestButton.addEventListener("click", openChest);
 
-    updateBest();
-    resizeCanvas();
-    render();
+    resize();
+    renderHub();
+    updateHud();
     requestAnimationFrame(frame);
   </script>
 </body>
