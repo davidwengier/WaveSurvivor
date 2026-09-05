@@ -756,6 +756,60 @@
       box-shadow: 0 0.9rem 2.4rem rgb(8 145 178 / 34%);
     }
 
+    .secondary {
+      min-width: 12rem;
+      padding: 0.75rem 1.2rem;
+      border: 1px solid rgb(255 255 255 / 16%);
+      border-radius: 0.7rem;
+      background: rgb(255 255 255 / 6%);
+      color: #dbeafe;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .secondary:hover {
+      border-color: rgb(103 232 249 / 45%);
+      background: rgb(34 211 238 / 10%);
+    }
+
+    .overlay-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.65rem;
+      margin-top: 1.1rem;
+    }
+
+    .milestone-reward {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid rgb(251 191 36 / 28%);
+      border-radius: 0.8rem;
+      background:
+        radial-gradient(circle at 50% 0%, rgb(251 191 36 / 14%), transparent 70%),
+        rgb(24 18 15 / 60%);
+    }
+
+    .milestone-reward strong,
+    .milestone-reward span {
+      display: block;
+    }
+
+    .milestone-reward strong {
+      color: #fde68a;
+      font-size: clamp(2rem, 8vw, 3.8rem);
+      line-height: 1;
+    }
+
+    .milestone-reward span {
+      margin-top: 0.35rem;
+      color: #cbd5e1;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
     .upgrade-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1017,7 +1071,7 @@
           <p>Runs award chests. Every chest contains a randomized equipment drop and bonus scrap.</p>
           <button id="openChestButton" class="chest-button">
             <strong>Open chest</strong>
-            <span id="chestHint">Contains equipment + 3-8 scrap</span>
+            <span id="chestHint">Contains equipment + 5-10 scrap</span>
           </button>
           <button id="buyChestButton" class="buy-chest-button">Buy chest - 25 scrap</button>
           <div id="chestResult" class="chest-result"></div>
@@ -1043,7 +1097,7 @@
         <div class="loot-heading">
           <div>
             <h2>Core skill tree</h2>
-            <p>Spend skill cores earned from deeper runs. Advanced nodes require their linked core skill.</p>
+            <p>Spend skill cores and scrap earned from runs. Advanced nodes require their linked core skill.</p>
           </div>
           <strong id="skillPointLabel">1 core available</strong>
         </div>
@@ -1077,20 +1131,40 @@
       <div class="eyebrow">Run paused</div>
       <h2>Take a breath</h2>
       <p>The arena is frozen until you are ready.</p>
-      <button id="resumeButton" class="primary">Resume</button>
+      <div class="overlay-actions">
+        <button id="resumeButton" class="primary">Resume</button>
+        <button id="lobbyButton" class="secondary">Return to lobby</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="milestoneOverlay" class="overlay" hidden>
+    <div class="panel">
+      <div class="eyebrow">Wave goal cleared</div>
+      <h2 id="milestoneHeading">Expedition complete</h2>
+      <p id="milestoneCopy">Your current rewards are secured. Return safely or push deeper for a larger multiplier.</p>
+      <div class="milestone-reward">
+        <strong id="milestoneMultiplier">x1</strong>
+        <span>Current reward multiplier</span>
+      </div>
+      <div class="overlay-actions">
+        <button id="claimRunButton" class="primary">Claim rewards</button>
+        <button id="continueRunButton" class="secondary">Continue for x2</button>
+      </div>
     </div>
   </div>
 
   <div id="gameOverOverlay" class="overlay" hidden>
     <div class="panel">
-      <div class="eyebrow">Run over</div>
-      <h2>The void wins this time</h2>
+      <div id="finalEyebrow" class="eyebrow">Run over</div>
+      <h2 id="finalHeading">The void wins this time</h2>
       <div class="run-summary">
         <div><strong id="finalTime">0:00</strong><span>Survived</span></div>
         <div><strong id="finalWave">1</strong><span>Wave</span></div>
         <div><strong id="finalKills">0</strong><span>Kills</span></div>
         <div><strong id="earnedChests">0</strong><span>Chests</span></div>
         <div><strong id="earnedSkillPoints">0</strong><span>Skill cores</span></div>
+        <div><strong id="finalMultiplier">x1</strong><span>Reward multiplier</span></div>
       </div>
       <button id="restartButton" class="primary">Return to safehouse</button>
     </div>
@@ -1109,6 +1183,7 @@
     const titleOverlay = document.querySelector("#titleOverlay");
     const upgradeOverlay = document.querySelector("#upgradeOverlay");
     const pauseOverlay = document.querySelector("#pauseOverlay");
+    const milestoneOverlay = document.querySelector("#milestoneOverlay");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
     const upgradeGrid = document.querySelector("#upgradeGrid");
     const pauseButton = document.querySelector("#pauseButton");
@@ -1150,6 +1225,8 @@
     let pendingLevels = 0;
     let shake = 0;
     let waveBannerTimer = 0;
+    let rewardMultiplier = 1;
+    let runRewardClaimed = false;
 
     const gameModes = {
       survival: {
@@ -1160,6 +1237,7 @@
         spawnRate: 1,
         enemyScale: 1,
         bossEvery: 5,
+        goalWaves: 5,
         chestMultiplier: 1
       },
       rush: {
@@ -1170,6 +1248,7 @@
         spawnRate: 1.3,
         enemyScale: 0.9,
         bossEvery: 5,
+        goalWaves: 8,
         chestMultiplier: 1.5
       },
       bossHunt: {
@@ -1180,6 +1259,7 @@
         spawnRate: 0.72,
         enemyScale: 1.12,
         bossEvery: 1,
+        goalWaves: 3,
         chestMultiplier: 2
       }
     };
@@ -1706,6 +1786,10 @@
       return 10 + level * 15;
     }
 
+    function skillCost(skill, level) {
+      return 5 + level * 5 + (skill.requires ? 5 : 0);
+    }
+
     function totalEquippedStats() {
       const totals = {};
       for (const item of equippedLoot()) {
@@ -1727,6 +1811,7 @@
         const level = meta.skills[skill.id];
         const unlocked = skillUnlocked(skill);
         const maxed = level >= skill.maxLevel;
+        const cost = skillCost(skill, level);
         const requirement = skill.requires
           ? skillDefinitions.find(candidate => candidate.id === skill.requires.id)
           : null;
@@ -1734,14 +1819,14 @@
           ? `Requires ${requirement.name} level ${skill.requires.level}`
           : maxed
             ? "Maximum level"
-            : `Level ${level}/${skill.maxLevel} - spend 1 core`;
+            : `Level ${level}/${skill.maxLevel} - 1 core + ${cost} scrap`;
         const shownLevel = maxed ? level : level + 1;
         return `
           <button
             class="skill-card ${!unlocked ? "locked" : ""} ${maxed ? "maxed" : ""}"
             data-skill="${skill.id}"
             style="--accent:${skill.accent}"
-            ${!unlocked || maxed || meta.skillPoints < 1 ? "disabled" : ""}
+            ${!unlocked || maxed || meta.skillPoints < 1 || meta.scrap < cost ? "disabled" : ""}
           >
             <div class="skill-icon">${iconSvg(skill.icon)}</div>
             <strong>${skill.name}</strong>
@@ -1758,7 +1843,10 @@
     function buySkill(id) {
       const skill = skillDefinitions.find(candidate => candidate.id === id);
       if (!skill || !skillUnlocked(skill) || meta.skillPoints < 1 || meta.skills[id] >= skill.maxLevel) return;
+      const cost = skillCost(skill, meta.skills[id]);
+      if (meta.scrap < cost) return;
       meta.skillPoints -= 1;
+      meta.scrap -= cost;
       meta.skills[id] += 1;
       chestResult.textContent = `${skill.name} increased to level ${meta.skills[id]}.`;
       saveMeta();
@@ -1781,7 +1869,7 @@
       buyChestButton.textContent = `Buy chest - ${chestCost} scrap`;
       const inventoryFull = meta.inventory.length >= inventoryLimit;
       openChestButton.disabled = meta.chests < 1 || inventoryFull;
-      chestHint.textContent = inventoryFull ? "Vault full - salvage an item first" : "Contains equipment + 3-8 scrap";
+      chestHint.textContent = inventoryFull ? "Vault full - salvage an item first" : "Contains equipment + 5-10 scrap";
       gearGrid.innerHTML = gearDefinitions.map(gear => {
         const level = meta.gear[gear.id];
         const cost = gearCost(level);
@@ -1797,7 +1885,7 @@
       modeGrid.innerHTML = Object.entries(gameModes).map(([id, mode]) => `
         <button class="mode-card ${meta.selectedMode === id ? "active" : ""}" data-mode="${id}">
           <strong>${mode.name}</strong>
-          <span>${mode.description}</span>
+          <span>${mode.description}<br>Goal: clear ${mode.goalWaves} waves.</span>
           <em>${mode.reward}</em>
         </button>
       `).join("");
@@ -1820,7 +1908,7 @@
     function openChest() {
       if (meta.chests < 1 || meta.inventory.length >= inventoryLimit) return;
       meta.chests -= 1;
-      const scrap = 3 + Math.floor(Math.random() * 6);
+      const scrap = 5 + Math.floor(Math.random() * 6);
       const item = createLoot();
       meta.scrap += scrap;
       meta.inventory.push(item);
@@ -1883,6 +1971,8 @@
       spawnTimer = 0.4;
       pendingLevels = 0;
       waveBannerTimer = 1.8;
+      rewardMultiplier = 1;
+      runRewardClaimed = false;
       Object.assign(player, {
         x: width / 2,
         y: height / 2,
@@ -1915,6 +2005,7 @@
       titleOverlay.hidden = true;
       gameOverOverlay.hidden = true;
       pauseOverlay.hidden = true;
+      milestoneOverlay.hidden = true;
       upgradeOverlay.hidden = true;
       state = "playing";
       if (activeMode().bossEvery === 1) {
@@ -1935,9 +2026,34 @@
       xpFill.style.width = `${player.xp / player.xpNeeded * 100}%`;
       xpLabel.textContent = `LEVEL ${player.level} - ${player.xp} / ${player.xpNeeded}`;
       timeDisplay.textContent = formatTime(elapsed);
-      waveDisplay.textContent = wave;
+      const goalWaves = activeMode().goalWaves;
+      const nextGoal = Math.ceil(wave / goalWaves) * goalWaves;
+      waveDisplay.textContent = `${wave} / ${nextGoal}`;
       killsDisplay.textContent = kills;
       dashButton.classList.toggle("cooldown", player.dashTimer > 0);
+    }
+
+    function beginCurrentWave() {
+      waveBannerTimer = 2.2;
+      burst(width / 2, height / 2, "#67e8f9", 28);
+      if (wave % activeMode().bossEvery === 0) spawnEnemy("boss");
+    }
+
+    function showMilestone(completedWaves) {
+      rewardMultiplier = completedWaves / activeMode().goalWaves;
+      state = "milestone";
+      milestoneOverlay.hidden = false;
+      document.querySelector("#milestoneHeading").textContent = `${completedWaves} waves cleared`;
+      document.querySelector("#milestoneMultiplier").textContent = `x${rewardMultiplier}`;
+      document.querySelector("#claimRunButton").textContent = `Claim x${rewardMultiplier} rewards`;
+      document.querySelector("#continueRunButton").textContent = `Continue for x${rewardMultiplier + 1}`;
+    }
+
+    function continueRun() {
+      milestoneOverlay.hidden = true;
+      state = "playing";
+      beginCurrentWave();
+      lastFrame = performance.now();
     }
 
     function randomEdgePosition() {
@@ -2227,9 +2343,13 @@
       const nextWave = Math.floor(elapsed / mode.waveSeconds) + 1;
       if (nextWave !== wave) {
         wave = nextWave;
-        waveBannerTimer = 2.2;
-        burst(width / 2, height / 2, "#67e8f9", 28);
-        if (wave % mode.bossEvery === 0) spawnEnemy("boss");
+        const completedWaves = wave - 1;
+        if (completedWaves > 0 && completedWaves % mode.goalWaves === 0) {
+          showMilestone(completedWaves);
+          updateHud();
+          return;
+        }
+        beginCurrentWave();
       }
 
       const move = movementVector();
@@ -2631,28 +2751,48 @@
       }
     }
 
-    function endRun() {
+    function finishRun(completed) {
+      if (runRewardClaimed) return;
+      runRewardClaimed = true;
       state = "gameover";
+      milestoneOverlay.hidden = true;
       const best = Math.max(Number(localStorage.getItem("maxGameBest") || 0), elapsed);
       localStorage.setItem("maxGameBest", String(best));
-      const baseChests = Math.max(1, Math.floor((wave + 1) / 3));
-      const earned = Math.ceil(baseChests * activeMode().chestMultiplier);
-      const earnedSkills = Math.floor(wave / 2);
+      const mode = activeMode();
+      const completedWaves = Math.max(1, wave - 1);
+      const reachedGoal = completedWaves >= mode.goalWaves;
+      const baseChests = reachedGoal
+        ? Math.max(1, Math.ceil(mode.goalWaves / 3))
+        : Math.max(1, Math.floor((completedWaves + 1) / 3));
+      const baseSkills = reachedGoal
+        ? Math.max(1, Math.floor(mode.goalWaves / 2))
+        : Math.floor(completedWaves / 2);
+      const earned = Math.ceil(baseChests * mode.chestMultiplier * rewardMultiplier);
+      const earnedSkills = baseSkills * rewardMultiplier;
       meta.chests += earned;
       meta.skillPoints += earnedSkills;
       saveMeta();
+      document.querySelector("#finalEyebrow").textContent = completed ? "Rewards secured" : "Run over";
+      document.querySelector("#finalHeading").textContent = completed ? "Expedition complete" : "The void wins this time";
       document.querySelector("#finalTime").textContent = formatTime(elapsed);
-      document.querySelector("#finalWave").textContent = wave;
+      document.querySelector("#finalWave").textContent = completedWaves;
       document.querySelector("#finalKills").textContent = kills;
       document.querySelector("#earnedChests").textContent = earned;
       document.querySelector("#earnedSkillPoints").textContent = earnedSkills;
+      document.querySelector("#finalMultiplier").textContent = `x${rewardMultiplier}`;
       gameOverOverlay.hidden = false;
     }
 
+    function endRun() {
+      finishRun(false);
+    }
+
     function showHub() {
+      resetRun();
       state = "title";
       gameOverOverlay.hidden = true;
       pauseOverlay.hidden = true;
+      milestoneOverlay.hidden = true;
       upgradeOverlay.hidden = true;
       titleOverlay.hidden = false;
       chestResult.textContent = "";
@@ -2741,6 +2881,9 @@
     });
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
+    document.querySelector("#lobbyButton").addEventListener("click", showHub);
+    document.querySelector("#claimRunButton").addEventListener("click", () => finishRun(true));
+    document.querySelector("#continueRunButton").addEventListener("click", continueRun);
     document.querySelector("#startButton").addEventListener("click", startRun);
     document.querySelector("#restartButton").addEventListener("click", showHub);
     openChestButton.addEventListener("click", openChest);
