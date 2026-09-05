@@ -139,6 +139,29 @@
       font-size: 0.95rem;
     }
 
+    .power-status {
+      position: fixed;
+      top: 5.1rem;
+      left: 50%;
+      z-index: 3;
+      padding: 0.45rem 0.8rem;
+      border: 1px solid rgb(250 204 21 / 38%);
+      border-radius: 999px;
+      background: rgb(15 12 8 / 82%);
+      color: #fde68a;
+      font-size: 0.68rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transform: translateX(-50%);
+      backdrop-filter: blur(0.6rem);
+      pointer-events: none;
+    }
+
+    .power-status[hidden] {
+      display: none;
+    }
+
     .overlay {
       position: fixed;
       inset: 0;
@@ -1067,11 +1090,16 @@
 
       .stats {
         justify-content: stretch;
+        flex-wrap: wrap;
       }
 
       .stat {
         min-width: 0;
         flex: 1;
+      }
+
+      .power-status {
+        top: 7.4rem;
       }
 
       .controls-copy,
@@ -1132,8 +1160,11 @@
       <div class="stat"><small>Time</small><strong id="time">0:00</strong></div>
       <div class="stat"><small>Wave</small><strong id="wave">1</strong></div>
       <div class="stat"><small>Kills</small><strong id="kills">0</strong></div>
+      <div class="stat"><small>Combo</small><strong id="combo">x0</strong></div>
     </div>
   </div>
+
+  <div id="powerStatus" class="power-status" hidden></div>
 
   <button id="pauseButton" class="pause" aria-label="Pause game">II</button>
 
@@ -1200,7 +1231,7 @@
         <div class="control-card"><strong>Move</strong>WASD, arrow keys, or joystick</div>
         <div class="control-card"><strong>Dash</strong>Space or the Dash button</div>
         <div class="control-card"><strong>Attack</strong>Automatic targeting</div>
-        <div class="control-card"><strong>Supplies</strong>Break gold caches for energy and recovery items</div>
+        <div class="control-card"><strong>Supplies</strong>Break gold caches for repair, shield, or overdrive pickups</div>
       </div>
       <button id="startButton" class="primary">Start run</button>
       <p id="bestRun">Best survival: 0:00</p>
@@ -1251,6 +1282,7 @@
         <div><strong id="finalTime">0:00</strong><span>Survived</span></div>
         <div><strong id="finalWave">1</strong><span>Wave</span></div>
         <div><strong id="finalKills">0</strong><span>Kills</span></div>
+        <div><strong id="finalCombo">0</strong><span>Best combo</span></div>
         <div><strong id="earnedChests">0</strong><span>Chests</span></div>
         <div><strong id="finalMultiplier">x1</strong><span>Reward multiplier</span></div>
       </div>
@@ -1268,6 +1300,8 @@
     const timeDisplay = document.querySelector("#time");
     const waveDisplay = document.querySelector("#wave");
     const killsDisplay = document.querySelector("#kills");
+    const comboDisplay = document.querySelector("#combo");
+    const powerStatus = document.querySelector("#powerStatus");
     const titleOverlay = document.querySelector("#titleOverlay");
     const upgradeOverlay = document.querySelector("#upgradeOverlay");
     const pauseOverlay = document.querySelector("#pauseOverlay");
@@ -1309,6 +1343,9 @@
     let elapsed = 0;
     let wave = 1;
     let kills = 0;
+    let combo = 0;
+    let bestCombo = 0;
+    let comboTimer = 0;
     let spawnTimer = 0;
     let supplyTimer = 0;
     let pendingLevels = 0;
@@ -2005,6 +2042,7 @@
       dashCooldown: 2.5,
       dashTimer: 0,
       invulnerable: 0,
+      overdriveTimer: 0,
       facing: -Math.PI / 2,
       moving: false
     };
@@ -2322,6 +2360,9 @@
       elapsed = 0;
       wave = 1;
       kills = 0;
+      combo = 0;
+      bestCombo = 0;
+      comboTimer = 0;
       spawnTimer = 0.4;
       supplyTimer = 14;
       pendingLevels = 0;
@@ -2350,6 +2391,7 @@
         dashCooldown: 2.5 / (1 + meta.skills.phaseDrive * 0.05 + (loot.dashCooldown || 0) / 100),
         dashTimer: 0,
         invulnerable: 0,
+        overdriveTimer: 0,
         facing: -Math.PI / 2,
         moving: false
       });
@@ -2383,6 +2425,12 @@
       const nextGoal = Math.ceil(wave / goalWaves) * goalWaves;
       waveDisplay.textContent = `${wave} / ${nextGoal}`;
       killsDisplay.textContent = kills;
+      comboDisplay.textContent = `x${combo}`;
+      const activePowers = [];
+      if (player.invulnerable > 1) activePowers.push(`Shield ${player.invulnerable.toFixed(1)}s`);
+      if (player.overdriveTimer > 0) activePowers.push(`Overdrive ${player.overdriveTimer.toFixed(1)}s`);
+      powerStatus.textContent = activePowers.join("  |  ");
+      powerStatus.hidden = activePowers.length === 0;
       dashButton.classList.toggle("cooldown", player.dashTimer > 0);
     }
 
@@ -2444,11 +2492,12 @@
     }
 
     function dropPickup(x, y) {
+      const roll = Math.random();
       pickups.push({
         x,
         y,
         radius: 10,
-        type: Math.random() < 0.68 ? "repair" : "shield",
+        type: roll < 0.55 ? "repair" : roll < 0.82 ? "shield" : "overdrive",
         phase: Math.random() * Math.PI * 2
       });
     }
@@ -2468,8 +2517,8 @@
       burst(crate.x, crate.y, "#fbbf24", 22);
     }
 
-    function spawnEnemy(type) {
-      const position = randomEdgePosition();
+    function spawnEnemy(type, spawnPosition = null, allowElite = true) {
+      const position = spawnPosition || randomEdgePosition();
       const mode = activeMode();
       const scale = (1 + wave * 0.12) * mode.enemyScale;
       const enemy = {
@@ -2517,6 +2566,32 @@
           xp: 8,
           shootTimer: 1.5
         });
+      } else if (type === "charger") {
+        Object.assign(enemy, {
+          radius: 15,
+          speed: (54 + wave * 1.5) * (mode.enemySpeed || 1),
+          health: 52 * scale,
+          maxHealth: 52 * scale,
+          damage: 16 + wave * 0.8,
+          color: "#fb923c",
+          xp: 10,
+          chargeCooldown: 1.8 + Math.random(),
+          chargeWindup: 0,
+          chargeTime: 0,
+          chargeVx: 0,
+          chargeVy: 0
+        });
+      } else if (type === "splitter") {
+        Object.assign(enemy, {
+          radius: 19,
+          speed: (52 + wave * 1.8) * (mode.enemySpeed || 1),
+          health: 64 * scale,
+          maxHealth: 64 * scale,
+          damage: 13 + wave * 0.7,
+          color: "#4ade80",
+          xp: 14,
+          splitter: true
+        });
       } else if (type === "boss") {
         Object.assign(enemy, {
           radius: 42,
@@ -2531,7 +2606,7 @@
         });
       }
       enemy.damage *= mode.enemyDamage || 1;
-      if (!enemy.boss && wave >= 3 && Math.random() < Math.min(0.05 + wave * 0.006, 0.16)) {
+      if (allowElite && !enemy.boss && wave >= 3 && Math.random() < Math.min(0.05 + wave * 0.006, 0.16)) {
         enemy.elite = true;
         enemy.radius *= 1.22;
         enemy.health *= 2.6;
@@ -2546,19 +2621,24 @@
     function chooseEnemyType() {
       const roll = Math.random();
       if (activeMode().enemyMix === "swarm") {
-        if (wave >= 4 && roll < 0.08) return "tank";
-        if (wave >= 2 && roll < 0.72) return "swift";
+        if (wave >= 4 && roll < 0.16) return "splitter";
+        if (wave >= 3 && roll < 0.3) return "charger";
+        if (wave >= 4 && roll < 0.38) return "tank";
+        if (wave >= 2 && roll < 0.8) return "swift";
         return "grunt";
       }
       if (activeMode().enemyMix === "shooters") {
         if (wave >= 3 && roll < 0.18) return "tank";
         if (wave >= 2 && roll < 0.68) return "shooter";
-        if (roll < 0.82) return "swift";
+        if (wave >= 3 && roll < 0.8) return "charger";
+        if (roll < 0.9) return "swift";
         return "grunt";
       }
-      if (wave >= 4 && roll < 0.13) return "shooter";
-      if (wave >= 3 && roll < 0.3) return "tank";
-      if (wave >= 2 && roll < 0.55) return "swift";
+      if (wave >= 5 && roll < 0.1) return "splitter";
+      if (wave >= 4 && roll < 0.22) return "shooter";
+      if (wave >= 3 && roll < 0.38) return "charger";
+      if (wave >= 3 && roll < 0.52) return "tank";
+      if (wave >= 2 && roll < 0.72) return "swift";
       return "grunt";
     }
 
@@ -2711,14 +2791,30 @@
       const enemy = enemies[index];
       enemies.splice(index, 1);
       kills += 1;
+      combo = comboTimer > 0 ? combo + 1 : 1;
+      bestCombo = Math.max(bestCombo, combo);
+      comboTimer = 3;
       const gemCount = enemy.boss ? 12 : enemy.elite ? 5 : 1;
       for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
         gems.push({
           x: enemy.x + (Math.random() - 0.5) * enemy.radius,
           y: enemy.y + (Math.random() - 0.5) * enemy.radius,
           radius: 5,
-          value: Math.ceil(enemy.xp / gemCount)
+          value: Math.ceil(enemy.xp * (1 + Math.min(10, combo) * 0.04) / gemCount)
         });
+      }
+      if (enemy.splitter) {
+        for (let child = 0; child < 2; child += 1) {
+          spawnEnemy("swift", {
+            x: enemy.x + (child ? 12 : -12),
+            y: enemy.y + (Math.random() - 0.5) * 18
+          }, false);
+          const spawned = enemies[enemies.length - 1];
+          spawned.radius *= 0.75;
+          spawned.health *= 0.55;
+          spawned.maxHealth = spawned.health;
+          spawned.xp = 2;
+        }
       }
       if (enemy.elite && Math.random() < 0.55) dropPickup(enemy.x, enemy.y);
       burst(enemy.x, enemy.y, enemy.color, enemy.boss ? 36 : 9);
@@ -2814,10 +2910,13 @@
       player.fireTimer -= delta;
       player.dashTimer = Math.max(0, player.dashTimer - delta);
       player.invulnerable = Math.max(0, player.invulnerable - delta);
+      player.overdriveTimer = Math.max(0, player.overdriveTimer - delta);
+      comboTimer = Math.max(0, comboTimer - delta);
+      if (comboTimer <= 0) combo = 0;
 
       if (player.fireTimer <= 0) {
         fireWeapon();
-        player.fireTimer = player.fireRate;
+        player.fireTimer = player.fireRate * (player.overdriveTimer > 0 ? 0.45 : 1);
       }
 
       spawnTimer -= delta;
@@ -2836,7 +2935,27 @@
         const dy = player.y - enemy.y;
         const distance = Math.max(1, Math.hypot(dx, dy));
         const preferredDistance = enemy.shootTimer > 0 && !enemy.boss ? 210 : 0;
-        if (distance > preferredDistance) {
+        if (enemy.type === "charger" && enemy.chargeTime > 0) {
+          enemy.x += enemy.chargeVx * delta;
+          enemy.y += enemy.chargeVy * delta;
+          enemy.chargeTime -= delta;
+        } else if (enemy.type === "charger" && enemy.chargeWindup > 0) {
+          enemy.chargeWindup -= delta;
+          if (enemy.chargeWindup <= 0) {
+            enemy.chargeTime = 0.55;
+            enemy.chargeVx = dx / distance * 330;
+            enemy.chargeVy = dy / distance * 330;
+            enemy.chargeCooldown = 2.4;
+          }
+        } else if (enemy.type === "charger") {
+          enemy.chargeCooldown -= delta;
+          if (enemy.chargeCooldown <= 0) {
+            enemy.chargeWindup = 0.55;
+          } else {
+            enemy.x += dx / distance * enemy.speed * delta;
+            enemy.y += dy / distance * enemy.speed * delta;
+          }
+        } else if (distance > preferredDistance) {
           enemy.x += dx / distance * enemy.speed * delta;
           enemy.y += dy / distance * enemy.speed * delta;
         }
@@ -2942,9 +3061,12 @@
         if (pickup.type === "repair") {
           player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.28);
           burst(pickup.x, pickup.y, "#4ade80", 16);
-        } else {
+        } else if (pickup.type === "shield") {
           player.invulnerable = Math.max(player.invulnerable, 3);
           burst(pickup.x, pickup.y, "#60a5fa", 16);
+        } else {
+          player.overdriveTimer = Math.max(player.overdriveTimer, 8);
+          burst(pickup.x, pickup.y, "#fbbf24", 20);
         }
         pickups.splice(index, 1);
       }
@@ -3276,7 +3398,8 @@
 
     function drawPickup(pickup) {
       const repair = pickup.type === "repair";
-      const color = repair ? "#4ade80" : "#60a5fa";
+      const shield = pickup.type === "shield";
+      const color = repair ? "#4ade80" : shield ? "#60a5fa" : "#fbbf24";
       context.save();
       context.translate(pickup.x, pickup.y + Math.sin(pickup.phase) * 3);
       context.rotate(pickup.phase * 0.35);
@@ -3285,7 +3408,7 @@
       context.fillStyle = "rgba(7, 12, 24, 0.92)";
       context.strokeStyle = color;
       context.lineWidth = 2;
-      polygonPath(10, repair ? 6 : 8, Math.PI / 8);
+      polygonPath(10, repair ? 6 : shield ? 8 : 4, Math.PI / 8);
       context.fill();
       context.stroke();
       context.strokeStyle = "#ffffff";
@@ -3296,8 +3419,15 @@
         context.lineTo(4, 0);
         context.moveTo(0, -4);
         context.lineTo(0, 4);
-      } else {
+      } else if (shield) {
         context.arc(0, 0, 4, 0, Math.PI * 2);
+      } else {
+        context.moveTo(2, -6);
+        context.lineTo(-3, 1);
+        context.lineTo(1, 1);
+        context.lineTo(-2, 6);
+        context.lineTo(5, -2);
+        context.lineTo(1, -2);
       }
       context.stroke();
       context.restore();
@@ -3313,6 +3443,16 @@
       context.fillStyle = enemy.color;
       context.strokeStyle = "rgba(255,255,255,0.75)";
       context.lineWidth = enemy.boss ? 3 : 1.5;
+
+      if (enemy.type === "charger" && enemy.chargeWindup > 0) {
+        context.strokeStyle = `rgba(251, 146, 60, ${0.35 + Math.sin(elapsed * 24) * 0.2})`;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(enemy.radius, 0);
+        context.lineTo(Math.min(260, Math.hypot(player.x - enemy.x, player.y - enemy.y)), 0);
+        context.stroke();
+        context.strokeStyle = "rgba(255,255,255,0.85)";
+      }
 
       if (enemy.elite) {
         context.save();
@@ -3332,6 +3472,10 @@
         polygonPath(enemy.radius, 4, Math.PI / 4);
       } else if (enemy.type === "shooter") {
         polygonPath(enemy.radius, 6, Math.PI / 6);
+      } else if (enemy.type === "charger") {
+        polygonPath(enemy.radius + 2, 4, 0);
+      } else if (enemy.type === "splitter") {
+        polygonPath(enemy.radius, 8, Math.PI / 8);
       } else if (enemy.boss) {
         polygonPath(enemy.radius, 10, elapsed * 0.18);
       } else {
@@ -3435,6 +3579,20 @@
       context.beginPath();
       context.ellipse(5, 0, 4, 2.5, 0, 0, Math.PI * 2);
       context.fill();
+
+      if (player.overdriveTimer > 0) {
+        context.save();
+        context.rotate(-player.facing + elapsed * 4);
+        context.strokeStyle = "#fbbf24";
+        context.globalAlpha *= 0.75;
+        context.lineWidth = 2;
+        for (let arc = 0; arc < 3; arc += 1) {
+          context.beginPath();
+          context.arc(0, 0, player.radius + 5, arc * 2.1, arc * 2.1 + 0.75);
+          context.stroke();
+        }
+        context.restore();
+      }
 
       if (player.armor > 0 || player.invulnerable > 1) {
         context.rotate(-player.facing);
@@ -3564,6 +3722,7 @@
       document.querySelector("#finalTime").textContent = formatTime(elapsed);
       document.querySelector("#finalWave").textContent = completedWaves;
       document.querySelector("#finalKills").textContent = kills;
+      document.querySelector("#finalCombo").textContent = bestCombo;
       document.querySelector("#earnedChests").textContent = earned;
       document.querySelector("#finalMultiplier").textContent = `x${rewardMultiplier}`;
       gameOverOverlay.hidden = !showSummary;
