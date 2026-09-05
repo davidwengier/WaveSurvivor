@@ -1315,7 +1315,7 @@
         <div class="control-card"><strong>Supplies</strong>Break gold caches for repair, shield, or overdrive pickups</div>
       </div>
       <button id="startButton" class="primary">Start run</button>
-      <p id="bestRun">Best survival: 0:00</p>
+      <p id="bestRun">Best run: 0:00</p>
     </div>
   </div>
 
@@ -1909,10 +1909,26 @@
     function loadMeta() {
       const storageKey = "waveSurvivorMeta";
       const legacyStorageKey = "maxGameMeta";
-      const saved = localStorage.getItem(storageKey) ?? localStorage.getItem(legacyStorageKey);
-      if (!saved) return structuredClone(defaultMeta);
+      function parseStoredMeta(key) {
+        const value = localStorage.getItem(key);
+        if (!value) return null;
+        try {
+          const parsed = JSON.parse(value);
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new TypeError("Progression data must be an object.");
+          }
+          return parsed;
+        } catch (error) {
+          console.warn(`Ignoring invalid progression data in ${key}.`, error);
+          localStorage.removeItem(key);
+          return null;
+        }
+      }
+
+      const currentMeta = parseStoredMeta(storageKey);
+      const parsed = currentMeta ?? parseStoredMeta(legacyStorageKey);
+      if (!parsed) return structuredClone(defaultMeta);
       try {
-        const parsed = JSON.parse(saved);
         const inventory = Array.isArray(parsed.inventory)
           ? parsed.inventory.map(normalizeLootItem).filter(Boolean).slice(0, inventoryLimit)
           : [];
@@ -1941,13 +1957,12 @@
           },
           skills
         };
-        if (!localStorage.getItem(storageKey)) {
+        if (!currentMeta) {
           localStorage.setItem(storageKey, JSON.stringify(normalized));
         }
         return normalized;
       } catch (error) {
         console.warn("Ignoring invalid WaveSurvivor progression data.", error);
-        localStorage.removeItem(storageKey);
         return structuredClone(defaultMeta);
       }
     }
@@ -2769,7 +2784,7 @@
       player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
       player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
       player.dashTimer = player.dashCooldown;
-      player.invulnerable = 0.35;
+      player.invulnerable = Math.max(player.invulnerable, 0.35);
       for (let step = 0; step < 6; step += 1) {
         const progress = step / 5;
         particles.push({
@@ -2853,6 +2868,7 @@
           radius: 4,
           damage: player.damage,
           remainingPierce: player.pierce,
+          hitTargets: new Set(),
           life: 1.5
         });
       }
@@ -3109,6 +3125,10 @@
         }
         if (circleHit(player, enemy)) {
           damagePlayer(enemy.damage);
+          if (state !== "playing") {
+            updateHud();
+            return;
+          }
           enemy.x -= dx / distance * 20;
           enemy.y -= dy / distance * 20;
         }
@@ -3140,25 +3160,26 @@
 
       for (let projectileIndex = projectiles.length - 1; projectileIndex >= 0; projectileIndex -= 1) {
         const projectile = projectiles[projectileIndex];
+        projectile.hitTargets ??= new Set();
         let removed = false;
         for (let enemyIndex = enemies.length - 1; enemyIndex >= 0 && !removed; enemyIndex -= 1) {
           const enemy = enemies[enemyIndex];
-          if (!circleHit(projectile, enemy)) continue;
+          if (projectile.hitTargets.has(enemy) || !projectilesHit(projectile, enemy)) continue;
+          projectile.hitTargets.add(enemy);
           const critical = Math.random() < player.critChance;
           enemy.health -= projectile.damage * (critical ? 2 : 1);
           burst(projectile.x, projectile.y, critical ? "#facc15" : "#67e8f9", critical ? 7 : 3);
           if (enemy.health <= 0) defeatEnemy(enemyIndex);
           if (projectile.remainingPierce > 0) {
             projectile.remainingPierce -= 1;
-            projectile.x += projectile.vx * 0.02;
-            projectile.y += projectile.vy * 0.02;
           } else {
             removed = true;
           }
         }
         for (let crateIndex = supplyCrates.length - 1; crateIndex >= 0 && !removed; crateIndex -= 1) {
           const crate = supplyCrates[crateIndex];
-          if (!circleHit(projectile, crate)) continue;
+          if (projectile.hitTargets.has(crate) || !projectilesHit(projectile, crate)) continue;
+          projectile.hitTargets.add(crate);
           crate.health -= projectile.damage;
           burst(projectile.x, projectile.y, "#fbbf24", 4);
           if (crate.health <= 0) breakSupplyCrate(crateIndex);
@@ -3176,6 +3197,10 @@
         if (circleHit(projectile, player)) {
           damagePlayer(projectile.damage);
           enemyProjectiles.splice(index, 1);
+          if (state !== "playing") {
+            updateHud();
+            return;
+          }
         }
       }
 
@@ -3940,19 +3965,23 @@
 
     function updateBestRun() {
       const best = storedBestRun();
-      document.querySelector("#bestRun").textContent = `Best survival: ${formatTime(best)}`;
+      document.querySelector("#bestRun").textContent = `Best run: ${formatTime(best)}`;
     }
 
     window.addEventListener("resize", resize);
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+      const interactiveTarget = event.target instanceof HTMLElement
+        && (event.target.matches("button, input, select, textarea, a[href]") || event.target.isContentEditable);
+      const gameplayInput = state === "playing" && !interactiveTarget;
+      if (gameplayInput && ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
         event.preventDefault();
       }
-      keys.add(key);
-      if (key === " ") dash();
-      if (key === "q") useNova();
-      if (key === "escape") togglePause();
+      if (gameplayInput) keys.add(key);
+      if (event.repeat) return;
+      if (gameplayInput && key === " ") dash();
+      if (gameplayInput && key === "q") useNova();
+      if (!interactiveTarget && key === "escape") togglePause();
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
     window.addEventListener("blur", () => {
