@@ -626,14 +626,85 @@
 
     .skill-grid {
       position: relative;
+      padding-top: 0.2rem;
+    }
+
+    .skill-root-row {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 1.5rem;
+    }
+
+    .skill-root-row::after {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      height: 1.5rem;
+      background: linear-gradient(#fbbf24, rgb(167 139 250 / 45%));
+      content: "";
+    }
+
+    .skill-root-row .skill-card {
+      width: min(15rem, 100%);
+      border-color: rgb(251 191 36 / 42%);
+    }
+
+    .skill-branches {
+      position: relative;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.65rem;
+      gap: 1rem;
+      padding-top: 1.5rem;
+    }
+
+    .skill-branches::before {
+      position: absolute;
+      top: 0;
+      right: 16.67%;
+      left: 16.67%;
+      height: 1px;
+      background: rgb(167 139 250 / 45%);
+      content: "";
+    }
+
+    .skill-branch {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: 1rem;
+    }
+
+    .skill-branch::before {
+      position: absolute;
+      top: -1.5rem;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: linear-gradient(rgb(167 139 250 / 48%), rgb(167 139 250 / 12%));
+      content: "";
+    }
+
+    .skill-branch-title {
+      position: relative;
+      z-index: 1;
+      padding: 0.38rem 0.6rem;
+      border: 1px solid color-mix(in srgb, var(--branch-color) 45%, transparent);
+      border-radius: 999px;
+      background: #111321;
+      color: var(--branch-color);
+      font-size: 0.64rem;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-align: center;
+      text-transform: uppercase;
     }
 
     .skill-card {
       position: relative;
-      min-height: 9.3rem;
+      z-index: 1;
+      min-height: 8.4rem;
       padding: 0.8rem;
       border: 1px solid rgb(167 139 250 / 30%);
       border-radius: 0.7rem;
@@ -646,19 +717,12 @@
       transition: border-color 150ms ease, transform 150ms ease, filter 150ms ease;
     }
 
-    .skill-card:nth-child(4) { grid-column: 1; grid-row: 2; }
-    .skill-card:nth-child(5) { grid-column: 1; grid-row: 3; }
-    .skill-card:nth-child(6) { grid-column: 2; grid-row: 2; }
-    .skill-card:nth-child(7) { grid-column: 2; grid-row: 3; }
-    .skill-card:nth-child(8) { grid-column: 3; grid-row: 2; }
-    .skill-card:nth-child(9) { grid-column: 3; grid-row: 3; }
-
-    .skill-card:nth-child(n + 4)::before {
+    .skill-branch .skill-card::before {
       position: absolute;
-      top: -0.7rem;
+      top: -1rem;
       left: 50%;
       width: 1px;
-      height: 0.7rem;
+      height: 1rem;
       background: rgb(167 139 250 / 45%);
       content: "";
     }
@@ -993,16 +1057,16 @@
       .loadout-grid,
       .inventory-grid,
       .skill-grid {
-        grid-template-columns: 1fr;
+        overflow-x: auto;
+        padding: 0.2rem 0.2rem 0.8rem;
       }
 
-      .skill-card:nth-child(n) {
-        grid-column: auto;
-        grid-row: auto;
+      .skill-branches {
+        min-width: 42rem;
       }
 
-      .skill-card:nth-child(n)::before {
-        display: none;
+      .skill-root-row .skill-card {
+        width: min(14rem, calc(100vw - 4rem));
       }
 
       .loot-heading {
@@ -1227,8 +1291,18 @@
     const gameModes = {
       survival: {
         name: "Survival",
-        description: "The standard endless run with a boss every fifth wave.",
+        description: "Explore the rain-soaked Neon Ruins with a boss every fifth wave.",
         reward: "Normal chest rewards",
+        themeName: "Neon Ruins",
+        theme: {
+          inner: "#102544",
+          middle: "#071426",
+          edge: "#02050c",
+          grid: "56, 189, 248",
+          accent: "#67e8f9",
+          star: "#bae6fd",
+          style: "ruins"
+        },
         waveSeconds: 25,
         spawnRate: 1,
         enemyScale: 1,
@@ -1239,8 +1313,18 @@
       },
       rush: {
         name: "Rush",
-        description: "Shorter waves and faster spawns for quick, aggressive runs.",
+        description: "Race through the burning Solar Foundry against faster waves.",
         reward: "50% more chests",
+        themeName: "Solar Foundry",
+        theme: {
+          inner: "#44200d",
+          middle: "#1d0c09",
+          edge: "#080303",
+          grid: "249, 115, 22",
+          accent: "#fb923c",
+          star: "#fed7aa",
+          style: "foundry"
+        },
         waveSeconds: 16,
         spawnRate: 1.3,
         enemyScale: 0.9,
@@ -1251,8 +1335,18 @@
       },
       bossHunt: {
         name: "Boss Hunt",
-        description: "A boss arrives every wave alongside a smaller escort.",
+        description: "Challenge ancient guardians inside the Void Sanctum.",
         reward: "Double chest rewards",
+        themeName: "Void Sanctum",
+        theme: {
+          inner: "#2d1747",
+          middle: "#140923",
+          edge: "#050208",
+          grid: "168, 85, 247",
+          accent: "#d8b4fe",
+          star: "#f3e8ff",
+          style: "sanctum"
+        },
         waveSeconds: 28,
         spawnRate: 0.72,
         enemyScale: 1.12,
@@ -1286,34 +1380,33 @@
 
     const skillDefinitions = [
       {
+        id: "nexus",
+        name: "Core Nexus",
+        icon: "fortune",
+        accent: "#fbbf24",
+        branch: "root",
+        tier: 0,
+        maxLevel: 1,
+        description: () => "Unlocks all branches and grants +2% damage, health, and speed."
+      },
+      {
         id: "force",
         name: "Force Core",
         icon: "damage",
         accent: "#fb7185",
+        branch: "offense",
+        tier: 1,
         maxLevel: 3,
+        requires: { id: "nexus", level: 1 },
         description: level => `+${level * 5}% starting damage.`
-      },
-      {
-        id: "vitality",
-        name: "Vitality Core",
-        icon: "health",
-        accent: "#4ade80",
-        maxLevel: 3,
-        description: level => `+${level * 8} starting health.`
-      },
-      {
-        id: "agility",
-        name: "Agility Core",
-        icon: "speed",
-        accent: "#38bdf8",
-        maxLevel: 3,
-        description: level => `+${level * 3}% starting speed.`
       },
       {
         id: "rapidFire",
         name: "Rapid Cycling",
         icon: "fireRate",
         accent: "#f97316",
+        branch: "offense",
+        tier: 2,
         maxLevel: 3,
         requires: { id: "force", level: 2 },
         description: level => `+${level * 4}% starting fire rate.`
@@ -1323,15 +1416,52 @@
         name: "Precision Matrix",
         icon: "crit",
         accent: "#fbbf24",
+        branch: "offense",
+        tier: 3,
         maxLevel: 3,
-        requires: { id: "force", level: 2 },
+        requires: { id: "rapidFire", level: 2 },
         description: level => `+${level * 2}% critical chance.`
+      },
+      {
+        id: "overcharge",
+        name: "Overcharge Rails",
+        icon: "projectile",
+        accent: "#f43f5e",
+        branch: "offense",
+        tier: 4,
+        maxLevel: 3,
+        requires: { id: "precision", level: 2 },
+        description: level => `+${level * 10}% projectile speed.`
+      },
+      {
+        id: "arsenal",
+        name: "Twin Arsenal",
+        icon: "split",
+        accent: "#e879f9",
+        branch: "offense",
+        tier: 5,
+        maxLevel: 2,
+        requires: { id: "overcharge", level: 2 },
+        description: level => `Start with ${level} additional projectile${level === 1 ? "" : "s"}.`
+      },
+      {
+        id: "vitality",
+        name: "Vitality Core",
+        icon: "health",
+        accent: "#4ade80",
+        branch: "defense",
+        tier: 1,
+        maxLevel: 3,
+        requires: { id: "nexus", level: 1 },
+        description: level => `+${level * 8} starting health.`
       },
       {
         id: "barrier",
         name: "Reactive Barrier",
         icon: "armor",
         accent: "#a78bfa",
+        branch: "defense",
+        tier: 2,
         maxLevel: 3,
         requires: { id: "vitality", level: 2 },
         description: level => `+${level} starting armor.`
@@ -1341,27 +1471,88 @@
         name: "Recovery Loop",
         icon: "repair",
         accent: "#34d399",
+        branch: "defense",
+        tier: 3,
         maxLevel: 3,
-        requires: { id: "vitality", level: 2 },
+        requires: { id: "barrier", level: 2 },
         description: level => `+${(level * 0.15).toFixed(2)} health regeneration per second.`
+      },
+      {
+        id: "fortitude",
+        name: "Titan Frame",
+        icon: "armor",
+        accent: "#818cf8",
+        branch: "defense",
+        tier: 4,
+        maxLevel: 3,
+        requires: { id: "recovery", level: 2 },
+        description: level => `+${level * 5}% total maximum health.`
+      },
+      {
+        id: "secondWind",
+        name: "Second Wind",
+        icon: "health",
+        accent: "#2dd4bf",
+        branch: "defense",
+        tier: 5,
+        maxLevel: 3,
+        requires: { id: "fortitude", level: 2 },
+        description: level => `Heal ${level * 6}% maximum health at each new wave.`
+      },
+      {
+        id: "agility",
+        name: "Agility Core",
+        icon: "speed",
+        accent: "#38bdf8",
+        branch: "utility",
+        tier: 1,
+        maxLevel: 3,
+        requires: { id: "nexus", level: 1 },
+        description: level => `+${level * 3}% starting speed.`
       },
       {
         id: "phaseDrive",
         name: "Phase Drive",
         icon: "dash",
         accent: "#22d3ee",
+        branch: "utility",
+        tier: 2,
         maxLevel: 3,
         requires: { id: "agility", level: 2 },
         description: level => `+${level * 5}% dash recharge speed.`
+      },
+      {
+        id: "magnetism",
+        name: "Gravity Well",
+        icon: "magnet",
+        accent: "#60a5fa",
+        branch: "utility",
+        tier: 3,
+        maxLevel: 3,
+        requires: { id: "phaseDrive", level: 2 },
+        description: level => `+${level * 15} pickup range.`
       },
       {
         id: "fortune",
         name: "Fortune Scanner",
         icon: "fortune",
         accent: "#e879f9",
+        branch: "utility",
+        tier: 4,
         maxLevel: 3,
-        requires: { id: "agility", level: 2 },
+        requires: { id: "magnetism", level: 2 },
         description: level => `+${level * 4}% chance to improve chest rarity.`
+      },
+      {
+        id: "scavenger",
+        name: "Deep Salvage",
+        icon: "repair",
+        accent: "#facc15",
+        branch: "utility",
+        tier: 5,
+        maxLevel: 3,
+        requires: { id: "fortune", level: 2 },
+        description: level => `+${level * 2} scrap from chests and salvaged equipment.`
       }
     ];
 
@@ -1432,15 +1623,22 @@
         boots: null
       },
       skills: {
+        nexus: 0,
         force: 0,
-        vitality: 0,
-        agility: 0,
         rapidFire: 0,
         precision: 0,
+        overcharge: 0,
+        arsenal: 0,
+        vitality: 0,
         barrier: 0,
         recovery: 0,
+        fortitude: 0,
+        secondWind: 0,
+        agility: 0,
         phaseDrive: 0,
-        fortune: 0
+        magnetism: 0,
+        fortune: 0,
+        scavenger: 0
       }
     };
 
@@ -1477,6 +1675,13 @@
           ? parsed.inventory.map(normalizeLootItem).filter(Boolean).slice(0, inventoryLimit)
           : [];
         const inventoryIds = new Set(inventory.map(item => item.id));
+        const skills = Object.fromEntries(skillDefinitions.map(skill => [
+          skill.id,
+          Math.min(skill.maxLevel, Math.max(0, Math.floor(Number(parsed.skills?.[skill.id]) || 0)))
+        ]));
+        if (parsed.skills?.nexus == null && Object.entries(skills).some(([id, level]) => id !== "nexus" && level > 0)) {
+          skills.nexus = 1;
+        }
         return {
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
@@ -1492,10 +1697,7 @@
             armor: inventoryIds.has(parsed.equipped?.armor) ? parsed.equipped.armor : null,
             boots: inventoryIds.has(parsed.equipped?.boots) ? parsed.equipped.boots : null
           },
-          skills: Object.fromEntries(skillDefinitions.map(skill => [
-            skill.id,
-            Math.min(skill.maxLevel, Math.max(0, Math.floor(Number(parsed.skills?.[skill.id]) || 0)))
-          ]))
+          skills
         };
       } catch (error) {
         console.warn("Ignoring invalid MaxGame progression data.", error);
@@ -1647,7 +1849,7 @@
       const index = meta.inventory.findIndex(item => item.id === id);
       if (index < 0) return;
       const item = meta.inventory[index];
-      const scrap = lootRarities[item.rarity].salvage;
+      const scrap = lootRarities[item.rarity].salvage + meta.skills.scavenger * 2;
       if (meta.equipped[item.slot] === item.id) meta.equipped[item.slot] = null;
       meta.inventory.splice(index, 1);
       meta.scrap += scrap;
@@ -1782,7 +1984,7 @@
     }
 
     function skillCost(skill, level) {
-      return 5 + level * 5 + (skill.requires ? 5 : 0);
+      return 5 + skill.tier * 5 + level * 5;
     }
 
     function totalEquippedStats() {
@@ -1800,7 +2002,7 @@
     }
 
     function renderSkills() {
-      skillGrid.innerHTML = skillDefinitions.map(skill => {
+      function cardMarkup(skill) {
         const level = meta.skills[skill.id];
         const unlocked = skillUnlocked(skill);
         const maxed = level >= skill.maxLevel;
@@ -1827,7 +2029,29 @@
             <em>${status}</em>
           </button>
         `;
-      }).join("");
+      }
+
+      const root = skillDefinitions.find(skill => skill.branch === "root");
+      const branches = [
+        { id: "offense", name: "Weapons", color: "#fb7185" },
+        { id: "defense", name: "Survival", color: "#4ade80" },
+        { id: "utility", name: "Mobility & Loot", color: "#38bdf8" }
+      ];
+      skillGrid.innerHTML = `
+        <div class="skill-root-row">${cardMarkup(root)}</div>
+        <div class="skill-branches">
+          ${branches.map(branch => `
+            <div class="skill-branch" style="--branch-color:${branch.color}">
+              <div class="skill-branch-title">${branch.name}</div>
+              ${skillDefinitions
+                .filter(skill => skill.branch === branch.id)
+                .sort((left, right) => left.tier - right.tier)
+                .map(cardMarkup)
+                .join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
       skillGrid.querySelectorAll("[data-skill]").forEach(button => {
         button.addEventListener("click", () => buySkill(button.dataset.skill));
       });
@@ -1861,7 +2085,10 @@
       buyChestButton.textContent = `Buy chest - ${chestCost} scrap`;
       const inventoryFull = meta.inventory.length >= inventoryLimit;
       openChestButton.disabled = meta.chests < 1 || inventoryFull;
-      chestHint.textContent = inventoryFull ? "Vault full - salvage an item first" : "Contains equipment + 5-10 scrap";
+      const chestScrapBonus = meta.skills.scavenger * 2;
+      chestHint.textContent = inventoryFull
+        ? "Vault full - salvage an item first"
+        : `Contains equipment + ${5 + chestScrapBonus}-${10 + chestScrapBonus} scrap`;
       gearGrid.innerHTML = gearDefinitions.map(gear => {
         const level = meta.gear[gear.id];
         const cost = gearCost(level);
@@ -1878,7 +2105,7 @@
         <button class="mode-card ${meta.selectedMode === id ? "active" : ""}" data-mode="${id}">
           <strong>${mode.name}</strong>
           <span>${mode.description}<br>Goal: clear ${mode.goalWaves} waves.</span>
-          <em>${mode.reward}</em>
+          <em>${mode.themeName} · ${mode.reward}</em>
         </button>
       `).join("");
       gearGrid.querySelectorAll("[data-gear]").forEach(button => {
@@ -1900,7 +2127,7 @@
     function openChest() {
       if (meta.chests < 1 || meta.inventory.length >= inventoryLimit) return;
       meta.chests -= 1;
-      const scrap = 5 + Math.floor(Math.random() * 6);
+      const scrap = 5 + Math.floor(Math.random() * 6) + meta.skills.scavenger * 2;
       const item = createLoot();
       meta.scrap += scrap;
       meta.inventory.push(item);
@@ -1949,9 +2176,11 @@
 
     function resetRun() {
       const loot = totalEquippedStats();
-      const damageBonus = 1 + meta.gear.blaster * 0.15 + meta.skills.force * 0.05 + (loot.damage || 0) / 100;
-      const healthBonus = meta.gear.armor * 20 + meta.skills.vitality * 8 + (loot.health || 0);
-      const speedBonus = 1 + meta.gear.boots * 0.07 + meta.skills.agility * 0.03 + (loot.speed || 0) / 100;
+      const nexusBonus = meta.skills.nexus * 0.02;
+      const damageBonus = 1 + nexusBonus + meta.gear.blaster * 0.15 + meta.skills.force * 0.05 + (loot.damage || 0) / 100;
+      const baseHealth = 100 + meta.gear.armor * 20 + meta.skills.vitality * 8 + (loot.health || 0);
+      const maxHealth = Math.round(baseHealth * (1 + nexusBonus + meta.skills.fortitude * 0.05));
+      const speedBonus = 1 + nexusBonus + meta.gear.boots * 0.07 + meta.skills.agility * 0.03 + (loot.speed || 0) / 100;
       enemies.length = 0;
       projectiles.length = 0;
       enemyProjectiles.length = 0;
@@ -1969,15 +2198,15 @@
         x: width / 2,
         y: height / 2,
         speed: 230 * speedBonus,
-        health: 100 + healthBonus,
-        maxHealth: 100 + healthBonus,
+        health: maxHealth,
+        maxHealth,
         damage: 18 * damageBonus,
         fireRate: 0.58 / (1 + meta.skills.rapidFire * 0.04 + (loot.fireRate || 0) / 100),
         fireTimer: 0,
-        projectileSpeed: 560 * (1 + (loot.projectileSpeed || 0) / 100),
-        projectiles: 1,
+        projectileSpeed: 560 * (1 + meta.skills.overcharge * 0.1 + (loot.projectileSpeed || 0) / 100),
+        projectiles: 1 + meta.skills.arsenal,
         pierce: 0,
-        magnet: 90 + (loot.magnet || 0),
+        magnet: 90 + meta.skills.magnetism * 15 + (loot.magnet || 0),
         armor: meta.skills.barrier + (loot.armor || 0),
         critChance: Math.min(0.75, 0.08 + meta.skills.precision * 0.02 + (loot.critChance || 0) / 100),
         level: 1,
@@ -2025,6 +2254,10 @@
     function beginCurrentWave() {
       waveBannerTimer = 2.2;
       burst(width / 2, height / 2, "#67e8f9", 28);
+      if (meta.skills.secondWind > 0) {
+        player.health = Math.min(player.maxHealth, player.health + player.maxHealth * meta.skills.secondWind * 0.06);
+        burst(player.x, player.y, "#4ade80", 12);
+      }
       const mode = activeMode();
       if (wave >= mode.bossStartWave && (wave - mode.bossStartWave) % mode.bossEvery === 0) {
         spawnEnemy("boss");
@@ -2472,7 +2705,59 @@
       updateHud();
     }
 
+    function drawThemeDecor(theme) {
+      context.save();
+      if (theme.style === "ruins") {
+        context.fillStyle = `rgba(${theme.grid}, 0.055)`;
+        context.strokeStyle = `rgba(${theme.grid}, 0.16)`;
+        for (let index = 0; index < 8; index += 1) {
+          const x = (index * 197 + 70) % Math.max(1, width);
+          const y = (index * 113 + 130) % Math.max(1, height);
+          const blockWidth = 42 + index % 3 * 18;
+          const blockHeight = 28 + index % 4 * 13;
+          context.fillRect(x - blockWidth / 2, y - blockHeight / 2, blockWidth, blockHeight);
+          context.strokeRect(x - blockWidth / 2, y - blockHeight / 2, blockWidth, blockHeight);
+        }
+      } else if (theme.style === "foundry") {
+        context.strokeStyle = `rgba(${theme.grid}, 0.13)`;
+        context.lineWidth = 3;
+        const travel = elapsed * 90 % 140;
+        for (let offset = -height; offset < width + height; offset += 140) {
+          context.beginPath();
+          context.moveTo(offset + travel, height);
+          context.lineTo(offset + height * 0.7 + travel, 0);
+          context.stroke();
+        }
+        context.fillStyle = `rgba(${theme.grid}, 0.08)`;
+        for (let index = 0; index < 5; index += 1) {
+          const x = width * (index + 0.5) / 5;
+          context.fillRect(x - 24, 28, 48, 8);
+          context.fillRect(x - 24, height - 36, 48, 8);
+        }
+      } else {
+        context.translate(width / 2, height / 2);
+        context.rotate(elapsed * 0.035);
+        context.strokeStyle = `rgba(${theme.grid}, 0.2)`;
+        context.lineWidth = 2;
+        for (let ring = 0; ring < 3; ring += 1) {
+          const radius = 115 + ring * 92;
+          polygonPath(radius, 6, ring * Math.PI / 6);
+          context.stroke();
+        }
+        for (let index = 0; index < 6; index += 1) {
+          const angle = index / 6 * Math.PI * 2;
+          context.fillStyle = `rgba(${theme.grid}, 0.18)`;
+          context.beginPath();
+          context.arc(Math.cos(angle) * 205, Math.sin(angle) * 205, 5, 0, Math.PI * 2);
+          context.fill();
+        }
+      }
+      context.restore();
+    }
+
     function drawGrid() {
+      const mode = activeMode();
+      const theme = mode.theme;
       const backdrop = context.createRadialGradient(
         width * 0.5,
         height * 0.44,
@@ -2481,16 +2766,16 @@
         height * 0.5,
         Math.max(width, height) * 0.72
       );
-      backdrop.addColorStop(0, "#101a33");
-      backdrop.addColorStop(0.48, "#080d1e");
-      backdrop.addColorStop(1, "#02040a");
+      backdrop.addColorStop(0, theme.inner);
+      backdrop.addColorStop(0.48, theme.middle);
+      backdrop.addColorStop(1, theme.edge);
       context.fillStyle = backdrop;
       context.fillRect(0, 0, width, height);
 
       for (const star of backgroundStars) {
         const pulse = 0.65 + Math.sin(elapsed * 1.4 + star.phase) * 0.35;
         context.globalAlpha = star.alpha * pulse;
-        context.fillStyle = "#b8e7ff";
+        context.fillStyle = theme.star;
         context.beginPath();
         context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         context.fill();
@@ -2503,7 +2788,7 @@
       const offsetY = (elapsed * 5) % size;
       for (let x = -size + offsetX; x < width + size; x += size) {
         const major = Math.round((x - offsetX) / size) % 4 === 0;
-        context.strokeStyle = major ? "rgba(56, 189, 248, 0.11)" : "rgba(56, 189, 248, 0.045)";
+        context.strokeStyle = major ? `rgba(${theme.grid}, 0.11)` : `rgba(${theme.grid}, 0.045)`;
         context.beginPath();
         context.moveTo(x, 0);
         context.lineTo(x, height);
@@ -2511,7 +2796,7 @@
       }
       for (let y = -size + offsetY; y < height + size; y += size) {
         const major = Math.round((y - offsetY) / size) % 4 === 0;
-        context.strokeStyle = major ? "rgba(56, 189, 248, 0.11)" : "rgba(56, 189, 248, 0.045)";
+        context.strokeStyle = major ? `rgba(${theme.grid}, 0.11)` : `rgba(${theme.grid}, 0.045)`;
         context.beginPath();
         context.moveTo(0, y);
         context.lineTo(width, y);
@@ -2520,7 +2805,7 @@
 
       context.save();
       context.translate(width / 2, height / 2);
-      context.strokeStyle = "rgba(103, 232, 249, 0.09)";
+      context.strokeStyle = `rgba(${theme.grid}, 0.09)`;
       for (let radius = 110; radius < Math.max(width, height) * 0.7; radius += 105) {
         context.beginPath();
         context.arc(0, 0, radius + Math.sin(elapsed + radius) * 2, 0, Math.PI * 2);
@@ -2528,9 +2813,18 @@
       }
       context.restore();
 
-      context.strokeStyle = "rgba(103, 232, 249, 0.18)";
+      drawThemeDecor(theme);
+
+      context.strokeStyle = `rgba(${theme.grid}, 0.2)`;
       context.lineWidth = 2;
       context.strokeRect(18, 18, Math.max(0, width - 36), Math.max(0, height - 36));
+
+      context.fillStyle = theme.accent;
+      context.globalAlpha = 0.42;
+      context.font = "900 10px Inter, sans-serif";
+      context.textAlign = "center";
+      context.fillText(mode.themeName.toUpperCase(), width / 2, height - 25);
+      context.globalAlpha = 1;
     }
 
     function polygonPath(radius, sides, rotation = 0) {
