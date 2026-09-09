@@ -649,45 +649,21 @@
       width: 2.6rem;
       height: 2.6rem;
       border: 2px solid color-mix(in srgb, var(--character-color) 70%, white);
-      border-radius: 50% 50% 44% 44%;
+      border-radius: 45% 45% 36% 36%;
       background: color-mix(in srgb, var(--character-color) 48%, #0f172a);
       box-shadow: 0 0 1.3rem var(--character-color);
       content: "";
+      transform: rotate(45deg);
     }
 
     .character-portrait::after {
       position: absolute;
-      width: 0.35rem;
-      height: 0.45rem;
-      margin-left: -0.75rem;
-      border-radius: 50%;
+      width: 1.45rem;
+      height: 0.35rem;
+      border-radius: 999px;
       background: white;
-      box-shadow: 1.45rem 0 white, 0 0 0.7rem var(--character-color);
+      box-shadow: 0 0 0.7rem var(--character-color);
       content: "";
-    }
-
-    .character-portrait.vanguard::before {
-      width: 3rem;
-      height: 3rem;
-      border-width: 3px;
-      border-radius: 42%;
-    }
-
-    .character-portrait.striker::before {
-      width: 2.35rem;
-      height: 2.75rem;
-      border-radius: 55% 40% 50% 45%;
-      transform: rotate(-8deg);
-    }
-
-    .character-portrait.oracle::before {
-      border-radius: 50% 50% 20% 20%;
-      box-shadow: 0 0 1.3rem var(--character-color), inset 0 0 0 0.35rem #500724;
-    }
-
-    .character-portrait.ranger::before {
-      border-radius: 50% 50% 48% 38%;
-      box-shadow: 0 0 1.3rem var(--character-color), -0.9rem -0.6rem 0 -0.55rem var(--character-color);
     }
 
     .loot-section {
@@ -1655,6 +1631,9 @@
     const shockwaves = [];
     const weaponEffects = [];
     const backgroundStars = [];
+    const maxFriendlyProjectiles = 180;
+    const maxParticles = 520;
+    const maxWeaponEffects = 120;
 
     let width = 0;
     let height = 0;
@@ -2286,6 +2265,7 @@
         armor: 0,
         critChance: 0,
         magnet: 1,
+        regenBonus: 0,
         chargeRate: 1
       },
       vanguard: {
@@ -2302,6 +2282,7 @@
         armor: 2,
         critChance: 0,
         magnet: 1,
+        regenBonus: 0,
         chargeRate: 0.9
       },
       striker: {
@@ -2318,6 +2299,7 @@
         armor: 0,
         critChance: 0.03,
         magnet: 1,
+        regenBonus: 0,
         chargeRate: 1.15
       },
       oracle: {
@@ -2334,7 +2316,42 @@
         armor: 0,
         critChance: 0.08,
         magnet: 1.5,
+        regenBonus: 0,
         chargeRate: 1
+      },
+      demolitionist: {
+        name: "Ember Tech",
+        role: "Demolition",
+        color: "#fb923c",
+        ability: "Cluster Mines",
+        abilityDescription: "Detonates eight fiery charges around the arena.",
+        stats: "110% damage · 105% health · 90% speed",
+        health: 1.05,
+        damage: 1.1,
+        speed: 0.9,
+        fireRate: 1.12,
+        armor: 1,
+        critChance: 0,
+        magnet: 1,
+        regenBonus: 0,
+        chargeRate: 0.95
+      },
+      medic: {
+        name: "Lifeline",
+        role: "Support",
+        color: "#2dd4bf",
+        ability: "Recovery Field",
+        abilityDescription: "Restores health, grants a shield, and creates three supply drops.",
+        stats: "110% health · +0.6 regeneration · 85% damage",
+        health: 1.1,
+        damage: 0.85,
+        speed: 1.02,
+        fireRate: 0.95,
+        armor: 0,
+        critChance: 0,
+        magnet: 1.15,
+        regenBonus: 0.6,
+        chargeRate: 1.05
       }
     };
 
@@ -2709,6 +2726,7 @@
       dashCooldown: 2.5,
       dashTimer: 0,
       invulnerable: 0,
+      shieldTimer: 0,
       overdriveTimer: 0,
       novaCharge: 0,
       characterId: "ranger",
@@ -3120,10 +3138,11 @@
         level: 1,
         xp: 0,
         xpNeeded: 18,
-        regen: meta.skills.recovery * 0.15 + (loot.regen || 0),
+        regen: meta.skills.recovery * 0.15 + (loot.regen || 0) + (character.regenBonus || 0),
         dashCooldown: 2.5 / (1 + meta.skills.phaseDrive * 0.05 + (loot.dashCooldown || 0) / 100),
         dashTimer: 0,
         invulnerable: 0,
+        shieldTimer: 0,
         overdriveTimer: 0,
         novaCharge: 0,
         characterId: meta.selectedCharacter,
@@ -3179,7 +3198,7 @@
       novaButton.style.setProperty("--ability-color", (characters[player.characterId] ?? activeCharacter()).color);
       novaButton.classList.toggle("ready", player.novaCharge >= 100);
       const activePowers = [];
-      if (player.invulnerable > 1) activePowers.push(`Shield ${player.invulnerable.toFixed(1)}s`);
+      if (player.shieldTimer > 0) activePowers.push(`Shield ${player.shieldTimer.toFixed(1)}s`);
       if (player.overdriveTimer > 0) activePowers.push(`Overdrive ${player.overdriveTimer.toFixed(1)}s`);
       powerStatus.textContent = activePowers.join("  |  ");
       powerStatus.hidden = activePowers.length === 0;
@@ -3194,7 +3213,9 @@
         burst(player.x, player.y, "#4ade80", 12);
       }
       if (meta.skills.guardian > 0) {
-        player.invulnerable = Math.max(player.invulnerable, meta.skills.guardian * 0.6);
+        const shieldDuration = meta.skills.guardian * 0.6;
+        player.invulnerable = Math.max(player.invulnerable, shieldDuration);
+        player.shieldTimer = Math.max(player.shieldTimer, shieldDuration);
         burst(player.x, player.y, "#60a5fa", 10);
       }
       const mode = activeMode();
@@ -3468,7 +3489,7 @@
       });
 
       if (player.characterId === "ranger") {
-        const bolts = 20;
+        const bolts = Math.min(20, Math.max(0, maxFriendlyProjectiles - projectiles.length));
         for (let index = 0; index < bolts; index += 1) {
           const angle = index / bolts * Math.PI * 2;
           projectiles.push({
@@ -3498,6 +3519,7 @@
         player.overdriveTimer = Math.max(player.overdriveTimer, 5);
       } else if (player.characterId === "vanguard") {
         player.invulnerable = Math.max(player.invulnerable, 4.5);
+        player.shieldTimer = Math.max(player.shieldTimer, 4.5);
         for (let index = enemies.length - 1; index >= 0; index -= 1) {
           const enemy = enemies[index];
           const dx = enemy.x - player.x;
@@ -3542,7 +3564,7 @@
         player.invulnerable = Math.max(player.invulnerable, 1.4);
         player.overdriveTimer = Math.max(player.overdriveTimer, 7);
         player.dashTimer = 0;
-      } else {
+      } else if (player.characterId === "oracle") {
         for (let index = enemies.length - 1; index >= 0; index -= 1) {
           const enemy = enemies[index];
           enemy.freezeTimer = Math.max(enemy.freezeTimer || 0, 5);
@@ -3551,6 +3573,40 @@
         }
         enemyProjectiles.length = 0;
         player.invulnerable = Math.max(player.invulnerable, 1);
+      } else if (player.characterId === "demolitionist") {
+        const minePositions = [];
+        for (let mine = 0; mine < 8; mine += 1) {
+          const angle = mine / 8 * Math.PI * 2;
+          const x = player.x + Math.cos(angle) * 125;
+          const y = player.y + Math.sin(angle) * 125;
+          minePositions.push({ x, y });
+          weaponEffects.push({
+            type: "blast",
+            x,
+            y,
+            radius: 8,
+            maxRadius: 82,
+            life: 0.42,
+            maxLife: 0.42
+          });
+        }
+        for (let index = enemies.length - 1; index >= 0; index -= 1) {
+          const enemy = enemies[index];
+          if (!minePositions.some(mine => Math.hypot(enemy.x - mine.x, enemy.y - mine.y) <= 82 + enemy.radius)) continue;
+          enemy.health -= enemy.boss ? damage * 0.65 : damage * 1.15;
+          if (enemy.health <= 0) defeatEnemy(index);
+        }
+      } else if (player.characterId === "medic") {
+        player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.6);
+        player.invulnerable = Math.max(player.invulnerable, 3.5);
+        player.shieldTimer = Math.max(player.shieldTimer, 3.5);
+        for (let drop = 0; drop < 3; drop += 1) {
+          const angle = drop / 3 * Math.PI * 2;
+          dropPickup(
+            player.x + Math.cos(angle) * 48,
+            player.y + Math.sin(angle) * 48
+          );
+        }
       }
 
       if (player.characterId === "vanguard") {
@@ -3571,6 +3627,7 @@
     }
 
     function fireWeapon() {
+      if (projectiles.length >= maxFriendlyProjectiles) return;
       const nearbyEnemies = enemies.filter(enemy => Math.hypot(enemy.x - player.x, enemy.y - player.y) < 320);
       const targets = nearbyEnemies.length > 0 ? nearbyEnemies : [...enemies, ...supplyCrates];
       if (targets.length === 0) return;
@@ -3593,9 +3650,10 @@
         3
       );
       const projectileCount = player.projectiles + (weapon.bonusProjectiles || 0);
+      const shotCount = Math.min(projectileCount, Math.max(0, maxFriendlyProjectiles - projectiles.length));
       const spread = weapon.spread ?? defaultWeapon.spread;
-      for (let index = 0; index < projectileCount; index += 1) {
-        const offset = (index - (projectileCount - 1) / 2) * spread;
+      for (let index = 0; index < shotCount; index += 1) {
+        const offset = (index - (shotCount - 1) / 2) * spread;
         const angle = baseAngle + offset;
         projectiles.push({
           x: player.x,
@@ -3603,7 +3661,7 @@
           vx: Math.cos(angle) * player.projectileSpeed * (weapon.speedMultiplier || 1),
           vy: Math.sin(angle) * player.projectileSpeed * (weapon.speedMultiplier || 1),
           radius: weapon.radius || defaultWeapon.radius,
-          damage: player.damage * weapon.damageMultiplier,
+          damage: player.damage * weapon.damageMultiplier * (player.overdriveTimer > 0 ? 1.2 : 1),
           remainingPierce: player.pierce + (weapon.innatePierce || 0),
           hitTargets: new Set(),
           effectTargets: new Set(),
@@ -3842,7 +3900,8 @@
     }
 
     function burst(x, y, color, count) {
-      for (let index = 0; index < count; index += 1) {
+      const particleCount = Math.min(count, Math.max(0, maxParticles - particles.length));
+      for (let index = 0; index < particleCount; index += 1) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 40 + Math.random() * 140;
         particles.push({
@@ -3884,6 +3943,7 @@
       player.fireTimer -= delta;
       player.dashTimer = Math.max(0, player.dashTimer - delta);
       player.invulnerable = Math.max(0, player.invulnerable - delta);
+      player.shieldTimer = Math.max(0, player.shieldTimer - delta);
       player.overdriveTimer = Math.max(0, player.overdriveTimer - delta);
       comboTimer = Math.max(0, comboTimer - delta);
       if (comboTimer <= 0) combo = 0;
@@ -3892,7 +3952,7 @@
         fireWeapon();
         player.fireTimer = player.fireRate
           * activeWeapon().cooldownMultiplier
-          * (player.overdriveTimer > 0 ? 0.45 : 1);
+          * (player.overdriveTimer > 0 ? 0.65 : 1);
       }
 
       spawnTimer -= delta;
@@ -4076,6 +4136,7 @@
           burst(pickup.x, pickup.y, "#4ade80", 16);
         } else if (pickup.type === "shield") {
           player.invulnerable = Math.max(player.invulnerable, 3);
+          player.shieldTimer = Math.max(player.shieldTimer, 3);
           burst(pickup.x, pickup.y, "#60a5fa", 16);
         } else {
           player.overdriveTimer = Math.max(player.overdriveTimer, 8);
@@ -4108,6 +4169,9 @@
           effect.radius = effect.maxRadius * (1 - effect.life / effect.maxLife);
         }
         if (effect.life <= 0) weaponEffects.splice(index, 1);
+      }
+      if (weaponEffects.length > maxWeaponEffects) {
+        weaponEffects.splice(0, weaponEffects.length - maxWeaponEffects);
       }
 
       shake = Math.max(0, shake - 35 * delta);
@@ -4605,14 +4669,14 @@
     function drawPlayer() {
       const character = characters[player.characterId] ?? characters.ranger;
       const palettes = {
-        ranger: { skin: "#f2c6a0", body: "#be123c", dark: "#4c0519", trim: "#fb7185", accent: "#ffe4e6" },
-        vanguard: { skin: "#d6a47b", body: "#1d4ed8", dark: "#172554", trim: "#60a5fa", accent: "#dbeafe" },
-        striker: { skin: "#efbd91", body: "#4d7c0f", dark: "#1a2e05", trim: "#a3e635", accent: "#ecfccb" },
-        oracle: { skin: "#c9a7df", body: "#be185d", dark: "#500724", trim: "#f472b6", accent: "#fce7f3" }
+        ranger: { boots: "#172554", trim: "#fb7185", body: "#be123c", outline: "#ffe4e6", visor: "#fecdd3" },
+        vanguard: { boots: "#172554", trim: "#60a5fa", body: "#1d4ed8", outline: "#dbeafe", visor: "#93c5fd" },
+        striker: { boots: "#1a2e05", trim: "#a3e635", body: "#4d7c0f", outline: "#ecfccb", visor: "#bef264" },
+        oracle: { boots: "#500724", trim: "#f472b6", body: "#be185d", outline: "#fce7f3", visor: "#f9a8d4" },
+        demolitionist: { boots: "#431407", trim: "#fb923c", body: "#c2410c", outline: "#ffedd5", visor: "#fdba74" },
+        medic: { boots: "#042f2e", trim: "#2dd4bf", body: "#0f766e", outline: "#ccfbf1", visor: "#5eead4" }
       };
       const palette = palettes[player.characterId] ?? palettes.ranger;
-      const bodyWidth = player.characterId === "vanguard" ? 18 : player.characterId === "striker" ? 13 : 15;
-      const bodyHeight = player.characterId === "vanguard" ? 19 : player.characterId === "striker" ? 15 : 17;
       context.save();
       context.translate(player.x, player.y);
       context.rotate(player.facing);
@@ -4621,138 +4685,93 @@
       context.save();
       context.rotate(-player.facing);
       context.scale(1, 0.48);
-      const shadow = context.createRadialGradient(0, 8, 1, 0, 8, 27);
+      const shadow = context.createRadialGradient(0, 5, 1, 0, 5, 27);
       shadow.addColorStop(0, "rgba(0,0,0,0.5)");
       shadow.addColorStop(1, "rgba(0,0,0,0)");
       context.fillStyle = shadow;
       context.beginPath();
-      context.arc(0, 8, 27, 0, Math.PI * 2);
+      context.arc(0, 5, 27, 0, Math.PI * 2);
       context.fill();
       context.restore();
 
-      const bob = player.moving ? Math.abs(Math.sin(elapsed * 13)) * 2 : 0;
-      const stride = player.moving ? Math.sin(elapsed * 13) * 3 : 0;
-      context.translate(0, -bob);
-      context.shadowColor = character.color;
-      context.shadowBlur = 12;
-      context.lineCap = "round";
-      context.strokeStyle = palette.dark;
-      context.lineWidth = 6;
-      context.beginPath();
-      context.moveTo(-7, 11);
-      context.lineTo(-10 - Math.abs(stride), 17);
-      context.moveTo(6, 11);
-      context.lineTo(8 + Math.abs(stride), 17);
-      context.stroke();
-
-      context.strokeStyle = palette.skin;
-      context.lineWidth = 7;
-      context.beginPath();
-      context.moveTo(-11, -1);
-      context.lineTo(-18, 4 + stride * 0.3);
-      context.moveTo(11, -1);
-      context.lineTo(18, -4);
-      context.stroke();
-
-      context.fillStyle = palette.body;
-      context.strokeStyle = palette.dark;
-      context.lineWidth = 2.5;
-      context.beginPath();
-      context.ellipse(0, 1, bodyWidth, bodyHeight, 0, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-
-      context.shadowBlur = 5;
-      context.fillStyle = palette.skin;
-      context.strokeStyle = palette.dark;
-      context.lineWidth = 2;
-      context.beginPath();
-      context.arc(2, -7, 12, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-
-      context.fillStyle = "#111827";
-      context.beginPath();
-      context.arc(8, -9, 2.2, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = "white";
-      context.beginPath();
-      context.arc(8.7, -9.7, 0.65, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = "#7c2d12";
-      context.lineWidth = 1.3;
-      context.beginPath();
-      context.arc(8, -4, 3, 0.25, 1.35);
-      context.stroke();
-
-      context.fillStyle = "#1e293b";
+      const stride = player.moving ? Math.sin(elapsed * 15) * 3 : 0;
+      context.fillStyle = palette.boots;
       context.strokeStyle = palette.trim;
+      context.lineWidth = 1.5;
+      context.fillRect(-13 + stride, -10, 12, 6);
+      context.strokeRect(-13 + stride, -10, 12, 6);
+      context.fillRect(-13 - stride, 4, 12, 6);
+      context.strokeRect(-13 - stride, 4, 12, 6);
+
+      context.shadowColor = character.color;
+      context.shadowBlur = 18;
+      context.fillStyle = palette.body;
+      context.beginPath();
+      context.moveTo(9, -11);
+      context.lineTo(15, -6);
+      context.lineTo(15, 6);
+      context.lineTo(9, 11);
+      context.lineTo(-10, 9);
+      context.lineTo(-13, 0);
+      context.lineTo(-10, -9);
+      context.closePath();
+      context.fill();
+      context.strokeStyle = palette.outline;
+      context.lineWidth = 2;
+      context.stroke();
+
+      context.shadowBlur = 8;
+      context.fillStyle = "#1e293b";
+      context.fillRect(4, -13, 20, 5);
+      context.strokeStyle = palette.trim;
+      context.strokeRect(4, -13, 20, 5);
+      context.fillStyle = palette.outline;
+      context.fillRect(20, -12, 7, 3);
+
+      context.fillStyle = "#0f172a";
+      context.beginPath();
+      context.arc(2, 0, 8, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = palette.outline;
+      context.stroke();
+      context.fillStyle = palette.visor;
+      context.beginPath();
+      context.ellipse(5, 0, 4, 2.5, 0, 0, Math.PI * 2);
+      context.fill();
+
+      context.save();
+      context.rotate(-player.facing);
+      context.fillStyle = palette.trim;
+      context.strokeStyle = palette.outline;
       context.lineWidth = 2;
       context.beginPath();
-      context.roundRect(9, -3, 22, 7, 3);
+      if (player.characterId === "vanguard") {
+        context.rect(-4, -4, 8, 8);
+      } else if (player.characterId === "striker") {
+        context.moveTo(-5, 4);
+        context.lineTo(0, -6);
+        context.lineTo(5, 4);
+      } else if (player.characterId === "oracle") {
+        context.arc(0, 0, 4, 0, Math.PI * 2);
+      } else if (player.characterId === "demolitionist") {
+        context.moveTo(-5, -4);
+        context.lineTo(5, 0);
+        context.lineTo(-5, 4);
+        context.closePath();
+      } else if (player.characterId === "medic") {
+        context.moveTo(-5, 0);
+        context.lineTo(5, 0);
+        context.moveTo(0, -5);
+        context.lineTo(0, 5);
+      } else {
+        context.moveTo(-5, 3);
+        context.lineTo(0, -5);
+        context.lineTo(5, 3);
+        context.closePath();
+      }
       context.fill();
       context.stroke();
-      context.fillStyle = palette.accent;
-      context.fillRect(27, -1.5, 7, 4);
-
-      if (player.characterId === "vanguard") {
-        context.fillStyle = palette.dark;
-        context.strokeStyle = palette.trim;
-        context.beginPath();
-        context.arc(0, -10, 14, Math.PI, Math.PI * 2);
-        context.lineTo(14, -7);
-        context.lineTo(-14, -7);
-        context.closePath();
-        context.fill();
-        context.stroke();
-        context.beginPath();
-        context.arc(-15, 2, 9, Math.PI / 2, Math.PI * 1.5);
-        context.stroke();
-      } else if (player.characterId === "striker") {
-        context.strokeStyle = palette.trim;
-        context.lineWidth = 3;
-        context.beginPath();
-        context.moveTo(-7, -17);
-        context.lineTo(-2, -25);
-        context.lineTo(2, -17);
-        context.lineTo(7, -24);
-        context.lineTo(9, -14);
-        context.stroke();
-        context.fillStyle = "#111827";
-        context.fillRect(0, -13, 14, 5);
-        context.fillStyle = palette.trim;
-        context.fillRect(7, -12, 5, 3);
-      } else if (player.characterId === "oracle") {
-        context.strokeStyle = palette.trim;
-        context.lineWidth = 3;
-        context.beginPath();
-        context.arc(1, -7, 16, Math.PI * 0.85, Math.PI * 2.15);
-        context.stroke();
-        for (let orb = 0; orb < 3; orb += 1) {
-          const angle = elapsed * 1.8 + orb * Math.PI * 2 / 3;
-          context.fillStyle = palette.accent;
-          context.beginPath();
-          context.arc(Math.cos(angle) * 21, Math.sin(angle) * 10, 2.5, 0, Math.PI * 2);
-          context.fill();
-        }
-      } else {
-        context.fillStyle = palette.dark;
-        context.strokeStyle = palette.trim;
-        context.beginPath();
-        context.arc(0, -11, 13, Math.PI, Math.PI * 2);
-        context.lineTo(13, -8);
-        context.lineTo(-13, -8);
-        context.closePath();
-        context.fill();
-        context.stroke();
-        context.strokeStyle = palette.trim;
-        context.lineWidth = 2.5;
-        context.beginPath();
-        context.moveTo(-10, -9);
-        context.lineTo(-20, -14);
-        context.lineTo(-14, -5);
-        context.stroke();
-      }
+      context.restore();
 
       if (player.overdriveTimer > 0) {
         context.save();
@@ -4768,9 +4787,9 @@
         context.restore();
       }
 
-      if (player.armor > 0 || player.invulnerable > 1) {
+      if (player.armor > 0 || player.shieldTimer > 0) {
         context.rotate(-player.facing);
-        context.strokeStyle = player.invulnerable > 1 ? "#60a5fa" : "#c4b5fd";
+        context.strokeStyle = player.shieldTimer > 0 ? "#60a5fa" : "#c4b5fd";
         context.globalAlpha *= 0.45 + Math.sin(elapsed * 5) * 0.12;
         context.lineWidth = 2;
         context.beginPath();
@@ -4995,7 +5014,7 @@
       const weaponItem = meta.inventory.find(item => item.id === meta.equipped.blaster);
       const attackDelay = player.fireRate
         * weapon.cooldownMultiplier
-        * (player.overdriveTimer > 0 ? 0.45 : 1);
+        * (player.overdriveTimer > 0 ? 0.65 : 1);
       const stats = [
         ["Survivor", (characters[player.characterId] ?? characters.ranger).name],
         ["Weapon", weaponItem ? lootName(weaponItem) : "Pulse Blaster"],
