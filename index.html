@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071426">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <title>WaveSurvivor</title>
+  <title>WAVE SURVIVOR</title>
   <style>
     :root {
       color-scheme: dark;
@@ -457,6 +457,19 @@
       cursor: not-allowed;
     }
 
+    .reset-progress {
+      display: block;
+      margin: 0.8rem auto 0;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid rgb(251 113 133 / 38%);
+      border-radius: 0.5rem;
+      background: rgb(159 18 57 / 14%);
+      color: #fda4af;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 850;
+    }
+
     .gear-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -651,6 +664,30 @@
       background: white;
       box-shadow: 1.45rem 0 white, 0 0 0.7rem var(--character-color);
       content: "";
+    }
+
+    .character-portrait.vanguard::before {
+      width: 3rem;
+      height: 3rem;
+      border-width: 3px;
+      border-radius: 42%;
+    }
+
+    .character-portrait.striker::before {
+      width: 2.35rem;
+      height: 2.75rem;
+      border-radius: 55% 40% 50% 45%;
+      transform: rotate(-8deg);
+    }
+
+    .character-portrait.oracle::before {
+      border-radius: 50% 50% 20% 20%;
+      box-shadow: 0 0 1.3rem var(--character-color), inset 0 0 0 0.35rem #500724;
+    }
+
+    .character-portrait.ranger::before {
+      border-radius: 50% 50% 48% 38%;
+      box-shadow: 0 0 1.3rem var(--character-color), -0.9rem -0.6rem 0 -0.55rem var(--character-color);
     }
 
     .loot-section {
@@ -1426,7 +1463,7 @@
     <div class="panel hub-panel">
       <img class="brand-logo" src="favicon.svg" alt="">
       <div class="eyebrow">Safehouse</div>
-      <h1>Wave<span>Survivor</span></h1>
+      <h1>WAVE <span>SURVIVOR</span></h1>
       <p>Prepare between expeditions. Open recovered chests, permanently improve your equipment, then choose how you want to enter the arena.</p>
       <div class="hub-resources">
         <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
@@ -1502,6 +1539,7 @@
       </div>
       <button id="startButton" class="primary">Start run</button>
       <p id="bestRun">Best run: 0:00</p>
+      <button id="resetProgressButton" class="reset-progress">Reset all progress</button>
     </div>
   </div>
 
@@ -1603,6 +1641,7 @@
     const skillGrid = document.querySelector("#skillGrid");
     const characterGrid = document.querySelector("#characterGrid");
     const pauseStats = document.querySelector("#pauseStats");
+    const resetProgressButton = document.querySelector("#resetProgressButton");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -2234,11 +2273,11 @@
 
     const characters = {
       ranger: {
-        name: "Nova Ranger",
-        role: "Balanced",
-        color: "#22d3ee",
-        ability: "Starbreaker",
-        abilityDescription: "A huge damaging shockwave that clears hostile bullets.",
+        name: "Scrap Scout",
+        role: "Gunner",
+        color: "#fb7185",
+        ability: "Drone Barrage",
+        abilityDescription: "Launches a full ring of high-powered piercing bolts.",
         stats: "100% health · 100% damage · 100% speed",
         health: 1,
         damage: 1,
@@ -2250,11 +2289,11 @@
         chargeRate: 1
       },
       vanguard: {
-        name: "Iron Vanguard",
+        name: "Bastion Brute",
         role: "Tank",
-        color: "#4ade80",
-        ability: "Aegis Pulse",
-        abilityDescription: "Repairs health, grants a long shield, and blasts enemies away.",
+        color: "#60a5fa",
+        ability: "Fortress Slam",
+        abilityDescription: "Smashes the arena, hurls enemies away, and gains a heavy shield.",
         stats: "135% health · +2 armor · 88% speed",
         health: 1.35,
         damage: 0.85,
@@ -2266,11 +2305,11 @@
         chargeRate: 0.9
       },
       striker: {
-        name: "Volt Striker",
+        name: "Rift Runner",
         role: "Speed",
-        color: "#facc15",
-        ability: "Hyperdrive",
-        abilityDescription: "Triggers extended overdrive, resets Dash, and releases lightning.",
+        color: "#a3e635",
+        ability: "Phase Blitz",
+        abilityDescription: "Teleports through up to six nearby enemies and strikes each with lightning.",
         stats: "120% speed · 125% fire rate · 80% health",
         health: 0.8,
         damage: 1,
@@ -2282,11 +2321,11 @@
         chargeRate: 1.15
       },
       oracle: {
-        name: "Void Oracle",
-        role: "Power",
-        color: "#c084fc",
-        ability: "Gravity Collapse",
-        abilityDescription: "Pulls enemies inward, damages them, and consumes every hostile shot.",
+        name: "Chrono Sage",
+        role: "Control",
+        color: "#f472b6",
+        ability: "Time Lock",
+        abilityDescription: "Freezes every enemy and erases hostile projectiles while dealing pulse damage.",
         stats: "115% damage · +8% critical · 150% pickup range",
         health: 0.9,
         damage: 1.15,
@@ -2455,7 +2494,7 @@
         }
         return normalized;
       } catch (error) {
-        console.warn("Ignoring invalid WaveSurvivor progression data.", error);
+        console.warn("Ignoring invalid WAVE SURVIVOR progression data.", error);
         return structuredClone(defaultMeta);
       }
     }
@@ -2464,6 +2503,19 @@
 
     function saveMeta() {
       localStorage.setItem("waveSurvivorMeta", JSON.stringify(meta));
+    }
+
+    function resetProgress() {
+      if (!window.confirm("Reset all chests, scrap, equipment, skills, and best-run progress?")) return;
+      localStorage.removeItem("waveSurvivorMeta");
+      localStorage.removeItem("waveSurvivorBest");
+      localStorage.removeItem("maxGameMeta");
+      localStorage.removeItem("maxGameBest");
+      Object.assign(meta, structuredClone(defaultMeta));
+      selectedChestType = "field";
+      saveMeta();
+      chestResult.textContent = "All WAVE SURVIVOR progress has been reset.";
+      renderHub();
     }
 
     function activeMode() {
@@ -2912,7 +2964,7 @@
           data-character="${id}"
           style="--character-color:${character.color}"
         >
-          <div class="character-portrait"></div>
+          <div class="character-portrait ${id}"></div>
           <strong>${character.name} · ${character.role}</strong>
           <span>${character.stats}</span>
           <em>${character.ability}: ${character.abilityDescription}</em>
@@ -3357,6 +3409,22 @@
       return length > 1 ? { x: x / length, y: y / length } : { x, y };
     }
 
+    function wrapPlayer() {
+      let wrapped = false;
+      if (width > 0 && (player.x < 0 || player.x >= width)) {
+        player.x = (player.x % width + width) % width;
+        wrapped = true;
+      }
+      if (height > 0 && (player.y < 0 || player.y >= height)) {
+        player.y = (player.y % height + height) % height;
+        wrapped = true;
+      }
+      if (wrapped) {
+        burst(player.x, player.y, (characters[player.characterId] ?? characters.ranger).color, 12);
+      }
+      return wrapped;
+    }
+
     function dash() {
       if (state !== "playing" || player.dashTimer > 0) return;
       const move = movementVector();
@@ -3365,11 +3433,10 @@
       const startY = player.y;
       player.x += move.x * 120;
       player.y += move.y * 120;
-      player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
-      player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
+      const wrapped = wrapPlayer();
       player.dashTimer = player.dashCooldown;
       player.invulnerable = Math.max(player.invulnerable, 0.35);
-      for (let step = 0; step < 6; step += 1) {
+      for (let step = 0; step < (wrapped ? 1 : 6); step += 1) {
         const progress = step / 5;
         particles.push({
           x: startX + (player.x - startX) * progress,
@@ -3388,8 +3455,8 @@
       if (state !== "playing" || player.novaCharge < 100) return;
       player.novaCharge = 0;
       const character = characters[player.characterId] ?? characters.ranger;
-      const radius = character === characters.oracle ? 360 : 285;
-      const damage = Math.max(140, player.damage * 8);
+      const radius = player.characterId === "oracle" ? Math.max(width, height) : 300;
+      const damage = Math.max(90, player.damage * 5);
       shockwaves.push({
         x: player.x,
         y: player.y,
@@ -3400,70 +3467,100 @@
         color: character.color
       });
 
-      if (player.characterId === "vanguard") {
-        player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.3);
-        player.invulnerable = Math.max(player.invulnerable, 5);
-        for (const enemy of enemies) {
+      if (player.characterId === "ranger") {
+        const bolts = 20;
+        for (let index = 0; index < bolts; index += 1) {
+          const angle = index / bolts * Math.PI * 2;
+          projectiles.push({
+            x: player.x,
+            y: player.y,
+            vx: Math.cos(angle) * player.projectileSpeed * 1.2,
+            vy: Math.sin(angle) * player.projectileSpeed * 1.2,
+            radius: 5,
+            damage: player.damage * 2.2,
+            remainingPierce: 2 + player.pierce,
+            hitTargets: new Set(),
+            effectTargets: new Set(),
+            kind: "rail",
+            color: "#ffe4e6",
+            glow: character.color,
+            chainCount: 0,
+            chainDamage: 0,
+            chainRange: 0,
+            blastRadius: 0,
+            blastDamage: 0,
+            knockback: player.knockback * 1.25,
+            slow: 0,
+            slowDuration: 0,
+            life: 1.5
+          });
+        }
+        player.overdriveTimer = Math.max(player.overdriveTimer, 5);
+      } else if (player.characterId === "vanguard") {
+        player.invulnerable = Math.max(player.invulnerable, 4.5);
+        for (let index = enemies.length - 1; index >= 0; index -= 1) {
+          const enemy = enemies[index];
           const dx = enemy.x - player.x;
           const dy = enemy.y - player.y;
           const distance = Math.max(1, Math.hypot(dx, dy));
           if (distance > radius + enemy.radius) continue;
-          enemy.health -= damage * 0.28;
-          enemy.x += dx / distance * 90;
-          enemy.y += dy / distance * 90;
-        }
-      } else if (player.characterId === "striker") {
-        player.overdriveTimer = Math.max(player.overdriveTimer, 14);
-        player.dashTimer = 0;
-        for (let index = enemies.length - 1; index >= 0; index -= 1) {
-          const enemy = enemies[index];
-          if (Math.hypot(enemy.x - player.x, enemy.y - player.y) > radius + enemy.radius) continue;
-          weaponEffects.push({
-            type: "arc",
-            x1: player.x,
-            y1: player.y,
-            x2: enemy.x,
-            y2: enemy.y,
-            life: 0.24,
-            maxLife: 0.24
-          });
-          enemy.health -= damage * 0.42;
+          enemy.health -= enemy.boss ? damage * 0.65 : damage;
+          enemy.x += dx / distance * 165;
+          enemy.y += dy / distance * 165;
           if (enemy.health <= 0) defeatEnemy(index);
         }
+      } else if (player.characterId === "striker") {
+        const targets = [...enemies]
+          .filter(enemy => Math.hypot(enemy.x - player.x, enemy.y - player.y) <= radius + enemy.radius)
+          .sort((left, right) =>
+            Math.hypot(left.x - player.x, left.y - player.y)
+            - Math.hypot(right.x - player.x, right.y - player.y)
+          )
+          .slice(0, 6);
+        let previousX = player.x;
+        let previousY = player.y;
+        for (const enemy of targets) {
+          if (!enemies.includes(enemy)) continue;
+          weaponEffects.push({
+            type: "arc",
+            x1: previousX,
+            y1: previousY,
+            x2: enemy.x,
+            y2: enemy.y,
+            life: 0.32,
+            maxLife: 0.32
+          });
+          previousX = enemy.x;
+          previousY = enemy.y;
+          player.x = enemy.x + Math.cos(player.facing) * 30;
+          player.y = enemy.y + Math.sin(player.facing) * 30;
+          enemy.health -= player.damage * 4;
+          const enemyIndex = enemies.indexOf(enemy);
+          if (enemyIndex >= 0 && enemy.health <= 0) defeatEnemy(enemyIndex);
+        }
+        wrapPlayer();
+        player.invulnerable = Math.max(player.invulnerable, 1.4);
+        player.overdriveTimer = Math.max(player.overdriveTimer, 7);
+        player.dashTimer = 0;
       } else {
         for (let index = enemies.length - 1; index >= 0; index -= 1) {
           const enemy = enemies[index];
-          const dx = player.x - enemy.x;
-          const dy = player.y - enemy.y;
-          const distance = Math.max(1, Math.hypot(dx, dy));
-          if (distance > radius + enemy.radius) continue;
-          if (player.characterId === "oracle") {
-            enemy.x += dx / distance * Math.min(150, distance * 0.5);
-            enemy.y += dy / distance * Math.min(150, distance * 0.5);
-            enemy.health -= enemy.boss ? damage * 0.4 : damage * 0.72;
-          } else {
-            enemy.health -= enemy.boss ? damage * 0.55 : damage;
-          }
+          enemy.freezeTimer = Math.max(enemy.freezeTimer || 0, 5);
+          enemy.health -= enemy.boss ? damage * 0.35 : damage * 0.65;
           if (enemy.health <= 0) defeatEnemy(index);
         }
+        enemyProjectiles.length = 0;
+        player.invulnerable = Math.max(player.invulnerable, 1);
       }
 
-      for (let index = enemies.length - 1; index >= 0; index -= 1) {
-        if (enemies[index].health <= 0) defeatEnemy(index);
-      }
-      for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
-        const projectile = enemyProjectiles[index];
-        if (Math.hypot(projectile.x - player.x, projectile.y - player.y) <= radius) {
-          enemyProjectiles.splice(index, 1);
+      if (player.characterId === "vanguard") {
+        for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
+          const projectile = enemyProjectiles[index];
+          if (Math.hypot(projectile.x - player.x, projectile.y - player.y) <= radius) {
+            enemyProjectiles.splice(index, 1);
+          }
         }
       }
-      if (player.characterId === "ranger") {
-        for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
-          const crate = supplyCrates[index];
-          if (Math.hypot(crate.x - player.x, crate.y - player.y) <= radius) breakSupplyCrate(index);
-        }
-      }
-      player.invulnerable = Math.max(player.invulnerable, 0.7);
       shake = 18;
       burst(player.x, player.y, character.color, 45);
       updateHud();
@@ -3782,8 +3879,7 @@
       }
       player.x += move.x * player.speed * delta;
       player.y += move.y * player.speed * delta;
-      player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
-      player.y = Math.max(player.radius, Math.min(height - player.radius, player.y));
+      wrapPlayer();
       player.health = Math.min(player.maxHealth, player.health + player.regen * delta);
       player.fireTimer -= delta;
       player.dashTimer = Math.max(0, player.dashTimer - delta);
@@ -3812,9 +3908,20 @@
 
       for (const enemy of enemies) {
         enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - delta);
+        enemy.freezeTimer = Math.max(0, (enemy.freezeTimer || 0) - delta);
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         const distance = Math.max(1, Math.hypot(dx, dy));
+        if (enemy.freezeTimer > 0) {
+          if (circleHit(player, enemy)) {
+            damagePlayer(enemy.damage);
+            if (state !== "playing") {
+              updateHud();
+              return;
+            }
+          }
+          continue;
+        }
         const moveSpeed = enemy.speed * (enemy.slowTimer > 0 ? enemy.slowMultiplier : 1);
         const preferredDistance = enemy.shootTimer > 0 && !enemy.boss ? 210 : 0;
         if (enemy.type === "charger" && enemy.chargeTime > 0) {
@@ -4431,6 +4538,19 @@
         context.strokeStyle = "rgba(255,255,255,0.85)";
       }
 
+      if (enemy.freezeTimer > 0) {
+        context.save();
+        context.rotate(-angle);
+        context.strokeStyle = "#f9a8d4";
+        context.shadowColor = "#f472b6";
+        context.shadowBlur = 14;
+        context.lineWidth = 2.5;
+        context.beginPath();
+        context.arc(0, 0, enemy.radius + 6, 0, Math.PI * 2);
+        context.stroke();
+        context.restore();
+      }
+
       if (enemy.type === "swift") {
         polygonPath(enemy.radius + 3, 3, 0);
       } else if (enemy.type === "tank") {
@@ -4485,12 +4605,14 @@
     function drawPlayer() {
       const character = characters[player.characterId] ?? characters.ranger;
       const palettes = {
-        ranger: { skin: "#f2c6a0", body: "#0891b2", dark: "#164e63", trim: "#67e8f9", accent: "#e0f2fe" },
-        vanguard: { skin: "#d6a47b", body: "#15803d", dark: "#14532d", trim: "#4ade80", accent: "#dcfce7" },
-        striker: { skin: "#efbd91", body: "#ca8a04", dark: "#713f12", trim: "#facc15", accent: "#fef9c3" },
-        oracle: { skin: "#c9a7df", body: "#7e22ce", dark: "#3b0764", trim: "#c084fc", accent: "#f3e8ff" }
+        ranger: { skin: "#f2c6a0", body: "#be123c", dark: "#4c0519", trim: "#fb7185", accent: "#ffe4e6" },
+        vanguard: { skin: "#d6a47b", body: "#1d4ed8", dark: "#172554", trim: "#60a5fa", accent: "#dbeafe" },
+        striker: { skin: "#efbd91", body: "#4d7c0f", dark: "#1a2e05", trim: "#a3e635", accent: "#ecfccb" },
+        oracle: { skin: "#c9a7df", body: "#be185d", dark: "#500724", trim: "#f472b6", accent: "#fce7f3" }
       };
       const palette = palettes[player.characterId] ?? palettes.ranger;
+      const bodyWidth = player.characterId === "vanguard" ? 18 : player.characterId === "striker" ? 13 : 15;
+      const bodyHeight = player.characterId === "vanguard" ? 19 : player.characterId === "striker" ? 15 : 17;
       context.save();
       context.translate(player.x, player.y);
       context.rotate(player.facing);
@@ -4536,7 +4658,7 @@
       context.strokeStyle = palette.dark;
       context.lineWidth = 2.5;
       context.beginPath();
-      context.ellipse(0, 1, 15, 17, 0, 0, Math.PI * 2);
+      context.ellipse(0, 1, bodyWidth, bodyHeight, 0, 0, Math.PI * 2);
       context.fill();
       context.stroke();
 
@@ -4614,17 +4736,22 @@
           context.fill();
         }
       } else {
+        context.fillStyle = palette.dark;
+        context.strokeStyle = palette.trim;
+        context.beginPath();
+        context.arc(0, -11, 13, Math.PI, Math.PI * 2);
+        context.lineTo(13, -8);
+        context.lineTo(-13, -8);
+        context.closePath();
+        context.fill();
+        context.stroke();
         context.strokeStyle = palette.trim;
         context.lineWidth = 2.5;
         context.beginPath();
-        context.moveTo(-7, -18);
-        context.lineTo(-2, -24);
-        context.lineTo(2, -18);
+        context.moveTo(-10, -9);
+        context.lineTo(-20, -14);
+        context.lineTo(-14, -5);
         context.stroke();
-        context.fillStyle = palette.trim;
-        context.beginPath();
-        context.arc(-2, -24, 2.5, 0, Math.PI * 2);
-        context.fill();
       }
 
       if (player.overdriveTimer > 0) {
@@ -4993,6 +5120,7 @@
     openRelicChestButton.addEventListener("click", () => selectChest("relic"));
     openSelectedChestButton.addEventListener("click", () => openChest(selectedChestType));
     buyChestButton.addEventListener("click", buyChest);
+    resetProgressButton.addEventListener("click", resetProgress);
 
     resize();
     renderHub();
