@@ -340,12 +340,14 @@
     }
 
     .hub-section h2,
+    .character-section h2,
     .mode-section h2 {
       margin: 0 0 0.3rem;
       font-size: 1.15rem;
     }
 
     .hub-section p,
+    .character-section p,
     .mode-section p {
       margin: 0 0 0.75rem;
       color: #aeb8ca;
@@ -536,6 +538,86 @@
       font-style: normal;
       font-weight: 900;
       text-transform: uppercase;
+    }
+
+    .character-section {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    .character-card {
+      padding: 0.7rem;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 0.65rem;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--character-color) 10%, transparent), #111620);
+      color: white;
+      text-align: left;
+    }
+
+    .character-card.active {
+      border-color: var(--character-color);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--character-color) 35%, transparent),
+        0 0 1.2rem color-mix(in srgb, var(--character-color) 18%, transparent);
+    }
+
+    .character-card strong,
+    .character-card span,
+    .character-card em {
+      display: block;
+    }
+
+    .character-card span {
+      margin-top: 0.25rem;
+      color: #aeb8ca;
+      font-size: 0.68rem;
+      line-height: 1.4;
+    }
+
+    .character-card em {
+      margin-top: 0.45rem;
+      color: var(--character-color);
+      font-size: 0.65rem;
+      font-style: normal;
+      font-weight: 850;
+    }
+
+    .character-portrait {
+      position: relative;
+      display: grid;
+      height: 4.8rem;
+      place-items: center;
+      margin: -0.7rem -0.7rem 0.7rem;
+      overflow: hidden;
+      border-bottom: 1px solid color-mix(in srgb, var(--character-color) 45%, transparent);
+      background: radial-gradient(circle, color-mix(in srgb, var(--character-color) 32%, transparent), transparent 64%);
+    }
+
+    .character-portrait::before {
+      width: 2.6rem;
+      height: 2.6rem;
+      border: 2px solid color-mix(in srgb, var(--character-color) 70%, white);
+      border-radius: 45% 45% 36% 36%;
+      background: color-mix(in srgb, var(--character-color) 48%, #0f172a);
+      box-shadow: 0 0 1.3rem var(--character-color);
+      content: "";
+      transform: rotate(45deg);
+    }
+
+    .character-portrait::after {
+      position: absolute;
+      width: 1.45rem;
+      height: 0.35rem;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 0 0.7rem var(--character-color);
+      content: "";
     }
 
     .loot-section {
@@ -1075,10 +1157,10 @@
       width: 4.5rem;
       height: 4.5rem;
       place-items: center;
-      border: 1px solid rgb(251 191 36 / 30%);
+      border: 1px solid color-mix(in srgb, var(--ability-color, #fbbf24) 45%, transparent);
       border-radius: 50%;
       background: rgb(120 53 15 / 62%);
-      color: #fde68a;
+      color: color-mix(in srgb, var(--ability-color, #fbbf24) 65%, white);
       font-size: 0.68rem;
       font-weight: 950;
       letter-spacing: 0.06em;
@@ -1088,9 +1170,9 @@
     }
 
     .nova.ready {
-      border-color: #fde047;
-      background: rgb(180 83 9 / 78%);
-      box-shadow: 0 0 1.8rem rgb(250 204 21 / 60%);
+      border-color: var(--ability-color, #fde047);
+      background: color-mix(in srgb, var(--ability-color, #fbbf24) 42%, #451a03);
+      box-shadow: 0 0 1.8rem color-mix(in srgb, var(--ability-color, #fbbf24) 60%, transparent);
       opacity: 1;
       animation: nova-ready 900ms ease-in-out infinite alternate;
     }
@@ -1180,6 +1262,7 @@
       .upgrade-grid,
       .hub-grid,
       .gear-grid,
+      .character-grid,
       .mode-grid,
       .loadout-grid,
       .inventory-grid,
@@ -1190,6 +1273,11 @@
 
       .skill-branches {
         min-width: 42rem;
+      }
+
+      .character-grid {
+        width: 100%;
+        grid-template-columns: repeat(4, minmax(10rem, 1fr));
       }
 
       .skill-root-row .skill-card {
@@ -1311,6 +1399,11 @@
         </div>
         <div id="skillGrid" class="skill-grid"></div>
       </section>
+      <section class="character-section">
+        <h2>Choose survivor</h2>
+        <p>Every survivor has a unique charged ability and different starting stats.</p>
+        <div id="characterGrid" class="character-grid"></div>
+      </section>
       <section class="mode-section">
         <h2>Choose game mode</h2>
         <p>Each mode changes pacing, bosses, and chest rewards.</p>
@@ -1319,7 +1412,7 @@
       <div class="controls-copy">
         <div class="control-card"><strong>Move</strong>WASD, arrow keys, or joystick</div>
         <div class="control-card"><strong>Dash</strong>Space or the Dash button</div>
-        <div class="control-card"><strong>Combat</strong>Automatic fire; press Q when Nova is charged</div>
+        <div class="control-card"><strong>Ability</strong>Automatic fire; press Q when your survivor ability is charged</div>
         <div class="control-card"><strong>Supplies</strong>Break gold caches for repair, shield, or overdrive pickups</div>
       </div>
       <button id="startButton" class="primary">Start run</button>
@@ -1416,6 +1509,7 @@
     const inventoryGrid = document.querySelector("#inventoryGrid");
     const inventoryCount = document.querySelector("#inventoryCount");
     const skillGrid = document.querySelector("#skillGrid");
+    const characterGrid = document.querySelector("#characterGrid");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -1911,6 +2005,73 @@
       glow: "#22d3ee"
     };
 
+    const characters = {
+      ranger: {
+        name: "Nova Ranger",
+        role: "Balanced",
+        color: "#22d3ee",
+        ability: "Starbreaker",
+        abilityDescription: "A huge damaging shockwave that clears hostile bullets.",
+        stats: "100% health · 100% damage · 100% speed",
+        health: 1,
+        damage: 1,
+        speed: 1,
+        fireRate: 1,
+        armor: 0,
+        critChance: 0,
+        magnet: 1,
+        chargeRate: 1
+      },
+      vanguard: {
+        name: "Iron Vanguard",
+        role: "Tank",
+        color: "#4ade80",
+        ability: "Aegis Pulse",
+        abilityDescription: "Repairs health, grants a long shield, and blasts enemies away.",
+        stats: "135% health · +2 armor · 88% speed",
+        health: 1.35,
+        damage: 0.85,
+        speed: 0.88,
+        fireRate: 1.08,
+        armor: 2,
+        critChance: 0,
+        magnet: 1,
+        chargeRate: 0.9
+      },
+      striker: {
+        name: "Volt Striker",
+        role: "Speed",
+        color: "#facc15",
+        ability: "Hyperdrive",
+        abilityDescription: "Triggers extended overdrive, resets Dash, and releases lightning.",
+        stats: "120% speed · 125% fire rate · 80% health",
+        health: 0.8,
+        damage: 1,
+        speed: 1.2,
+        fireRate: 0.8,
+        armor: 0,
+        critChance: 0.03,
+        magnet: 1,
+        chargeRate: 1.15
+      },
+      oracle: {
+        name: "Void Oracle",
+        role: "Power",
+        color: "#c084fc",
+        ability: "Gravity Collapse",
+        abilityDescription: "Pulls enemies inward, damages them, and consumes every hostile shot.",
+        stats: "115% damage · +8% critical · 150% pickup range",
+        health: 0.9,
+        damage: 1.15,
+        speed: 0.96,
+        fireRate: 1.04,
+        armor: 0,
+        critChance: 0.08,
+        magnet: 1.5,
+        chargeRate: 1
+      }
+    };
+
     const inventoryLimit = 24;
     const chestCost = 25;
 
@@ -1918,6 +2079,7 @@
       chests: 1,
       scrap: 0,
       selectedMode: "survival",
+      selectedCharacter: "ranger",
       gear: {
         blaster: 0,
         armor: 0,
@@ -2011,6 +2173,7 @@
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
+          selectedCharacter: Object.hasOwn(characters, parsed.selectedCharacter) ? parsed.selectedCharacter : "ranger",
           gear: {
             blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
             armor: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.armor) || 0))),
@@ -2042,6 +2205,10 @@
 
     function activeMode() {
       return gameModes[meta.selectedMode];
+    }
+
+    function activeCharacter() {
+      return characters[meta.selectedCharacter];
     }
 
     function iconSvg(type) {
@@ -2219,6 +2386,7 @@
       invulnerable: 0,
       overdriveTimer: 0,
       novaCharge: 0,
+      characterId: "ranger",
       weaponId: null,
       facing: -Math.PI / 2,
       moving: false
@@ -2453,12 +2621,32 @@
           <em>${mode.themeName} · ${mode.reward}</em>
         </button>
       `).join("");
+      characterGrid.innerHTML = Object.entries(characters).map(([id, character]) => `
+        <button
+          class="character-card ${meta.selectedCharacter === id ? "active" : ""}"
+          data-character="${id}"
+          style="--character-color:${character.color}"
+        >
+          <div class="character-portrait"></div>
+          <strong>${character.name} · ${character.role}</strong>
+          <span>${character.stats}</span>
+          <em>${character.ability}: ${character.abilityDescription}</em>
+        </button>
+      `).join("");
       gearGrid.querySelectorAll("[data-gear]").forEach(button => {
         button.addEventListener("click", () => upgradeGear(button.dataset.gear));
       });
       modeGrid.querySelectorAll("[data-mode]").forEach(button => {
         button.addEventListener("click", () => {
           meta.selectedMode = button.dataset.mode;
+          saveMeta();
+          renderHub();
+        });
+      });
+      characterGrid.querySelectorAll("[data-character]").forEach(button => {
+        button.addEventListener("click", () => {
+          meta.selectedCharacter = button.dataset.character;
+          chestResult.textContent = `${activeCharacter().name} selected.`;
           saveMeta();
           renderHub();
         });
@@ -2527,10 +2715,16 @@
     function resetRun() {
       const loot = totalEquippedStats();
       const mode = activeMode();
+      const character = activeCharacter();
       const nexusBonus = meta.skills.nexus * 0.02;
       const damageBonus = 1 + nexusBonus + meta.gear.blaster * 0.15 + meta.skills.force * 0.05 + (loot.damage || 0) / 100;
       const baseHealth = 100 + meta.gear.armor * 20 + meta.skills.vitality * 8 + (loot.health || 0);
-      const maxHealth = Math.round(baseHealth * (1 + nexusBonus + meta.skills.fortitude * 0.05) * (mode.playerHealth || 1));
+      const maxHealth = Math.round(
+        baseHealth
+        * (1 + nexusBonus + meta.skills.fortitude * 0.05)
+        * (mode.playerHealth || 1)
+        * character.health
+      );
       const speedBonus = 1 + nexusBonus + meta.gear.boots * 0.07 + meta.skills.agility * 0.03 + (loot.speed || 0) / 100;
       enemies.length = 0;
       projectiles.length = 0;
@@ -2556,18 +2750,21 @@
       Object.assign(player, {
         x: width / 2,
         y: height / 2,
-        speed: 230 * speedBonus,
+        speed: 230 * speedBonus * character.speed,
         health: maxHealth,
         maxHealth,
-        damage: 18 * damageBonus * (mode.playerDamage || 1),
-        fireRate: 0.58 / (1 + meta.skills.rapidFire * 0.04 + (loot.fireRate || 0) / 100),
+        damage: 18 * damageBonus * (mode.playerDamage || 1) * character.damage,
+        fireRate: 0.58 * character.fireRate / (1 + meta.skills.rapidFire * 0.04 + (loot.fireRate || 0) / 100),
         fireTimer: 0,
         projectileSpeed: 560 * (1 + meta.skills.overcharge * 0.1 + (loot.projectileSpeed || 0) / 100),
         projectiles: 1 + meta.skills.arsenal,
         pierce: 0,
-        magnet: 90 + meta.skills.magnetism * 15 + (loot.magnet || 0),
-        armor: meta.skills.barrier + (loot.armor || 0),
-        critChance: Math.min(0.75, 0.08 + meta.skills.precision * 0.02 + (loot.critChance || 0) / 100),
+        magnet: (90 + meta.skills.magnetism * 15 + (loot.magnet || 0)) * character.magnet,
+        armor: meta.skills.barrier + (loot.armor || 0) + character.armor,
+        critChance: Math.min(
+          0.75,
+          0.08 + meta.skills.precision * 0.02 + (loot.critChance || 0) / 100 + character.critChance
+        ),
         level: 1,
         xp: 0,
         xpNeeded: 18,
@@ -2577,6 +2774,7 @@
         invulnerable: 0,
         overdriveTimer: 0,
         novaCharge: 0,
+        characterId: meta.selectedCharacter,
         weaponId: meta.inventory.find(item => item.id === meta.equipped.blaster)?.baseId ?? null,
         facing: -Math.PI / 2,
         moving: false
@@ -2621,7 +2819,12 @@
       killsDisplay.textContent = kills;
       comboDisplay.textContent = `x${combo}`;
       novaFill.style.width = `${player.novaCharge}%`;
-      novaLabel.textContent = player.novaCharge >= 100 ? "NOVA READY - Q" : `NOVA ${Math.floor(player.novaCharge)}%`;
+      const abilityName = (characters[player.characterId] ?? activeCharacter()).ability;
+      novaLabel.textContent = player.novaCharge >= 100
+        ? `${abilityName.toUpperCase()} READY - Q`
+        : `${abilityName.toUpperCase()} ${Math.floor(player.novaCharge)}%`;
+      novaButton.textContent = abilityName;
+      novaButton.style.setProperty("--ability-color", (characters[player.characterId] ?? activeCharacter()).color);
       novaButton.classList.toggle("ready", player.novaCharge >= 100);
       const activePowers = [];
       if (player.invulnerable > 1) activePowers.push(`Shield ${player.invulnerable.toFixed(1)}s`);
@@ -2877,10 +3080,11 @@
       burst(player.x, player.y, "#67e8f9", 14);
     }
 
-    function useNova() {
+    function useAbility() {
       if (state !== "playing" || player.novaCharge < 100) return;
       player.novaCharge = 0;
-      const radius = 285;
+      const character = characters[player.characterId] ?? characters.ranger;
+      const radius = character === characters.oracle ? 360 : 285;
       const damage = Math.max(140, player.damage * 8);
       shockwaves.push({
         x: player.x,
@@ -2888,13 +3092,60 @@
         radius: 20,
         maxRadius: radius,
         life: 0.65,
-        maxLife: 0.65
+        maxLife: 0.65,
+        color: character.color
       });
+
+      if (player.characterId === "vanguard") {
+        player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.3);
+        player.invulnerable = Math.max(player.invulnerable, 5);
+        for (const enemy of enemies) {
+          const dx = enemy.x - player.x;
+          const dy = enemy.y - player.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          if (distance > radius + enemy.radius) continue;
+          enemy.health -= damage * 0.28;
+          enemy.x += dx / distance * 90;
+          enemy.y += dy / distance * 90;
+        }
+      } else if (player.characterId === "striker") {
+        player.overdriveTimer = Math.max(player.overdriveTimer, 14);
+        player.dashTimer = 0;
+        for (let index = enemies.length - 1; index >= 0; index -= 1) {
+          const enemy = enemies[index];
+          if (Math.hypot(enemy.x - player.x, enemy.y - player.y) > radius + enemy.radius) continue;
+          weaponEffects.push({
+            type: "arc",
+            x1: player.x,
+            y1: player.y,
+            x2: enemy.x,
+            y2: enemy.y,
+            life: 0.24,
+            maxLife: 0.24
+          });
+          enemy.health -= damage * 0.42;
+          if (enemy.health <= 0) defeatEnemy(index);
+        }
+      } else {
+        for (let index = enemies.length - 1; index >= 0; index -= 1) {
+          const enemy = enemies[index];
+          const dx = player.x - enemy.x;
+          const dy = player.y - enemy.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          if (distance > radius + enemy.radius) continue;
+          if (player.characterId === "oracle") {
+            enemy.x += dx / distance * Math.min(150, distance * 0.5);
+            enemy.y += dy / distance * Math.min(150, distance * 0.5);
+            enemy.health -= enemy.boss ? damage * 0.4 : damage * 0.72;
+          } else {
+            enemy.health -= enemy.boss ? damage * 0.55 : damage;
+          }
+          if (enemy.health <= 0) defeatEnemy(index);
+        }
+      }
+
       for (let index = enemies.length - 1; index >= 0; index -= 1) {
-        const enemy = enemies[index];
-        if (Math.hypot(enemy.x - player.x, enemy.y - player.y) > radius + enemy.radius) continue;
-        enemy.health -= enemy.boss ? damage * 0.55 : damage;
-        if (enemy.health <= 0) defeatEnemy(index);
+        if (enemies[index].health <= 0) defeatEnemy(index);
       }
       for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
         const projectile = enemyProjectiles[index];
@@ -2902,13 +3153,15 @@
           enemyProjectiles.splice(index, 1);
         }
       }
-      for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
-        const crate = supplyCrates[index];
-        if (Math.hypot(crate.x - player.x, crate.y - player.y) <= radius) breakSupplyCrate(index);
+      if (player.characterId === "ranger") {
+        for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
+          const crate = supplyCrates[index];
+          if (Math.hypot(crate.x - player.x, crate.y - player.y) <= radius) breakSupplyCrate(index);
+        }
       }
       player.invulnerable = Math.max(player.invulnerable, 0.7);
       shake = 18;
-      burst(player.x, player.y, "#fde047", 45);
+      burst(player.x, player.y, character.color, 45);
       updateHud();
     }
 
@@ -3106,7 +3359,11 @@
       combo = comboTimer > 0 ? combo + 1 : 1;
       bestCombo = Math.max(bestCombo, combo);
       comboTimer = 3;
-      player.novaCharge = Math.min(100, player.novaCharge + (enemy.boss ? 40 : enemy.elite ? 18 : 8));
+      const chargeRate = (characters[player.characterId] ?? characters.ranger).chargeRate;
+      player.novaCharge = Math.min(
+        100,
+        player.novaCharge + (enemy.boss ? 40 : enemy.elite ? 18 : 8) * chargeRate
+      );
       const gemCount = enemy.boss ? 12 : enemy.elite ? 5 : 1;
       for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
         gems.push({
@@ -3884,6 +4141,14 @@
     }
 
     function drawPlayer() {
+      const character = characters[player.characterId] ?? characters.ranger;
+      const palettes = {
+        ranger: { legs: "#172554", trim: "#60a5fa", body: "#0e7490", outline: "#a5f3fc", visor: "#22d3ee" },
+        vanguard: { legs: "#14532d", trim: "#4ade80", body: "#166534", outline: "#bbf7d0", visor: "#86efac" },
+        striker: { legs: "#713f12", trim: "#facc15", body: "#ca8a04", outline: "#fef08a", visor: "#fde047" },
+        oracle: { legs: "#3b0764", trim: "#c084fc", body: "#7e22ce", outline: "#e9d5ff", visor: "#d8b4fe" }
+      };
+      const palette = palettes[player.characterId] ?? palettes.ranger;
       context.save();
       context.translate(player.x, player.y);
       context.rotate(player.facing);
@@ -3902,17 +4167,17 @@
       context.restore();
 
       const stride = player.moving ? Math.sin(elapsed * 15) * 3 : 0;
-      context.fillStyle = "#172554";
-      context.strokeStyle = "#60a5fa";
+      context.fillStyle = palette.legs;
+      context.strokeStyle = palette.trim;
       context.lineWidth = 1.5;
       context.fillRect(-13 + stride, -10, 12, 6);
       context.strokeRect(-13 + stride, -10, 12, 6);
       context.fillRect(-13 - stride, 4, 12, 6);
       context.strokeRect(-13 - stride, 4, 12, 6);
 
-      context.shadowColor = "#22d3ee";
+      context.shadowColor = character.color;
       context.shadowBlur = 18;
-      context.fillStyle = "#0e7490";
+      context.fillStyle = palette.body;
       context.beginPath();
       context.moveTo(9, -11);
       context.lineTo(15, -6);
@@ -3923,14 +4188,14 @@
       context.lineTo(-10, -9);
       context.closePath();
       context.fill();
-      context.strokeStyle = "#a5f3fc";
+      context.strokeStyle = palette.outline;
       context.lineWidth = 2;
       context.stroke();
 
       context.shadowBlur = 8;
       context.fillStyle = "#1e293b";
       context.fillRect(4, -13, 20, 5);
-      context.strokeStyle = "#67e8f9";
+      context.strokeStyle = palette.trim;
       context.strokeRect(4, -13, 20, 5);
       context.fillStyle = "#e0f2fe";
       context.fillRect(20, -12, 7, 3);
@@ -3941,10 +4206,40 @@
       context.fill();
       context.strokeStyle = "#bae6fd";
       context.stroke();
-      context.fillStyle = "#22d3ee";
+      context.fillStyle = palette.visor;
       context.beginPath();
       context.ellipse(5, 0, 4, 2.5, 0, 0, Math.PI * 2);
       context.fill();
+
+      context.save();
+      context.strokeStyle = palette.outline;
+      context.fillStyle = palette.body;
+      context.lineWidth = 2;
+      if (player.characterId === "vanguard") {
+        context.beginPath();
+        context.arc(-10, 0, 9, Math.PI / 2, Math.PI * 1.5);
+        context.lineTo(-5, -8);
+        context.lineTo(-5, 8);
+        context.closePath();
+        context.fill();
+        context.stroke();
+      } else if (player.characterId === "striker") {
+        context.beginPath();
+        context.moveTo(-8, -12);
+        context.lineTo(-18, -3);
+        context.lineTo(-10, 0);
+        context.lineTo(-18, 7);
+        context.lineTo(-7, 10);
+        context.stroke();
+      } else if (player.characterId === "oracle") {
+        context.beginPath();
+        context.arc(0, 0, player.radius + 5, 0, Math.PI * 2);
+        context.stroke();
+        context.beginPath();
+        context.arc(0, 0, 3, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
 
       if (player.overdriveTimer > 0) {
         context.save();
@@ -4016,8 +4311,8 @@
         const alpha = Math.max(0, shockwave.life / shockwave.maxLife);
         context.save();
         context.globalAlpha = alpha;
-        context.strokeStyle = "#fde047";
-        context.shadowColor = "#f59e0b";
+        context.strokeStyle = shockwave.color || "#fde047";
+        context.shadowColor = shockwave.color || "#f59e0b";
         context.shadowBlur = 25;
         context.lineWidth = 7 * alpha + 2;
         context.beginPath();
@@ -4206,7 +4501,7 @@
       if (gameplayInput) keys.add(key);
       if (event.repeat) return;
       if (gameplayInput && key === " ") dash();
-      if (gameplayInput && key === "q") useNova();
+      if (gameplayInput && key === "q") useAbility();
       if (!interactiveTarget && key === "escape") togglePause();
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
@@ -4257,7 +4552,7 @@
     });
     novaButton.addEventListener("pointerdown", event => {
       event.preventDefault();
-      useNova();
+      useAbility();
     });
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
