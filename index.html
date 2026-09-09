@@ -370,10 +370,43 @@
       transition: border-color 150ms ease, filter 150ms ease, transform 150ms ease;
     }
 
+    .chest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .chest-button {
+      min-height: 8.5rem;
+      padding: 0.7rem;
+    }
+
+    .chest-button[data-chest="reinforced"] {
+      border-color: #60a5fa;
+      background: linear-gradient(145deg, rgb(59 130 246 / 22%), transparent), #111827;
+    }
+
+    .chest-button[data-chest="relic"] {
+      border-color: #c084fc;
+      background: linear-gradient(145deg, rgb(192 132 252 / 24%), transparent), #1e1030;
+    }
+
+    .chest-button em {
+      display: block;
+      margin-top: 0.45rem;
+      color: #fde68a;
+      font-size: 0.65rem;
+      font-style: normal;
+    }
+
     .chest-button:not(:disabled):hover {
       border-color: #fde68a;
       filter: brightness(1.16);
       transform: translateY(-2px);
+    }
+
+    .chest-button.selected {
+      box-shadow: inset 0 0 0 2px white, 0 0 1.2rem rgb(255 255 255 / 16%);
     }
 
     .chest-button strong,
@@ -603,20 +636,20 @@
       width: 2.6rem;
       height: 2.6rem;
       border: 2px solid color-mix(in srgb, var(--character-color) 70%, white);
-      border-radius: 45% 45% 36% 36%;
+      border-radius: 50% 50% 44% 44%;
       background: color-mix(in srgb, var(--character-color) 48%, #0f172a);
       box-shadow: 0 0 1.3rem var(--character-color);
       content: "";
-      transform: rotate(45deg);
     }
 
     .character-portrait::after {
       position: absolute;
-      width: 1.45rem;
-      height: 0.35rem;
-      border-radius: 999px;
+      width: 0.35rem;
+      height: 0.45rem;
+      margin-left: -0.75rem;
+      border-radius: 50%;
       background: white;
-      box-shadow: 0 0 0.7rem var(--character-color);
+      box-shadow: 1.45rem 0 white, 0 0 0.7rem var(--character-color);
       content: "";
     }
 
@@ -1229,6 +1262,39 @@
       text-transform: uppercase;
     }
 
+    .pause-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.55rem;
+      margin: 1rem 0 1.3rem;
+      text-align: left;
+    }
+
+    .pause-stat {
+      padding: 0.65rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.55rem;
+      background: rgb(255 255 255 / 4%);
+    }
+
+    .pause-stat small,
+    .pause-stat strong {
+      display: block;
+    }
+
+    .pause-stat small {
+      color: #94a3b8;
+      font-size: 0.6rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .pause-stat strong {
+      margin-top: 0.15rem;
+      color: #e0f2fe;
+      font-size: 0.9rem;
+    }
+
     @media (pointer: coarse), (max-width: 700px) {
       .mobile-controls {
         display: flex;
@@ -1269,6 +1335,11 @@
       .skill-grid {
         overflow-x: auto;
         padding: 0.2rem 0.2rem 0.8rem;
+      }
+
+      .chest-grid,
+      .pause-stats {
+        grid-template-columns: 1fr;
       }
 
       .skill-branches {
@@ -1364,12 +1435,26 @@
       <div class="hub-grid">
         <section class="hub-section">
           <h2>Recovered chests</h2>
-          <p>Runs award chests. Every chest contains a randomized equipment drop and bonus scrap.</p>
-          <button id="openChestButton" class="chest-button">
-            <strong>Open chest</strong>
-            <span id="chestHint">Contains equipment + 5-10 scrap</span>
-          </button>
-          <button id="buyChestButton" class="buy-chest-button">Buy chest - 25 scrap</button>
+          <p>Choose a cache. Higher chest tiers improve the minimum loot rarity and scrap payout.</p>
+          <div class="chest-grid">
+            <button id="openChestButton" class="chest-button" data-chest="field">
+              <strong>Field Cache</strong>
+              <span id="chestHint">1 available · Any rarity</span>
+              <em>Buy: 25 scrap</em>
+            </button>
+            <button id="openReinforcedChestButton" class="chest-button" data-chest="reinforced">
+              <strong>Reinforced Cache</strong>
+              <span id="reinforcedChestHint">0 available · Uncommon+</span>
+              <em>Buy: 65 scrap</em>
+            </button>
+            <button id="openRelicChestButton" class="chest-button" data-chest="relic">
+              <strong>Relic Vault</strong>
+              <span id="relicChestHint">0 available · Rare+</span>
+              <em>Buy: 140 scrap</em>
+            </button>
+          </div>
+          <button id="openSelectedChestButton" class="buy-chest-button">Open selected chest</button>
+          <button id="buyChestButton" class="buy-chest-button">Buy selected chest</button>
           <div id="chestResult" class="chest-result"></div>
         </section>
         <section class="hub-section">
@@ -1433,6 +1518,7 @@
       <div class="eyebrow">Run paused</div>
       <h2>Take a breath</h2>
       <p>The arena is frozen until you are ready.</p>
+      <div id="pauseStats" class="pause-stats"></div>
       <div class="overlay-actions">
         <button id="resumeButton" class="primary">Resume</button>
         <button id="lobbyButton" class="secondary">Return to lobby</button>
@@ -1466,6 +1552,7 @@
         <div><strong id="finalKills">0</strong><span>Kills</span></div>
         <div><strong id="finalCombo">0</strong><span>Best combo</span></div>
         <div><strong id="earnedChests">0</strong><span>Chests</span></div>
+        <div><strong id="earnedScrap">0</strong><span>Scrap</span></div>
         <div><strong id="finalMultiplier">x1</strong><span>Reward multiplier</span></div>
       </div>
       <button id="restartButton" class="primary">Return to safehouse</button>
@@ -1500,8 +1587,13 @@
     const chestCount = document.querySelector("#chestCount");
     const scrapCount = document.querySelector("#scrapCount");
     const openChestButton = document.querySelector("#openChestButton");
+    const openReinforcedChestButton = document.querySelector("#openReinforcedChestButton");
+    const openRelicChestButton = document.querySelector("#openRelicChestButton");
+    const openSelectedChestButton = document.querySelector("#openSelectedChestButton");
     const buyChestButton = document.querySelector("#buyChestButton");
     const chestHint = document.querySelector("#chestHint");
+    const reinforcedChestHint = document.querySelector("#reinforcedChestHint");
+    const relicChestHint = document.querySelector("#relicChestHint");
     const chestResult = document.querySelector("#chestResult");
     const gearGrid = document.querySelector("#gearGrid");
     const modeGrid = document.querySelector("#modeGrid");
@@ -1510,6 +1602,7 @@
     const inventoryCount = document.querySelector("#inventoryCount");
     const skillGrid = document.querySelector("#skillGrid");
     const characterGrid = document.querySelector("#characterGrid");
+    const pauseStats = document.querySelector("#pauseStats");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -1541,6 +1634,7 @@
     let waveBannerTimer = 0;
     let rewardMultiplier = 1;
     let runRewardClaimed = false;
+    let selectedChestType = "field";
 
     const gameModes = {
       survival: {
@@ -1788,6 +1882,28 @@
         description: level => `Start with ${level} additional projectile${level === 1 ? "" : "s"}.`
       },
       {
+        id: "knockback",
+        name: "Impact Drive",
+        icon: "knockback",
+        accent: "#fb923c",
+        branch: "offense",
+        tier: 6,
+        maxLevel: 3,
+        requires: { id: "arsenal", level: 1 },
+        description: level => `+${level * 14}% weapon knockback.`
+      },
+      {
+        id: "execution",
+        name: "Execution Protocol",
+        icon: "crit",
+        accent: "#ef4444",
+        branch: "offense",
+        tier: 7,
+        maxLevel: 3,
+        requires: { id: "knockback", level: 2 },
+        description: level => `+${level * 6}% damage against enemies below half health.`
+      },
+      {
         id: "vitality",
         name: "Vitality Core",
         icon: "health",
@@ -1843,6 +1959,28 @@
         description: level => `Heal ${level * 6}% maximum health at each new wave.`
       },
       {
+        id: "guardian",
+        name: "Guardian Matrix",
+        icon: "armor",
+        accent: "#60a5fa",
+        branch: "defense",
+        tier: 6,
+        maxLevel: 3,
+        requires: { id: "secondWind", level: 2 },
+        description: level => `Gain ${level * 0.6} seconds of shielding at each new wave.`
+      },
+      {
+        id: "resilience",
+        name: "Last Bastion",
+        icon: "health",
+        accent: "#14b8a6",
+        branch: "defense",
+        tier: 7,
+        maxLevel: 3,
+        requires: { id: "guardian", level: 2 },
+        description: level => `Take ${level * 4}% less damage.`
+      },
+      {
         id: "agility",
         name: "Agility Core",
         icon: "speed",
@@ -1877,14 +2015,14 @@
       },
       {
         id: "fortune",
-        name: "Fortune Scanner",
+        name: "Luck",
         icon: "fortune",
         accent: "#e879f9",
         branch: "utility",
         tier: 4,
         maxLevel: 3,
         requires: { id: "magnetism", level: 2 },
-        description: level => `+${level * 4}% chance to improve chest rarity.`
+        description: level => `+${level * 5}% better loot and supply-drop luck.`
       },
       {
         id: "scavenger",
@@ -1896,15 +2034,38 @@
         maxLevel: 3,
         requires: { id: "fortune", level: 2 },
         description: level => `+${level * 2} scrap from chests and salvaged equipment.`
+      },
+      {
+        id: "bounty",
+        name: "Bounty Uplink",
+        icon: "fortune",
+        accent: "#f59e0b",
+        branch: "utility",
+        tier: 6,
+        maxLevel: 3,
+        requires: { id: "scavenger", level: 2 },
+        description: level => `Earn +${level} scrap for every 12 enemies defeated.`
+      },
+      {
+        id: "supplyLuck",
+        name: "Supply Whisperer",
+        icon: "repair",
+        accent: "#84cc16",
+        branch: "utility",
+        tier: 7,
+        maxLevel: 3,
+        requires: { id: "bounty", level: 2 },
+        description: level => `+${level * 6}% supply drop chance from elite enemies.`
       }
     ];
 
     const lootRarities = {
-      common: { name: "Common", color: "#cbd5e1", power: 1, salvage: 4, chance: 0.48 },
-      uncommon: { name: "Uncommon", color: "#4ade80", power: 1.45, salvage: 8, chance: 0.28 },
-      rare: { name: "Rare", color: "#60a5fa", power: 2, salvage: 14, chance: 0.15 },
-      epic: { name: "Epic", color: "#c084fc", power: 2.75, salvage: 24, chance: 0.07 },
-      legendary: { name: "Legendary", color: "#fbbf24", power: 3.7, salvage: 40, chance: 0.02 }
+      common: { name: "Common", color: "#cbd5e1", power: 1, salvage: 4, chance: 0.442 },
+      uncommon: { name: "Uncommon", color: "#4ade80", power: 1.45, salvage: 8, chance: 0.27 },
+      rare: { name: "Rare", color: "#60a5fa", power: 2, salvage: 14, chance: 0.16 },
+      epic: { name: "Epic", color: "#c084fc", power: 2.75, salvage: 24, chance: 0.08 },
+      legendary: { name: "Legendary", color: "#fbbf24", power: 3.7, salvage: 40, chance: 0.04 },
+      mythic: { name: "Mythic", color: "#fb7185", power: 4.8, salvage: 65, chance: 0.008 }
     };
 
     const lootSlots = {
@@ -1959,6 +2120,71 @@
               glow: "#3b82f6"
             },
             stats: { fireRate: [4, 7], projectileSpeed: [8, 14] }
+          },
+          {
+            id: "scatter-blaster",
+            name: "Scatter Blaster",
+            trait: "Fires a wide 5-pellet burst that shreds enemies up close.",
+            weapon: {
+              kind: "scatter",
+              damageMultiplier: 0.3,
+              cooldownMultiplier: 1.25,
+              speedMultiplier: 0.9,
+              bonusProjectiles: 4,
+              spread: 0.22,
+              color: "#fee2e2",
+              glow: "#ef4444"
+            },
+            stats: { damage: [5, 9], knockback: [8, 14] }
+          },
+          {
+            id: "rail-lance",
+            name: "Rail Lance",
+            trait: "Fires a hyperfast beam that pierces 3 additional targets.",
+            weapon: {
+              kind: "rail",
+              damageMultiplier: 2.15,
+              cooldownMultiplier: 1.85,
+              speedMultiplier: 1.6,
+              innatePierce: 3,
+              radius: 3,
+              color: "#ecfccb",
+              glow: "#84cc16"
+            },
+            stats: { damage: [9, 14], projectileSpeed: [10, 16] }
+          },
+          {
+            id: "frost-caster",
+            name: "Frost Caster",
+            trait: "Chilling bolts slow enemies for 2 seconds.",
+            weapon: {
+              kind: "frost",
+              damageMultiplier: 0.82,
+              cooldownMultiplier: 0.9,
+              slow: 0.45,
+              slowDuration: 2,
+              radius: 5,
+              color: "#e0f2fe",
+              glow: "#38bdf8"
+            },
+            stats: { fireRate: [3, 6], critChance: [1, 3] }
+          },
+          {
+            id: "graviton-disc",
+            name: "Graviton Disc",
+            trait: "A broad kinetic disc with extreme knockback and innate piercing.",
+            weapon: {
+              kind: "disc",
+              damageMultiplier: 1.05,
+              cooldownMultiplier: 1.2,
+              speedMultiplier: 0.72,
+              innatePierce: 2,
+              knockbackMultiplier: 2.4,
+              radius: 10,
+              color: "#f3e8ff",
+              glow: "#d946ef"
+            },
+            stats: { damage: [6, 11], knockback: [12, 20] }
           }
         ]
       },
@@ -1990,7 +2216,8 @@
       regen: { label: "Health regeneration", format: value => `+${value}/s` },
       magnet: { label: "Pickup range", format: value => `+${value}` },
       speed: { label: "Movement speed", format: value => `+${value}%` },
-      dashCooldown: { label: "Dash recharge", format: value => `+${value}%` }
+      dashCooldown: { label: "Dash recharge", format: value => `+${value}%` },
+      knockback: { label: "Knockback", format: value => `+${value}%` }
     };
 
     const defaultWeapon = {
@@ -2072,11 +2299,39 @@
       }
     };
 
+    const chestDefinitions = {
+      field: {
+        name: "Field Cache",
+        key: "chests",
+        cost: 25,
+        minimumRarity: "common",
+        scrap: [5, 10],
+        color: "#facc15"
+      },
+      reinforced: {
+        name: "Reinforced Cache",
+        key: "reinforcedChests",
+        cost: 65,
+        minimumRarity: "uncommon",
+        scrap: [14, 24],
+        color: "#60a5fa"
+      },
+      relic: {
+        name: "Relic Vault",
+        key: "relicChests",
+        cost: 140,
+        minimumRarity: "rare",
+        scrap: [30, 48],
+        color: "#c084fc"
+      }
+    };
+
     const inventoryLimit = 24;
-    const chestCost = 25;
 
     const defaultMeta = {
       chests: 1,
+      reinforcedChests: 0,
+      relicChests: 0,
       scrap: 0,
       selectedMode: "survival",
       selectedCharacter: "ranger",
@@ -2107,7 +2362,13 @@
         phaseDrive: 0,
         magnetism: 0,
         fortune: 0,
-        scavenger: 0
+        scavenger: 0,
+        knockback: 0,
+        execution: 0,
+        guardian: 0,
+        resilience: 0,
+        bounty: 0,
+        supplyLuck: 0
       }
     };
 
@@ -2171,6 +2432,8 @@
         }
         const normalized = {
           chests: Math.max(0, Math.floor(Number(parsed.chests) || 0)),
+          reinforcedChests: Math.max(0, Math.floor(Number(parsed.reinforcedChests) || 0)),
+          relicChests: Math.max(0, Math.floor(Number(parsed.relicChests) || 0)),
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
           selectedCharacter: Object.hasOwn(characters, parsed.selectedCharacter) ? parsed.selectedCharacter : "ranger",
@@ -2225,6 +2488,7 @@
         crit: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
         projectile: '<path d="m4 18 14-12M9 5l9 1-1 9"/><path d="M4 13v5h5"/>',
         dash: '<path d="M2 8h7M1 12h8M2 16h7l9-4-9-4"/>',
+        knockback: '<path d="M3 12h12m-5-5 5 5-5 5"/><path d="M19 5v14"/>',
         fortune: '<path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><circle cx="12" cy="12" r="2"/>',
         nature: '<path d="M12 21V9"/><path d="M12 13c-5 0-8-3-8-8 5 0 8 3 8 8zm0 4c5 0 8-3 8-8-5 0-8 3-8 8z"/>',
         desert: '<circle cx="17" cy="6" r="3"/><path d="M2 19c4-5 8-5 12 0 3-3 5-3 8 0M17 1v2m0 6v2m-5-5h2m6 0h2"/>',
@@ -2242,24 +2506,30 @@
         .filter(Boolean);
     }
 
-    function rollLootRarity() {
+    function rollLootRarity(chestType = "field") {
       let roll = Math.random();
-      if (Math.random() < meta.skills.fortune * 0.04) {
+      if (Math.random() < meta.skills.fortune * 0.05) {
         roll = Math.max(roll, Math.random());
       }
+      let rolledRarity = "common";
       for (const [id, rarity] of Object.entries(lootRarities)) {
         roll -= rarity.chance;
-        if (roll <= 0) return id;
+        if (roll <= 0) {
+          rolledRarity = id;
+          break;
+        }
       }
-      return "common";
+      const rarityIds = Object.keys(lootRarities);
+      const minimumRarity = chestDefinitions[chestType]?.minimumRarity ?? "common";
+      return rarityIds[Math.max(rarityIds.indexOf(rolledRarity), rarityIds.indexOf(minimumRarity))];
     }
 
-    function createLoot() {
+    function createLoot(chestType = "field") {
       const slotIds = Object.keys(lootSlots);
       const slot = slotIds[Math.floor(Math.random() * slotIds.length)];
       const bases = lootSlots[slot].bases;
       const base = bases[Math.floor(Math.random() * bases.length)];
-      const rarity = rollLootRarity();
+      const rarity = rollLootRarity(chestType);
       const power = lootRarities[rarity].power;
       const stats = {};
       for (const [stat, range] of Object.entries(base.stats)) {
@@ -2374,6 +2644,9 @@
       projectileSpeed: 560,
       projectiles: 1,
       pierce: 0,
+      knockback: 18,
+      executeBonus: 0,
+      damageReduction: 0,
       magnet: 90,
       armor: 0,
       critChance: 0.08,
@@ -2578,25 +2851,37 @@
     }
 
     function buyChest() {
-      if (meta.scrap < chestCost) return;
-      meta.scrap -= chestCost;
-      meta.chests += 1;
-      chestResult.textContent = "Purchased one recovered chest.";
+      const chest = chestDefinitions[selectedChestType];
+      if (!chest || meta.scrap < chest.cost) return;
+      meta.scrap -= chest.cost;
+      meta[chest.key] += 1;
+      chestResult.textContent = `Purchased one ${chest.name}.`;
       saveMeta();
       renderHub();
     }
 
     function renderHub() {
-      chestCount.textContent = meta.chests;
+      chestCount.textContent = meta.chests + meta.reinforcedChests + meta.relicChests;
       scrapCount.textContent = meta.scrap;
-      buyChestButton.disabled = meta.scrap < chestCost;
-      buyChestButton.textContent = `Buy chest - ${chestCost} scrap`;
+      const selectedChest = chestDefinitions[selectedChestType];
+      buyChestButton.disabled = meta.scrap < selectedChest.cost;
+      buyChestButton.textContent = `Buy ${selectedChest.name} - ${selectedChest.cost} scrap`;
       const inventoryFull = meta.inventory.length >= inventoryLimit;
-      openChestButton.disabled = meta.chests < 1 || inventoryFull;
-      const chestScrapBonus = meta.skills.scavenger * 2;
-      chestHint.textContent = inventoryFull
-        ? "Vault full - salvage an item first"
-        : `Contains equipment + ${5 + chestScrapBonus}-${10 + chestScrapBonus} scrap`;
+      openSelectedChestButton.disabled = inventoryFull || meta[selectedChest.key] < 1;
+      openSelectedChestButton.textContent = inventoryFull
+        ? "Vault full - salvage an item"
+        : `Open ${selectedChest.name} (${meta[selectedChest.key]} available)`;
+      const chestButtons = {
+        field: [openChestButton, chestHint],
+        reinforced: [openReinforcedChestButton, reinforcedChestHint],
+        relic: [openRelicChestButton, relicChestHint]
+      };
+      for (const [type, [button, hint]] of Object.entries(chestButtons)) {
+        const chest = chestDefinitions[type];
+        const count = meta[chest.key];
+        button.classList.toggle("selected", selectedChestType === type);
+        hint.textContent = `${count} available · ${chest.minimumRarity === "common" ? "Any rarity" : `${lootRarities[chest.minimumRarity].name}+ loot`}`;
+      }
       gearGrid.innerHTML = gearDefinitions.map(gear => {
         const level = meta.gear[gear.id];
         const cost = gearCost(level);
@@ -2657,16 +2942,28 @@
       updateBestRun();
     }
 
-    function openChest() {
-      if (meta.chests < 1 || meta.inventory.length >= inventoryLimit) return;
-      meta.chests -= 1;
-      const scrap = 5 + Math.floor(Math.random() * 6) + meta.skills.scavenger * 2;
-      const item = createLoot();
+    function selectChest(type) {
+      if (!chestDefinitions[type]) return;
+      selectedChestType = type;
+      const chest = chestDefinitions[type];
+      chestResult.textContent = `${chest.name} selected.`;
+      renderHub();
+    }
+
+    function openChest(type = "field") {
+      const chest = chestDefinitions[type];
+      if (!chest || meta[chest.key] < 1 || meta.inventory.length >= inventoryLimit) return;
+      meta[chest.key] -= 1;
+      const scrapRange = chest.scrap;
+      const scrap = scrapRange[0]
+        + Math.floor(Math.random() * (scrapRange[1] - scrapRange[0] + 1))
+        + meta.skills.scavenger * 2;
+      const item = createLoot(type);
       meta.scrap += scrap;
       meta.inventory.push(item);
       if (!meta.equipped[item.slot]) meta.equipped[item.slot] = item.id;
       const rarity = lootRarities[item.rarity];
-      chestResult.innerHTML = `Found <span style="color:${rarity.color}">${rarity.name} ${lootName(item)}</span> and ${scrap} scrap.`;
+      chestResult.innerHTML = `${chest.name}: found <span style="color:${rarity.color}">${rarity.name} ${lootName(item)}</span> and ${scrap} scrap.`;
       saveMeta();
       renderHub();
     }
@@ -2759,6 +3056,9 @@
         projectileSpeed: 560 * (1 + meta.skills.overcharge * 0.1 + (loot.projectileSpeed || 0) / 100),
         projectiles: 1 + meta.skills.arsenal,
         pierce: 0,
+        knockback: 18 * (1 + meta.skills.knockback * 0.14 + (loot.knockback || 0) / 100),
+        executeBonus: meta.skills.execution * 0.06,
+        damageReduction: meta.skills.resilience * 0.04,
         magnet: (90 + meta.skills.magnetism * 15 + (loot.magnet || 0)) * character.magnet,
         armor: meta.skills.barrier + (loot.armor || 0) + character.armor,
         critChance: Math.min(
@@ -2840,6 +3140,10 @@
       if (meta.skills.secondWind > 0) {
         player.health = Math.min(player.maxHealth, player.health + player.maxHealth * meta.skills.secondWind * 0.06);
         burst(player.x, player.y, "#4ade80", 12);
+      }
+      if (meta.skills.guardian > 0) {
+        player.invulnerable = Math.max(player.invulnerable, meta.skills.guardian * 0.6);
+        burst(player.x, player.y, "#60a5fa", 10);
       }
       const mode = activeMode();
       if (wave >= mode.bossStartWave && (wave - mode.bossStartWave) % mode.bossEvery === 0) {
@@ -3203,7 +3507,7 @@
           vy: Math.sin(angle) * player.projectileSpeed * (weapon.speedMultiplier || 1),
           radius: weapon.radius || defaultWeapon.radius,
           damage: player.damage * weapon.damageMultiplier,
-          remainingPierce: player.pierce,
+          remainingPierce: player.pierce + (weapon.innatePierce || 0),
           hitTargets: new Set(),
           effectTargets: new Set(),
           kind: weapon.kind,
@@ -3214,6 +3518,9 @@
           chainRange: weapon.chainRange || 0,
           blastRadius: weapon.blastRadius || 0,
           blastDamage: weapon.blastDamage || 0,
+          knockback: player.knockback * (weapon.knockbackMultiplier || 1),
+          slow: weapon.slow || 0,
+          slowDuration: weapon.slowDuration || 0,
           life: 1.5
         });
       }
@@ -3343,7 +3650,7 @@
 
     function damagePlayer(amount) {
       if (player.invulnerable > 0) return;
-      player.health -= Math.max(1, amount - player.armor);
+      player.health -= Math.max(1, (amount - player.armor) * (1 - player.damageReduction));
       player.invulnerable = 0.45;
       shake = 9;
       burst(player.x, player.y, "#fb7185", 10);
@@ -3386,7 +3693,8 @@
           spawned.xp = 2;
         }
       }
-      if (enemy.elite && Math.random() < 0.55) dropPickup(enemy.x, enemy.y);
+      const supplyChance = Math.min(0.9, 0.55 + meta.skills.fortune * 0.05 + meta.skills.supplyLuck * 0.06);
+      if (enemy.elite && Math.random() < supplyChance) dropPickup(enemy.x, enemy.y);
       burst(enemy.x, enemy.y, enemy.color, enemy.boss ? 36 : 9);
     }
 
@@ -3503,13 +3811,16 @@
       }
 
       for (const enemy of enemies) {
+        enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - delta);
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         const distance = Math.max(1, Math.hypot(dx, dy));
+        const moveSpeed = enemy.speed * (enemy.slowTimer > 0 ? enemy.slowMultiplier : 1);
         const preferredDistance = enemy.shootTimer > 0 && !enemy.boss ? 210 : 0;
         if (enemy.type === "charger" && enemy.chargeTime > 0) {
-          enemy.x += enemy.chargeVx * delta;
-          enemy.y += enemy.chargeVy * delta;
+          const chargeSlow = enemy.slowTimer > 0 ? enemy.slowMultiplier : 1;
+          enemy.x += enemy.chargeVx * delta * chargeSlow;
+          enemy.y += enemy.chargeVy * delta * chargeSlow;
           enemy.chargeTime -= delta;
         } else if (enemy.type === "charger" && enemy.chargeWindup > 0) {
           enemy.chargeWindup -= delta;
@@ -3524,12 +3835,12 @@
           if (enemy.chargeCooldown <= 0) {
             enemy.chargeWindup = 0.55;
           } else {
-            enemy.x += dx / distance * enemy.speed * delta;
-            enemy.y += dy / distance * enemy.speed * delta;
+            enemy.x += dx / distance * moveSpeed * delta;
+            enemy.y += dy / distance * moveSpeed * delta;
           }
         } else if (distance > preferredDistance) {
-          enemy.x += dx / distance * enemy.speed * delta;
-          enemy.y += dy / distance * enemy.speed * delta;
+          enemy.x += dx / distance * moveSpeed * delta;
+          enemy.y += dy / distance * moveSpeed * delta;
         }
         if (enemy.shootTimer > 0 || enemy.boss) {
           enemy.shootTimer -= delta;
@@ -3583,7 +3894,15 @@
           if (projectile.hitTargets.has(enemy) || !projectilesHit(projectile, enemy)) continue;
           projectile.hitTargets.add(enemy);
           const critical = Math.random() < player.critChance;
-          enemy.health -= projectile.damage * (critical ? 2 : 1);
+          const executeMultiplier = enemy.health <= enemy.maxHealth * 0.5 ? 1 + player.executeBonus : 1;
+          enemy.health -= projectile.damage * (critical ? 2 : 1) * executeMultiplier;
+          const projectileSpeed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
+          enemy.x += projectile.vx / projectileSpeed * projectile.knockback;
+          enemy.y += projectile.vy / projectileSpeed * projectile.knockback;
+          if (projectile.slow > 0) {
+            enemy.slowMultiplier = 1 - projectile.slow;
+            enemy.slowTimer = Math.max(enemy.slowTimer || 0, projectile.slowDuration);
+          }
           burst(projectile.x, projectile.y, critical ? "#facc15" : "#67e8f9", critical ? 7 : 3);
           triggerWeaponEffect(projectile, enemy);
           const currentEnemyIndex = enemies.indexOf(enemy);
@@ -3989,6 +4308,29 @@
           projectile.y + projectile.vy / speed * projectile.radius * 2
         );
         context.stroke();
+      } else if (friendly && projectile.kind === "rail") {
+        context.strokeStyle = "#d9f99d";
+        context.lineWidth = 2;
+        context.globalAlpha = 0.9;
+        context.beginPath();
+        context.moveTo(
+          projectile.x - projectile.vx / speed * 24,
+          projectile.y - projectile.vy / speed * 24
+        );
+        context.lineTo(projectile.x, projectile.y);
+        context.stroke();
+      } else if (friendly && projectile.kind === "frost") {
+        context.strokeStyle = "#bae6fd";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.arc(projectile.x, projectile.y, projectile.radius + 3, 0, Math.PI * 2);
+        context.stroke();
+      } else if (friendly && projectile.kind === "disc") {
+        context.strokeStyle = "#f5d0fe";
+        context.lineWidth = 3;
+        context.beginPath();
+        context.arc(projectile.x, projectile.y, projectile.radius + 2, 0.2, Math.PI - 0.2);
+        context.stroke();
       }
       context.restore();
     }
@@ -4143,10 +4485,10 @@
     function drawPlayer() {
       const character = characters[player.characterId] ?? characters.ranger;
       const palettes = {
-        ranger: { legs: "#172554", trim: "#60a5fa", body: "#0e7490", outline: "#a5f3fc", visor: "#22d3ee" },
-        vanguard: { legs: "#14532d", trim: "#4ade80", body: "#166534", outline: "#bbf7d0", visor: "#86efac" },
-        striker: { legs: "#713f12", trim: "#facc15", body: "#ca8a04", outline: "#fef08a", visor: "#fde047" },
-        oracle: { legs: "#3b0764", trim: "#c084fc", body: "#7e22ce", outline: "#e9d5ff", visor: "#d8b4fe" }
+        ranger: { skin: "#f2c6a0", body: "#0891b2", dark: "#164e63", trim: "#67e8f9", accent: "#e0f2fe" },
+        vanguard: { skin: "#d6a47b", body: "#15803d", dark: "#14532d", trim: "#4ade80", accent: "#dcfce7" },
+        striker: { skin: "#efbd91", body: "#ca8a04", dark: "#713f12", trim: "#facc15", accent: "#fef9c3" },
+        oracle: { skin: "#c9a7df", body: "#7e22ce", dark: "#3b0764", trim: "#c084fc", accent: "#f3e8ff" }
       };
       const palette = palettes[player.characterId] ?? palettes.ranger;
       context.save();
@@ -4157,89 +4499,133 @@
       context.save();
       context.rotate(-player.facing);
       context.scale(1, 0.48);
-      const shadow = context.createRadialGradient(0, 5, 1, 0, 5, 27);
+      const shadow = context.createRadialGradient(0, 8, 1, 0, 8, 27);
       shadow.addColorStop(0, "rgba(0,0,0,0.5)");
       shadow.addColorStop(1, "rgba(0,0,0,0)");
       context.fillStyle = shadow;
       context.beginPath();
-      context.arc(0, 5, 27, 0, Math.PI * 2);
+      context.arc(0, 8, 27, 0, Math.PI * 2);
       context.fill();
       context.restore();
 
-      const stride = player.moving ? Math.sin(elapsed * 15) * 3 : 0;
-      context.fillStyle = palette.legs;
-      context.strokeStyle = palette.trim;
-      context.lineWidth = 1.5;
-      context.fillRect(-13 + stride, -10, 12, 6);
-      context.strokeRect(-13 + stride, -10, 12, 6);
-      context.fillRect(-13 - stride, 4, 12, 6);
-      context.strokeRect(-13 - stride, 4, 12, 6);
-
+      const bob = player.moving ? Math.abs(Math.sin(elapsed * 13)) * 2 : 0;
+      const stride = player.moving ? Math.sin(elapsed * 13) * 3 : 0;
+      context.translate(0, -bob);
       context.shadowColor = character.color;
-      context.shadowBlur = 18;
-      context.fillStyle = palette.body;
+      context.shadowBlur = 12;
+      context.lineCap = "round";
+      context.strokeStyle = palette.dark;
+      context.lineWidth = 6;
       context.beginPath();
-      context.moveTo(9, -11);
-      context.lineTo(15, -6);
-      context.lineTo(15, 6);
-      context.lineTo(9, 11);
-      context.lineTo(-10, 9);
-      context.lineTo(-13, 0);
-      context.lineTo(-10, -9);
-      context.closePath();
-      context.fill();
-      context.strokeStyle = palette.outline;
-      context.lineWidth = 2;
+      context.moveTo(-7, 11);
+      context.lineTo(-10 - Math.abs(stride), 17);
+      context.moveTo(6, 11);
+      context.lineTo(8 + Math.abs(stride), 17);
       context.stroke();
 
-      context.shadowBlur = 8;
+      context.strokeStyle = palette.skin;
+      context.lineWidth = 7;
+      context.beginPath();
+      context.moveTo(-11, -1);
+      context.lineTo(-18, 4 + stride * 0.3);
+      context.moveTo(11, -1);
+      context.lineTo(18, -4);
+      context.stroke();
+
+      context.fillStyle = palette.body;
+      context.strokeStyle = palette.dark;
+      context.lineWidth = 2.5;
+      context.beginPath();
+      context.ellipse(0, 1, 15, 17, 0, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+
+      context.shadowBlur = 5;
+      context.fillStyle = palette.skin;
+      context.strokeStyle = palette.dark;
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(2, -7, 12, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+
+      context.fillStyle = "#111827";
+      context.beginPath();
+      context.arc(8, -9, 2.2, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = "white";
+      context.beginPath();
+      context.arc(8.7, -9.7, 0.65, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "#7c2d12";
+      context.lineWidth = 1.3;
+      context.beginPath();
+      context.arc(8, -4, 3, 0.25, 1.35);
+      context.stroke();
+
       context.fillStyle = "#1e293b";
-      context.fillRect(4, -13, 20, 5);
       context.strokeStyle = palette.trim;
-      context.strokeRect(4, -13, 20, 5);
-      context.fillStyle = "#e0f2fe";
-      context.fillRect(20, -12, 7, 3);
-
-      context.fillStyle = "#0f172a";
-      context.beginPath();
-      context.arc(2, 0, 8, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = "#bae6fd";
-      context.stroke();
-      context.fillStyle = palette.visor;
-      context.beginPath();
-      context.ellipse(5, 0, 4, 2.5, 0, 0, Math.PI * 2);
-      context.fill();
-
-      context.save();
-      context.strokeStyle = palette.outline;
-      context.fillStyle = palette.body;
       context.lineWidth = 2;
+      context.beginPath();
+      context.roundRect(9, -3, 22, 7, 3);
+      context.fill();
+      context.stroke();
+      context.fillStyle = palette.accent;
+      context.fillRect(27, -1.5, 7, 4);
+
       if (player.characterId === "vanguard") {
+        context.fillStyle = palette.dark;
+        context.strokeStyle = palette.trim;
         context.beginPath();
-        context.arc(-10, 0, 9, Math.PI / 2, Math.PI * 1.5);
-        context.lineTo(-5, -8);
-        context.lineTo(-5, 8);
+        context.arc(0, -10, 14, Math.PI, Math.PI * 2);
+        context.lineTo(14, -7);
+        context.lineTo(-14, -7);
         context.closePath();
         context.fill();
         context.stroke();
+        context.beginPath();
+        context.arc(-15, 2, 9, Math.PI / 2, Math.PI * 1.5);
+        context.stroke();
       } else if (player.characterId === "striker") {
+        context.strokeStyle = palette.trim;
+        context.lineWidth = 3;
         context.beginPath();
-        context.moveTo(-8, -12);
-        context.lineTo(-18, -3);
-        context.lineTo(-10, 0);
-        context.lineTo(-18, 7);
-        context.lineTo(-7, 10);
+        context.moveTo(-7, -17);
+        context.lineTo(-2, -25);
+        context.lineTo(2, -17);
+        context.lineTo(7, -24);
+        context.lineTo(9, -14);
         context.stroke();
+        context.fillStyle = "#111827";
+        context.fillRect(0, -13, 14, 5);
+        context.fillStyle = palette.trim;
+        context.fillRect(7, -12, 5, 3);
       } else if (player.characterId === "oracle") {
+        context.strokeStyle = palette.trim;
+        context.lineWidth = 3;
         context.beginPath();
-        context.arc(0, 0, player.radius + 5, 0, Math.PI * 2);
+        context.arc(1, -7, 16, Math.PI * 0.85, Math.PI * 2.15);
         context.stroke();
+        for (let orb = 0; orb < 3; orb += 1) {
+          const angle = elapsed * 1.8 + orb * Math.PI * 2 / 3;
+          context.fillStyle = palette.accent;
+          context.beginPath();
+          context.arc(Math.cos(angle) * 21, Math.sin(angle) * 10, 2.5, 0, Math.PI * 2);
+          context.fill();
+        }
+      } else {
+        context.strokeStyle = palette.trim;
+        context.lineWidth = 2.5;
         context.beginPath();
-        context.arc(0, 0, 3, 0, Math.PI * 2);
+        context.moveTo(-7, -18);
+        context.lineTo(-2, -24);
+        context.lineTo(2, -18);
+        context.stroke();
+        context.fillStyle = palette.trim;
+        context.beginPath();
+        context.arc(-2, -24, 2.5, 0, Math.PI * 2);
         context.fill();
       }
-      context.restore();
 
       if (player.overdriveTimer > 0) {
         context.save();
@@ -4428,7 +4814,18 @@
         ? Math.max(1, Math.ceil(mode.goalWaves / 3))
         : Math.max(1, Math.floor((completedWaves + 1) / 3));
       const earned = Math.ceil(baseChests * mode.chestMultiplier * rewardMultiplier);
-      meta.chests += earned;
+      const relicEarned = rewardMultiplier >= 3 && earned >= 3 ? 1 : 0;
+      const reinforcedEarned = Math.min(
+        earned - relicEarned,
+        Math.floor((earned + rewardMultiplier) / 4)
+      );
+      const fieldEarned = earned - reinforcedEarned - relicEarned;
+      const earnedScrap = Math.floor(kills / 12) * (1 + meta.skills.bounty)
+        + Math.max(0, Math.floor(completedWaves / 3));
+      meta.chests += fieldEarned;
+      meta.reinforcedChests += reinforcedEarned;
+      meta.relicChests += relicEarned;
+      meta.scrap += earnedScrap;
       saveMeta();
       document.querySelector("#finalEyebrow").textContent = completed ? "Rewards secured" : "Run over";
       document.querySelector("#finalHeading").textContent = completed ? "Expedition complete" : "The void wins this time";
@@ -4437,9 +4834,10 @@
       document.querySelector("#finalKills").textContent = kills;
       document.querySelector("#finalCombo").textContent = bestCombo;
       document.querySelector("#earnedChests").textContent = earned;
+      document.querySelector("#earnedScrap").textContent = earnedScrap;
       document.querySelector("#finalMultiplier").textContent = `x${rewardMultiplier}`;
       gameOverOverlay.hidden = !showSummary;
-      return { earned };
+      return { earned, earnedScrap, fieldEarned, reinforcedEarned, relicEarned };
     }
 
     function endRun() {
@@ -4450,7 +4848,7 @@
       const rewards = finishRun(true, false);
       if (!rewards) return;
       showHub();
-      chestResult.textContent = `Run complete: claimed ${rewards.earned} chests.`;
+      chestResult.textContent = `Run complete: claimed ${rewards.earned} chests and ${rewards.earnedScrap} scrap.`;
     }
 
     function showHub() {
@@ -4465,9 +4863,38 @@
       renderHub();
     }
 
+    function renderPauseStats() {
+      const weapon = activeWeapon();
+      const weaponItem = meta.inventory.find(item => item.id === meta.equipped.blaster);
+      const attackDelay = player.fireRate
+        * weapon.cooldownMultiplier
+        * (player.overdriveTimer > 0 ? 0.45 : 1);
+      const stats = [
+        ["Survivor", (characters[player.characterId] ?? characters.ranger).name],
+        ["Weapon", weaponItem ? lootName(weaponItem) : "Pulse Blaster"],
+        ["Damage", (player.damage * weapon.damageMultiplier).toFixed(1)],
+        ["Attack speed", `${(1 / Math.max(0.01, attackDelay)).toFixed(2)}/s`],
+        ["Critical chance", `${Math.round(player.critChance * 100)}%`],
+        ["Projectiles", player.projectiles + (weapon.bonusProjectiles || 0)],
+        ["Piercing", player.pierce + (weapon.innatePierce || 0)],
+        ["Knockback", (player.knockback * (weapon.knockbackMultiplier || 1)).toFixed(0)],
+        ["Armor", player.armor.toFixed(0)],
+        ["Damage reduction", `${Math.round(player.damageReduction * 100)}%`],
+        ["Movement speed", player.speed.toFixed(0)],
+        ["Regeneration", `${player.regen.toFixed(2)}/s`],
+        ["Pickup range", player.magnet.toFixed(0)],
+        ["Luck", `${meta.skills.fortune * 5}%`],
+        ["Ability charge", `${Math.floor(player.novaCharge)}%`]
+      ];
+      pauseStats.innerHTML = stats.map(([label, value]) => `
+        <div class="pause-stat"><small>${label}</small><strong>${value}</strong></div>
+      `).join("");
+    }
+
     function togglePause() {
       if (state === "playing") {
         state = "paused";
+        renderPauseStats();
         pauseOverlay.hidden = false;
       } else if (state === "paused") {
         state = "playing";
@@ -4561,7 +4988,10 @@
     document.querySelector("#continueRunButton").addEventListener("click", continueRun);
     document.querySelector("#startButton").addEventListener("click", startRun);
     document.querySelector("#restartButton").addEventListener("click", showHub);
-    openChestButton.addEventListener("click", openChest);
+    openChestButton.addEventListener("click", () => selectChest("field"));
+    openReinforcedChestButton.addEventListener("click", () => selectChest("reinforced"));
+    openRelicChestButton.addEventListener("click", () => selectChest("relic"));
+    openSelectedChestButton.addEventListener("click", () => openChest(selectedChestType));
     buyChestButton.addEventListener("click", buyChest);
 
     resize();
