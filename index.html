@@ -426,76 +426,100 @@
       line-height: 1.45;
     }
 
-    .chest-button {
-      display: block;
-      width: 100%;
-      min-height: 7.5rem;
+    .chest-grid {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .chest-card {
+      display: grid;
+      grid-template-columns: 3.2rem minmax(0, 1fr);
+      gap: 0.7rem;
+      padding: 0.7rem;
       border: 1px solid #facc15;
       border-radius: 0.7rem;
       background:
         linear-gradient(145deg, rgb(250 204 21 / 18%), transparent),
         #1b1720;
       color: #fef3c7;
-      cursor: pointer;
-      font-weight: 950;
-      transition: border-color 150ms ease, filter 150ms ease, transform 150ms ease;
+      box-shadow: inset 0 1px rgb(255 255 255 / 7%);
     }
 
-    .chest-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.5rem;
-    }
-
-    .chest-button {
-      min-height: 8.5rem;
-      padding: 0.7rem;
-    }
-
-    .chest-button[data-chest="reinforced"] {
+    .chest-card[data-chest="reinforced"] {
       border-color: #60a5fa;
       background: linear-gradient(145deg, rgb(59 130 246 / 22%), transparent), #111827;
     }
 
-    .chest-button[data-chest="relic"] {
+    .chest-card[data-chest="relic"] {
       border-color: #c084fc;
       background: linear-gradient(145deg, rgb(192 132 252 / 24%), transparent), #1e1030;
     }
 
-    .chest-button em {
+    .chest-icon {
+      display: grid;
+      width: 3.2rem;
+      height: 3.2rem;
+      place-items: center;
+      align-self: center;
+      border: 1px solid currentColor;
+      border-radius: 0.65rem;
+      background: rgb(0 0 0 / 18%);
+      font-size: 1.45rem;
+      box-shadow: 0 0 1rem color-mix(in srgb, currentColor 18%, transparent);
+    }
+
+    .chest-copy strong,
+    .chest-copy span,
+    .chest-copy em {
       display: block;
-      margin-top: 0.45rem;
+    }
+
+    .chest-copy strong {
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .chest-copy span {
+      margin-top: 0.15rem;
+      color: #d6d3d1;
+      font-size: 0.68rem;
+    }
+
+    .chest-copy em {
+      margin-top: 0.2rem;
       color: #fde68a;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-style: normal;
     }
 
-    .chest-button:not(:disabled):hover {
-      border-color: #fde68a;
-      filter: brightness(1.16);
-      transform: translateY(-2px);
+    .chest-actions {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.45rem;
     }
 
-    .chest-button.selected {
-      box-shadow: inset 0 0 0 2px white, 0 0 1.2rem rgb(255 255 255 / 16%);
+    .chest-action {
+      padding: 0.5rem;
+      border: 1px solid rgb(255 255 255 / 15%);
+      border-radius: 0.45rem;
+      background: rgb(255 255 255 / 8%);
+      color: white;
+      cursor: pointer;
+      font-size: 0.66rem;
+      font-weight: 900;
     }
 
-    .chest-button strong,
-    .chest-button span {
-      display: block;
+    .chest-action.open {
+      border-color: currentColor;
+      background: rgb(255 255 255 / 13%);
     }
 
-    .chest-button strong {
-      font-size: 1.2rem;
+    .chest-action:not(:disabled):hover {
+      filter: brightness(1.2);
     }
 
-    .chest-button span {
-      margin-top: 0.25rem;
-      color: #d6d3d1;
-      font-size: 0.72rem;
-    }
-
-    .chest-button:disabled,
+    .chest-action:disabled,
     .gear-card:disabled {
       opacity: 0.42;
       cursor: not-allowed;
@@ -508,24 +532,6 @@
       font-size: 0.75rem;
       font-weight: 800;
       text-align: center;
-    }
-
-    .buy-chest-button {
-      width: 100%;
-      margin-top: 0.55rem;
-      padding: 0.65rem;
-      border: 1px solid rgb(103 232 249 / 30%);
-      border-radius: 0.55rem;
-      background: rgb(8 145 178 / 12%);
-      color: #a5f3fc;
-      cursor: pointer;
-      font-size: 0.72rem;
-      font-weight: 900;
-    }
-
-    .buy-chest-button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
     }
 
     .reset-progress {
@@ -1678,26 +1684,45 @@
       <div id="arsenalSection" class="hub-grid">
         <section class="hub-section">
           <h2>Recovered chests</h2>
-          <p>Choose a cache. Higher chest tiers improve the minimum loot rarity and scrap payout.</p>
+          <p>Open saved caches or buy more directly. Higher tiers guarantee stronger loot and more scrap.</p>
           <div class="chest-grid">
-            <button id="openChestButton" class="chest-button" data-chest="field">
-              <strong>Field Cache</strong>
-              <span id="chestHint">1 available · Any rarity</span>
-              <em>Buy: 25 scrap</em>
-            </button>
-            <button id="openReinforcedChestButton" class="chest-button" data-chest="reinforced">
-              <strong>Reinforced Cache</strong>
-              <span id="reinforcedChestHint">0 available · Uncommon+</span>
-              <em>Buy: 65 scrap</em>
-            </button>
-            <button id="openRelicChestButton" class="chest-button" data-chest="relic">
-              <strong>Relic Vault</strong>
-              <span id="relicChestHint">0 available · Rare+</span>
-              <em>Buy: 140 scrap</em>
-            </button>
+            <article class="chest-card" data-chest="field">
+              <div class="chest-icon" aria-hidden="true">◆</div>
+              <div class="chest-copy">
+                <strong>Field Cache</strong>
+                <span id="chestHint">1 available · Any rarity</span>
+                <em>Common gear and basic salvage</em>
+              </div>
+              <div class="chest-actions">
+                <button class="chest-action open" data-open-chest="field">Open</button>
+                <button class="chest-action" data-buy-chest="field">Buy · 25 scrap</button>
+              </div>
+            </article>
+            <article class="chest-card" data-chest="reinforced">
+              <div class="chest-icon" aria-hidden="true">⬢</div>
+              <div class="chest-copy">
+                <strong>Reinforced Cache</strong>
+                <span id="reinforcedChestHint">0 available · Uncommon+</span>
+                <em>Improved gear and extra salvage</em>
+              </div>
+              <div class="chest-actions">
+                <button class="chest-action open" data-open-chest="reinforced">Open</button>
+                <button class="chest-action" data-buy-chest="reinforced">Buy · 65 scrap</button>
+              </div>
+            </article>
+            <article class="chest-card" data-chest="relic">
+              <div class="chest-icon" aria-hidden="true">✦</div>
+              <div class="chest-copy">
+                <strong>Relic Vault</strong>
+                <span id="relicChestHint">0 available · Rare+</span>
+                <em>Premium gear and major salvage</em>
+              </div>
+              <div class="chest-actions">
+                <button class="chest-action open" data-open-chest="relic">Open</button>
+                <button class="chest-action" data-buy-chest="relic">Buy · 140 scrap</button>
+              </div>
+            </article>
           </div>
-          <button id="openSelectedChestButton" class="buy-chest-button">Open selected chest</button>
-          <button id="buyChestButton" class="buy-chest-button">Buy selected chest</button>
           <div id="chestResult" class="chest-result"></div>
         </section>
         <section class="hub-section">
@@ -1854,11 +1879,6 @@
     const joystickKnob = document.querySelector("#joystickKnob");
     const chestCount = document.querySelector("#chestCount");
     const scrapCount = document.querySelector("#scrapCount");
-    const openChestButton = document.querySelector("#openChestButton");
-    const openReinforcedChestButton = document.querySelector("#openReinforcedChestButton");
-    const openRelicChestButton = document.querySelector("#openRelicChestButton");
-    const openSelectedChestButton = document.querySelector("#openSelectedChestButton");
-    const buyChestButton = document.querySelector("#buyChestButton");
     const chestHint = document.querySelector("#chestHint");
     const reinforcedChestHint = document.querySelector("#reinforcedChestHint");
     const relicChestHint = document.querySelector("#relicChestHint");
@@ -1909,13 +1929,13 @@
     let waveBannerTimer = 0;
     let rewardMultiplier = 1;
     let runRewardClaimed = false;
-    let selectedChestType = "field";
     let selectedSkillTree = "offense";
     let settingsReturnOverlay = titleOverlay;
     let audioContext = null;
     let musicGain = null;
     let musicTimer = null;
     let musicStep = 0;
+    let musicNoiseBuffer = null;
 
     const gameModes = {
       survival: {
@@ -3001,35 +3021,76 @@
 
     function updateMusicVolume() {
       if (!musicGain || !audioContext) return;
-      musicGain.gain.setTargetAtTime(meta.settings.musicVolume * 0.16, audioContext.currentTime, 0.05);
+      musicGain.gain.setTargetAtTime(meta.settings.musicVolume * 0.13, audioContext.currentTime, 0.05);
+    }
+
+    function playSynthTone(frequency, duration, type, volume, when, filterFrequency = 1800) {
+      const oscillator = audioContext.createOscillator();
+      const filter = audioContext.createBiquadFilter();
+      const envelope = audioContext.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, when);
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(filterFrequency, when);
+      filter.Q.value = 1.2;
+      envelope.gain.setValueAtTime(0.0001, when);
+      envelope.gain.exponentialRampToValueAtTime(volume, when + 0.025);
+      envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+      oscillator.connect(filter).connect(envelope).connect(musicGain);
+      oscillator.start(when);
+      oscillator.stop(when + duration + 0.03);
+    }
+
+    function playDrum(when, snare = false) {
+      if (snare) {
+        const noise = audioContext.createBufferSource();
+        const filter = audioContext.createBiquadFilter();
+        const envelope = audioContext.createGain();
+        noise.buffer = musicNoiseBuffer;
+        filter.type = "highpass";
+        filter.frequency.value = 1200;
+        envelope.gain.setValueAtTime(0.09, when);
+        envelope.gain.exponentialRampToValueAtTime(0.0001, when + 0.12);
+        noise.connect(filter).connect(envelope).connect(musicGain);
+        noise.start(when);
+        noise.stop(when + 0.13);
+        return;
+      }
+      const kick = audioContext.createOscillator();
+      const envelope = audioContext.createGain();
+      kick.type = "sine";
+      kick.frequency.setValueAtTime(120, when);
+      kick.frequency.exponentialRampToValueAtTime(48, when + 0.13);
+      envelope.gain.setValueAtTime(0.22, when);
+      envelope.gain.exponentialRampToValueAtTime(0.0001, when + 0.16);
+      kick.connect(envelope).connect(musicGain);
+      kick.start(when);
+      kick.stop(when + 0.17);
     }
 
     function playMusicStep() {
       if (!audioContext || !musicGain || !meta.settings.music) return;
-      const melody = [220, 261.63, 329.63, 293.66, 196, 246.94, 329.63, 392];
-      const bass = [55, 65.41, 49, 73.42];
-      const now = audioContext.currentTime;
-      const lead = audioContext.createOscillator();
-      const leadEnvelope = audioContext.createGain();
-      lead.type = "triangle";
-      lead.frequency.value = melody[musicStep % melody.length];
-      leadEnvelope.gain.setValueAtTime(0.0001, now);
-      leadEnvelope.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
-      leadEnvelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
-      lead.connect(leadEnvelope).connect(musicGain);
-      lead.start(now);
-      lead.stop(now + 0.45);
-      if (musicStep % 2 === 0) {
-        const low = audioContext.createOscillator();
-        const lowEnvelope = audioContext.createGain();
-        low.type = "sine";
-        low.frequency.value = bass[Math.floor(musicStep / 2) % bass.length];
-        lowEnvelope.gain.setValueAtTime(0.0001, now);
-        lowEnvelope.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
-        lowEnvelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
-        low.connect(lowEnvelope).connect(musicGain);
-        low.start(now);
-        low.stop(now + 0.85);
+      const roots = [65.41, 51.91, 43.65, 49];
+      const melody = [
+        261.63, null, 311.13, 392, null, 349.23, 311.13, null,
+        261.63, 311.13, 392, 466.16, 392, 349.23, 311.13, null
+      ];
+      const step = musicStep % 16;
+      const root = roots[Math.floor(step / 4)];
+      const now = audioContext.currentTime + 0.02;
+      if (step % 4 === 0) {
+        playDrum(now);
+        for (const ratio of [1, 1.2, 1.5]) {
+          playSynthTone(root * ratio * 2, 1.65, "sine", 0.035, now, 900);
+        }
+      }
+      if (step === 4 || step === 12) playDrum(now, true);
+      if (step % 2 === 0) {
+        playSynthTone(root, 0.42, "sawtooth", 0.08, now, 320);
+      }
+      if (melody[step]) {
+        playSynthTone(melody[step], 0.2, "square", 0.045, now, 1450);
+        playSynthTone(melody[step] * 2, 0.16, "triangle", 0.018, now + 0.06, 2400);
       }
       musicStep += 1;
     }
@@ -3047,10 +3108,17 @@
         musicGain = audioContext.createGain();
         musicGain.connect(audioContext.destination);
       }
+      if (!musicNoiseBuffer) {
+        musicNoiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+        const noise = musicNoiseBuffer.getChannelData(0);
+        for (let index = 0; index < noise.length; index += 1) {
+          noise[index] = Math.random() * 2 - 1;
+        }
+      }
       audioContext.resume();
       updateMusicVolume();
       playMusicStep();
-      musicTimer = window.setInterval(playMusicStep, 450);
+      musicTimer = window.setInterval(playMusicStep, 250);
     }
 
     function stopMusic() {
@@ -3096,7 +3164,6 @@
       localStorage.removeItem("maxGameMeta");
       localStorage.removeItem("maxGameBest");
       Object.assign(meta, structuredClone(defaultMeta));
-      selectedChestType = "field";
       stopMusic();
       saveMeta();
       chestResult.textContent = "All WAVE SURVIVOR progress has been reset.";
@@ -3512,8 +3579,8 @@
       renderHub();
     }
 
-    function buyChest() {
-      const chest = chestDefinitions[selectedChestType];
+    function buyChest(type) {
+      const chest = chestDefinitions[type];
       if (!chest || meta.scrap < chest.cost) return;
       meta.scrap -= chest.cost;
       meta[chest.key] += 1;
@@ -3544,24 +3611,21 @@
     function renderHub() {
       chestCount.textContent = meta.chests + meta.reinforcedChests + meta.relicChests;
       scrapCount.textContent = meta.scrap;
-      const selectedChest = chestDefinitions[selectedChestType];
-      buyChestButton.disabled = meta.scrap < selectedChest.cost;
-      buyChestButton.textContent = `Buy ${selectedChest.name} - ${selectedChest.cost} scrap`;
       const inventoryFull = meta.inventory.length >= inventoryLimit;
-      openSelectedChestButton.disabled = inventoryFull || meta[selectedChest.key] < 1;
-      openSelectedChestButton.textContent = inventoryFull
-        ? "Vault full - salvage an item"
-        : `Open ${selectedChest.name} (${meta[selectedChest.key]} available)`;
-      const chestButtons = {
-        field: [openChestButton, chestHint],
-        reinforced: [openReinforcedChestButton, reinforcedChestHint],
-        relic: [openRelicChestButton, relicChestHint]
+      const chestRows = {
+        field: chestHint,
+        reinforced: reinforcedChestHint,
+        relic: relicChestHint
       };
-      for (const [type, [button, hint]] of Object.entries(chestButtons)) {
+      for (const [type, hint] of Object.entries(chestRows)) {
         const chest = chestDefinitions[type];
         const count = meta[chest.key];
-        button.classList.toggle("selected", selectedChestType === type);
         hint.textContent = `${count} available · ${chest.minimumRarity === "common" ? "Any rarity" : `${lootRarities[chest.minimumRarity].name}+ loot`}`;
+        const openButton = document.querySelector(`[data-open-chest="${type}"]`);
+        const buyButton = document.querySelector(`[data-buy-chest="${type}"]`);
+        openButton.disabled = inventoryFull || count < 1;
+        openButton.textContent = inventoryFull ? "Vault full" : `Open (${count})`;
+        buyButton.disabled = meta.scrap < chest.cost;
       }
       gearGrid.innerHTML = gearDefinitions.map(gear => {
         const level = meta.gear[gear.id];
@@ -3621,14 +3685,6 @@
       renderSkills();
       document.querySelector("#startButton").textContent = `Start ${activeMode().name}`;
       updateBestRun();
-    }
-
-    function selectChest(type) {
-      if (!chestDefinitions[type]) return;
-      selectedChestType = type;
-      const chest = chestDefinitions[type];
-      chestResult.textContent = `${chest.name} selected.`;
-      renderHub();
     }
 
     function openChest(type = "field") {
@@ -6056,11 +6112,12 @@
     document.querySelector("#continueRunButton").addEventListener("click", continueRun);
     document.querySelector("#startButton").addEventListener("click", startRun);
     document.querySelector("#restartButton").addEventListener("click", showHub);
-    openChestButton.addEventListener("click", () => selectChest("field"));
-    openReinforcedChestButton.addEventListener("click", () => selectChest("reinforced"));
-    openRelicChestButton.addEventListener("click", () => selectChest("relic"));
-    openSelectedChestButton.addEventListener("click", () => openChest(selectedChestType));
-    buyChestButton.addEventListener("click", buyChest);
+    document.querySelectorAll("[data-open-chest]").forEach(button => {
+      button.addEventListener("click", () => openChest(button.dataset.openChest));
+    });
+    document.querySelectorAll("[data-buy-chest]").forEach(button => {
+      button.addEventListener("click", () => buyChest(button.dataset.buyChest));
+    });
     resetProgressButton.addEventListener("click", resetProgress);
     window.addEventListener("pointerdown", () => {
       if (meta.settings.music) startMusic();
