@@ -212,7 +212,7 @@
 
     .hub-header {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr;
       align-items: start;
       gap: 1rem;
     }
@@ -230,21 +230,6 @@
       margin: 0.7rem 0 0;
       color: #b8c3d6;
       line-height: 1.55;
-    }
-
-    .settings-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      padding: 0.65rem 0.85rem;
-      border: 1px solid rgb(103 232 249 / 28%);
-      border-radius: 0.65rem;
-      background: rgb(8 145 178 / 12%);
-      color: #a5f3fc;
-      cursor: pointer;
-      font-size: 0.72rem;
-      font-weight: 900;
     }
 
     .hub-navigation {
@@ -569,8 +554,7 @@
     .gear-card strong,
     .gear-card span,
     .mode-card strong,
-    .mode-card span,
-    .mode-card small {
+    .mode-card span {
       display: block;
     }
 
@@ -602,13 +586,6 @@
       color: #aeb8ca;
       font-size: 0.7rem;
       line-height: 1.35;
-    }
-
-    .mode-card small {
-      margin-top: 0.4rem;
-      color: var(--mode-accent, #67e8f9);
-      font-size: 0.62rem;
-      font-weight: 850;
     }
 
     .gear-card em {
@@ -1451,64 +1428,6 @@
       font-size: 0.9rem;
     }
 
-    .settings-list {
-      display: grid;
-      gap: 0.8rem;
-      margin: 1.2rem 0;
-      text-align: left;
-    }
-
-    .setting-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.9rem;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 0.7rem;
-      background: rgb(255 255 255 / 4%);
-    }
-
-    .setting-row strong,
-    .setting-row span {
-      display: block;
-    }
-
-    .setting-row span {
-      margin-top: 0.2rem;
-      color: #94a3b8;
-      font-size: 0.72rem;
-    }
-
-    .setting-control {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .setting-toggle {
-      min-width: 5rem;
-      padding: 0.55rem 0.75rem;
-      border: 1px solid rgb(255 255 255 / 16%);
-      border-radius: 999px;
-      background: #171b28;
-      color: #94a3b8;
-      cursor: pointer;
-      font-weight: 900;
-    }
-
-    .setting-toggle.enabled {
-      border-color: #22d3ee;
-      background: rgb(8 145 178 / 22%);
-      color: #a5f3fc;
-      box-shadow: 0 0 1rem rgb(34 211 238 / 16%);
-    }
-
-    .setting-slider {
-      width: min(12rem, 32vw);
-      accent-color: #22d3ee;
-    }
-
     @media (pointer: coarse), (max-width: 700px) {
       .mobile-controls {
         display: flex;
@@ -1578,10 +1497,6 @@
       .hub-title p {
         margin-right: auto;
         margin-left: auto;
-      }
-
-      .settings-button {
-        justify-self: center;
       }
 
       .hub-navigation {
@@ -1672,7 +1587,6 @@
           <h1>WAVE <span>SURVIVOR</span></h1>
           <p>Choose your survivor and battlefield, then prepare your gear and permanent upgrades for the next expedition.</p>
         </div>
-        <button id="settingsButton" class="settings-button">Settings</button>
       </header>
       <div class="hub-resources">
         <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
@@ -1793,36 +1707,8 @@
       <div id="pauseStats" class="pause-stats"></div>
       <div class="overlay-actions">
         <button id="resumeButton" class="primary">Resume</button>
-        <button id="pauseSettingsButton" class="secondary">Settings</button>
         <button id="lobbyButton" class="secondary">Return to lobby</button>
       </div>
-    </div>
-  </div>
-
-  <div id="settingsOverlay" class="overlay" hidden>
-    <div class="panel">
-      <div class="eyebrow">Options</div>
-      <h2>Settings</h2>
-      <p>Adjust sound without leaving your current run.</p>
-      <div class="settings-list">
-        <div class="setting-row">
-          <div>
-            <strong>Music</strong>
-            <span id="musicTrackLabel">Current track: Fields of Signal</span>
-          </div>
-          <button id="musicToggle" class="setting-toggle" aria-pressed="false">Off</button>
-        </div>
-        <label class="setting-row" for="musicVolume">
-          <div>
-            <strong>Music volume</strong>
-            <span id="musicVolumeLabel">35%</span>
-          </div>
-          <span class="setting-control">
-            <input id="musicVolume" class="setting-slider" type="range" min="0" max="100" step="5" value="35">
-          </span>
-        </label>
-      </div>
-      <button id="closeSettingsButton" class="primary">Done</button>
     </div>
   </div>
 
@@ -1876,7 +1762,6 @@
     const titleOverlay = document.querySelector("#titleOverlay");
     const upgradeOverlay = document.querySelector("#upgradeOverlay");
     const pauseOverlay = document.querySelector("#pauseOverlay");
-    const settingsOverlay = document.querySelector("#settingsOverlay");
     const milestoneOverlay = document.querySelector("#milestoneOverlay");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
     const upgradeGrid = document.querySelector("#upgradeGrid");
@@ -1900,10 +1785,6 @@
     const characterGrid = document.querySelector("#characterGrid");
     const pauseStats = document.querySelector("#pauseStats");
     const resetProgressButton = document.querySelector("#resetProgressButton");
-    const musicToggle = document.querySelector("#musicToggle");
-    const musicVolume = document.querySelector("#musicVolume");
-    const musicVolumeLabel = document.querySelector("#musicVolumeLabel");
-    const musicTrackLabel = document.querySelector("#musicTrackLabel");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -1939,13 +1820,6 @@
     let rewardMultiplier = 1;
     let runRewardClaimed = false;
     let selectedSkillTree = "offense";
-    let settingsReturnOverlay = titleOverlay;
-    let audioContext = null;
-    let musicGain = null;
-    let musicTimer = null;
-    let musicStep = 0;
-    let musicNoiseBuffer = null;
-    const musicSources = new Set();
 
     const gameModes = {
       survival: {
@@ -2102,105 +1976,6 @@
         bossStartWave: 7,
         goalWaves: 7,
         chestMultiplier: 2
-      }
-    };
-
-    const musicProfiles = {
-      survival: {
-        name: "Fields of Signal",
-        stepMs: 280,
-        roots: [65.41, 73.42, 82.41, 73.42],
-        chordRatios: [1, 1.25, 1.5],
-        melody: [261.63, null, 329.63, 392, null, 349.23, 329.63, null, 293.66, null, 329.63, 440, 392, null, 329.63, null],
-        leadType: "triangle",
-        leadFilter: 2100,
-        bassType: "sine",
-        bassFilter: 420,
-        bassSteps: [0, 2, 4, 6, 8, 10, 12, 14],
-        kickSteps: [0, 8],
-        snareSteps: [4, 12],
-        padVolume: 0.04,
-        leadVolume: 0.052
-      },
-      rush: {
-        name: "Sunscar Pursuit",
-        stepMs: 185,
-        roots: [73.42, 69.3, 58.27, 65.41],
-        chordRatios: [1, 1.19, 1.5],
-        melody: [293.66, 349.23, 440, null, 466.16, 440, 349.23, 293.66, 261.63, 293.66, 349.23, 440, 523.25, 466.16, 440, 349.23],
-        leadType: "sawtooth",
-        leadFilter: 1750,
-        bassType: "square",
-        bassFilter: 360,
-        bassSteps: [0, 2, 3, 5, 6, 8, 10, 11, 13, 14],
-        kickSteps: [0, 3, 6, 8, 11, 14],
-        snareSteps: [4, 12],
-        padVolume: 0.025,
-        leadVolume: 0.042
-      },
-      bossHunt: {
-        name: "Temple of Titans",
-        stepMs: 340,
-        roots: [36.71, 43.65, 41.2, 32.7],
-        chordRatios: [1, 1.2, 1.5],
-        melody: [146.83, null, null, 174.61, null, 164.81, null, null, 130.81, null, 146.83, null, 196, null, 174.61, null],
-        leadType: "square",
-        leadFilter: 850,
-        bassType: "sawtooth",
-        bassFilter: 250,
-        bassSteps: [0, 4, 8, 12],
-        kickSteps: [0, 7, 8, 15],
-        snareSteps: [4, 12],
-        padVolume: 0.055,
-        leadVolume: 0.032
-      },
-      swarm: {
-        name: "Glowfen Pulse",
-        stepMs: 215,
-        roots: [69.3, 55, 65.41, 61.74],
-        chordRatios: [1, 1.2, 1.48],
-        melody: [277.18, null, 329.63, 369.99, null, 415.3, 369.99, 329.63, null, 277.18, 329.63, null, 415.3, 493.88, 415.3, null],
-        leadType: "square",
-        leadFilter: 1250,
-        bassType: "sawtooth",
-        bassFilter: 290,
-        bassSteps: [0, 3, 6, 7, 10, 13, 15],
-        kickSteps: [0, 5, 8, 11, 14],
-        snareSteps: [4, 12],
-        padVolume: 0.03,
-        leadVolume: 0.038
-      },
-      glassCannon: {
-        name: "Prismatic Velocity",
-        stepMs: 195,
-        roots: [82.41, 103.83, 77.78, 98],
-        chordRatios: [1, 1.26, 1.59],
-        melody: [659.25, 783.99, 987.77, 783.99, 622.25, 739.99, 932.33, 739.99, 587.33, 698.46, 880, 1046.5, 987.77, 880, 783.99, 698.46],
-        leadType: "sine",
-        leadFilter: 3600,
-        bassType: "triangle",
-        bassFilter: 620,
-        bassSteps: [0, 2, 4, 6, 8, 10, 12, 14],
-        kickSteps: [0, 8],
-        snareSteps: [6, 14],
-        padVolume: 0.032,
-        leadVolume: 0.04
-      },
-      bulletStorm: {
-        name: "Tempest Protocol",
-        stepMs: 165,
-        roots: [55, 61.74, 65.41, 49],
-        chordRatios: [1, 1.2, 1.5],
-        melody: [440, null, 493.88, 523.25, 587.33, 523.25, 493.88, null, 392, 440, 493.88, 587.33, 659.25, 587.33, 523.25, 493.88],
-        leadType: "square",
-        leadFilter: 2300,
-        bassType: "sawtooth",
-        bassFilter: 380,
-        bassSteps: [0, 2, 4, 5, 6, 8, 10, 12, 13, 14],
-        kickSteps: [0, 2, 5, 8, 10, 13],
-        snareSteps: [4, 7, 12, 15],
-        padVolume: 0.022,
-        leadVolume: 0.035
       }
     };
 
@@ -2973,10 +2748,6 @@
       scrap: 0,
       selectedMode: "survival",
       selectedCharacter: "ranger",
-      settings: {
-        music: false,
-        musicVolume: 0.35
-      },
       gear: {
         blaster: 0,
         armor: 0,
@@ -3093,12 +2864,6 @@
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
           selectedCharacter: Object.hasOwn(characters, parsed.selectedCharacter) ? parsed.selectedCharacter : "ranger",
-          settings: {
-            music: parsed.settings?.music === true,
-            musicVolume: Number.isFinite(Number(parsed.settings?.musicVolume))
-              ? Math.min(1, Math.max(0, Number(parsed.settings.musicVolume)))
-              : defaultMeta.settings.musicVolume
-          },
           gear: {
             blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
             armor: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.armor) || 0))),
@@ -3128,175 +2893,6 @@
       localStorage.setItem("waveSurvivorMeta", JSON.stringify(meta));
     }
 
-    function updateMusicVolume() {
-      if (!musicGain || !audioContext) return;
-      musicGain.gain.setTargetAtTime(meta.settings.musicVolume * 0.13, audioContext.currentTime, 0.05);
-    }
-
-    function playSynthTone(frequency, duration, type, volume, when, filterFrequency = 1800) {
-      const oscillator = audioContext.createOscillator();
-      const filter = audioContext.createBiquadFilter();
-      const envelope = audioContext.createGain();
-      oscillator.type = type;
-      oscillator.frequency.setValueAtTime(frequency, when);
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(filterFrequency, when);
-      filter.Q.value = 1.2;
-      envelope.gain.setValueAtTime(0.0001, when);
-      envelope.gain.exponentialRampToValueAtTime(volume, when + 0.025);
-      envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
-      oscillator.connect(filter).connect(envelope).connect(musicGain);
-      musicSources.add(oscillator);
-      oscillator.addEventListener("ended", () => musicSources.delete(oscillator), { once: true });
-      oscillator.start(when);
-      oscillator.stop(when + duration + 0.03);
-    }
-
-    function playDrum(when, snare = false) {
-      if (snare) {
-        const noise = audioContext.createBufferSource();
-        const filter = audioContext.createBiquadFilter();
-        const envelope = audioContext.createGain();
-        noise.buffer = musicNoiseBuffer;
-        filter.type = "highpass";
-        filter.frequency.value = 1200;
-        envelope.gain.setValueAtTime(0.09, when);
-        envelope.gain.exponentialRampToValueAtTime(0.0001, when + 0.12);
-        noise.connect(filter).connect(envelope).connect(musicGain);
-        musicSources.add(noise);
-        noise.addEventListener("ended", () => musicSources.delete(noise), { once: true });
-        noise.start(when);
-        noise.stop(when + 0.13);
-        return;
-      }
-      const kick = audioContext.createOscillator();
-      const envelope = audioContext.createGain();
-      kick.type = "sine";
-      kick.frequency.setValueAtTime(120, when);
-      kick.frequency.exponentialRampToValueAtTime(48, when + 0.13);
-      envelope.gain.setValueAtTime(0.22, when);
-      envelope.gain.exponentialRampToValueAtTime(0.0001, when + 0.16);
-      kick.connect(envelope).connect(musicGain);
-      musicSources.add(kick);
-      kick.addEventListener("ended", () => musicSources.delete(kick), { once: true });
-      kick.start(when);
-      kick.stop(when + 0.17);
-    }
-
-    function playMusicStep() {
-      if (!audioContext || !musicGain || !meta.settings.music) return;
-      const profile = musicProfiles[meta.selectedMode] ?? musicProfiles.survival;
-      const step = musicStep % 16;
-      const root = profile.roots[Math.floor(step / 4)];
-      const now = audioContext.currentTime + 0.02;
-      if (step % 4 === 0) {
-        for (const ratio of profile.chordRatios) {
-          playSynthTone(root * ratio * 2, profile.stepMs / 1000 * 6.5, "sine", profile.padVolume, now, 900);
-        }
-      }
-      if (profile.kickSteps.includes(step)) playDrum(now);
-      if (profile.snareSteps.includes(step)) playDrum(now, true);
-      if (profile.bassSteps.includes(step)) {
-        playSynthTone(root, profile.stepMs / 1000 * 1.7, profile.bassType, 0.075, now, profile.bassFilter);
-      }
-      if (profile.melody[step]) {
-        playSynthTone(
-          profile.melody[step],
-          profile.stepMs / 1000 * 0.82,
-          profile.leadType,
-          profile.leadVolume,
-          now,
-          profile.leadFilter
-        );
-        if (meta.selectedMode === "glassCannon" || meta.selectedMode === "bulletStorm") {
-          playSynthTone(
-            profile.melody[step] * 2,
-            profile.stepMs / 1000 * 0.65,
-            "triangle",
-            profile.leadVolume * 0.4,
-            now + 0.05,
-            3600
-          );
-        }
-      }
-      musicStep += 1;
-    }
-
-    function startMusic() {
-      if (!meta.settings.music || musicTimer) return;
-      const AudioContextType = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextType) {
-        musicToggle.disabled = true;
-        musicToggle.textContent = "Unavailable";
-        return;
-      }
-      audioContext ??= new AudioContextType();
-      if (!musicGain) {
-        musicGain = audioContext.createGain();
-        musicGain.connect(audioContext.destination);
-      }
-      if (!musicNoiseBuffer) {
-        musicNoiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
-        const noise = musicNoiseBuffer.getChannelData(0);
-        for (let index = 0; index < noise.length; index += 1) {
-          noise[index] = Math.random() * 2 - 1;
-        }
-      }
-      audioContext.resume();
-      updateMusicVolume();
-      playMusicStep();
-      const profile = musicProfiles[meta.selectedMode] ?? musicProfiles.survival;
-      musicTimer = window.setInterval(playMusicStep, profile.stepMs);
-    }
-
-    function stopMusic() {
-      if (musicTimer) window.clearInterval(musicTimer);
-      musicTimer = null;
-      for (const source of musicSources) {
-        source.stop();
-      }
-      musicSources.clear();
-      if (musicGain && audioContext) {
-        musicGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.03);
-      }
-    }
-
-    function restartMusic() {
-      if (!meta.settings.music) return;
-      stopMusic();
-      musicStep = 0;
-      startMusic();
-    }
-
-    function renderSettings() {
-      musicToggle.textContent = meta.settings.music ? "On" : "Off";
-      musicToggle.classList.toggle("enabled", meta.settings.music);
-      musicToggle.setAttribute("aria-pressed", String(meta.settings.music));
-      musicVolume.value = String(Math.round(meta.settings.musicVolume * 100));
-      musicVolumeLabel.textContent = `${musicVolume.value}%`;
-      musicTrackLabel.textContent = `Current track: ${(musicProfiles[meta.selectedMode] ?? musicProfiles.survival).name}`;
-    }
-
-    function openSettings(sourceOverlay) {
-      settingsReturnOverlay = sourceOverlay;
-      sourceOverlay.hidden = true;
-      settingsOverlay.hidden = false;
-      renderSettings();
-    }
-
-    function closeSettings() {
-      settingsOverlay.hidden = true;
-      settingsReturnOverlay.hidden = false;
-    }
-
-    function toggleMusic() {
-      meta.settings.music = !meta.settings.music;
-      saveMeta();
-      renderSettings();
-      if (meta.settings.music) startMusic();
-      else stopMusic();
-    }
-
     function resetProgress() {
       if (!window.confirm("Reset all chests, scrap, equipment, skills, and best-run progress?")) return;
       localStorage.removeItem("waveSurvivorMeta");
@@ -3304,11 +2900,9 @@
       localStorage.removeItem("maxGameMeta");
       localStorage.removeItem("maxGameBest");
       Object.assign(meta, structuredClone(defaultMeta));
-      stopMusic();
       saveMeta();
       chestResult.textContent = "All WAVE SURVIVOR progress has been reset.";
       renderHub();
-      renderSettings();
     }
 
     function activeMode() {
@@ -3788,7 +3382,6 @@
           <div class="mode-preview">${iconSvg(mode.theme.icon)}</div>
           <strong>${mode.name}</strong>
           <span>${mode.description}<br>Goal: clear ${mode.goalWaves} waves.</span>
-          <small>Soundtrack: ${musicProfiles[id].name}</small>
           <em>${mode.themeName} · ${mode.reward}</em>
         </button>
       `).join("");
@@ -3811,9 +3404,7 @@
         button.addEventListener("click", () => {
           meta.selectedMode = button.dataset.mode;
           saveMeta();
-          restartMusic();
           renderHub();
-          renderSettings();
         });
       });
       characterGrid.querySelectorAll("[data-character]").forEach(button => {
@@ -6178,10 +5769,7 @@
       if (event.repeat) return;
       if (gameplayInput && key === " ") dash();
       if (gameplayInput && key === "q") useAbility();
-      if (!interactiveTarget && key === "escape") {
-        if (!settingsOverlay.hidden) closeSettings();
-        else togglePause();
-      }
+      if (!interactiveTarget && key === "escape") togglePause();
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
     window.addEventListener("blur", () => {
@@ -6235,16 +5823,6 @@
     });
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
-    document.querySelector("#settingsButton").addEventListener("click", () => openSettings(titleOverlay));
-    document.querySelector("#pauseSettingsButton").addEventListener("click", () => openSettings(pauseOverlay));
-    document.querySelector("#closeSettingsButton").addEventListener("click", closeSettings);
-    musicToggle.addEventListener("click", toggleMusic);
-    musicVolume.addEventListener("input", () => {
-      meta.settings.musicVolume = Number(musicVolume.value) / 100;
-      musicVolumeLabel.textContent = `${musicVolume.value}%`;
-      updateMusicVolume();
-      saveMeta();
-    });
     document.querySelectorAll("[data-hub-target]").forEach(button => {
       button.addEventListener("click", () => {
         document.querySelector(`#${button.dataset.hubTarget}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -6262,13 +5840,9 @@
       button.addEventListener("click", () => buyChest(button.dataset.buyChest));
     });
     resetProgressButton.addEventListener("click", resetProgress);
-    window.addEventListener("pointerdown", () => {
-      if (meta.settings.music) startMusic();
-    }, { once: true });
 
     resize();
     renderHub();
-    renderSettings();
     updateHud();
     requestAnimationFrame(frame);
   </script>
