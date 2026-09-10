@@ -839,6 +839,30 @@
       padding-top: 0.2rem;
     }
 
+    .skill-tree-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .skill-tree-tab {
+      padding: 0.55rem;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 0.5rem;
+      background: #111321;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 900;
+    }
+
+    .skill-tree-tab.active {
+      border-color: var(--tree-color);
+      color: var(--tree-color);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tree-color) 35%, transparent);
+    }
+
     .skill-root-row {
       position: relative;
       display: flex;
@@ -867,6 +891,15 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1rem;
       padding-top: 1.5rem;
+    }
+
+    .skill-branches.single {
+      grid-template-columns: 1fr;
+    }
+
+    .skill-branches.single::before {
+      right: 50%;
+      left: 50%;
     }
 
     .skill-branches::before {
@@ -1359,6 +1392,10 @@
         min-width: 42rem;
       }
 
+      .skill-tree-tabs {
+        min-width: 36rem;
+      }
+
       .character-grid {
         width: 100%;
         grid-template-columns: repeat(4, minmax(10rem, 1fr));
@@ -1653,6 +1690,7 @@
     let rewardMultiplier = 1;
     let runRewardClaimed = false;
     let selectedChestType = "field";
+    let selectedSkillTree = "offense";
 
     const gameModes = {
       survival: {
@@ -2074,6 +2112,72 @@
         maxLevel: 3,
         requires: { id: "bounty", level: 2 },
         description: level => `+${level * 6}% supply drop chance from elite enemies.`
+      },
+      {
+        id: "elementalCore",
+        name: "Elemental Core",
+        icon: "fire",
+        accent: "#f97316",
+        branch: "elemental",
+        tier: 1,
+        maxLevel: 1,
+        requires: { id: "nexus", level: 1 },
+        description: () => "Unlocks burn and frost effects for every weapon."
+      },
+      {
+        id: "burnChance",
+        name: "Ignition Rounds",
+        icon: "fire",
+        accent: "#fb923c",
+        branch: "elemental",
+        tier: 2,
+        maxLevel: 3,
+        requires: { id: "elementalCore", level: 1 },
+        description: level => `${level * 8}% chance for weapon hits to ignite enemies.`
+      },
+      {
+        id: "burnPower",
+        name: "Wildfire",
+        icon: "fire",
+        accent: "#ef4444",
+        branch: "elemental",
+        tier: 3,
+        maxLevel: 3,
+        requires: { id: "burnChance", level: 2 },
+        description: level => `Burns deal ${level * 3 + 3} damage per second for 4 seconds.`
+      },
+      {
+        id: "frostChance",
+        name: "Cryo Rounds",
+        icon: "frost",
+        accent: "#38bdf8",
+        branch: "elemental",
+        tier: 2,
+        maxLevel: 3,
+        requires: { id: "elementalCore", level: 1 },
+        description: level => `${level * 8}% chance for weapon hits to chill enemies.`
+      },
+      {
+        id: "frostPower",
+        name: "Deep Freeze",
+        icon: "frost",
+        accent: "#60a5fa",
+        branch: "elemental",
+        tier: 3,
+        maxLevel: 3,
+        requires: { id: "frostChance", level: 2 },
+        description: level => `Chill slows enemies by ${level * 12}% for ${1.5 + level * 0.5} seconds.`
+      },
+      {
+        id: "thermalShock",
+        name: "Thermal Shock",
+        icon: "frost",
+        accent: "#c084fc",
+        branch: "elemental",
+        tier: 4,
+        maxLevel: 3,
+        requires: { id: "burnPower", level: 2 },
+        description: level => `Deal ${level * 8}% more damage to burning or chilled enemies.`
       }
     ];
 
@@ -2352,6 +2456,42 @@
         magnet: 1.15,
         regenBonus: 0.6,
         chargeRate: 1.05
+      },
+      pyre: {
+        name: "Pyre Knight",
+        role: "Burn",
+        color: "#ef4444",
+        ability: "Inferno Core",
+        abilityDescription: "Ignites every enemy and supercharges burn damage.",
+        stats: "120% damage · 85% health · +15% burn chance",
+        health: 0.85,
+        damage: 1.2,
+        speed: 1,
+        fireRate: 1.05,
+        armor: 0,
+        critChance: 0,
+        magnet: 1,
+        regenBonus: 0,
+        burnChanceBonus: 0.15,
+        chargeRate: 1
+      },
+      glacier: {
+        name: "Glacier Guard",
+        role: "Frost",
+        color: "#67e8f9",
+        ability: "Avalanche",
+        abilityDescription: "Launches a ring of freezing shards and gains an ice shield.",
+        stats: "120% health · +1 armor · +15% frost chance",
+        health: 1.2,
+        damage: 0.9,
+        speed: 0.92,
+        fireRate: 1,
+        armor: 1,
+        critChance: 0,
+        magnet: 1,
+        regenBonus: 0,
+        frostChanceBonus: 0.15,
+        chargeRate: 0.95
       }
     };
 
@@ -2424,7 +2564,13 @@
         guardian: 0,
         resilience: 0,
         bounty: 0,
-        supplyLuck: 0
+        supplyLuck: 0,
+        elementalCore: 0,
+        burnChance: 0,
+        burnPower: 0,
+        frostChance: 0,
+        frostPower: 0,
+        thermalShock: 0
       }
     };
 
@@ -2558,6 +2704,8 @@
         projectile: '<path d="m4 18 14-12M9 5l9 1-1 9"/><path d="M4 13v5h5"/>',
         dash: '<path d="M2 8h7M1 12h8M2 16h7l9-4-9-4"/>',
         knockback: '<path d="M3 12h12m-5-5 5 5-5 5"/><path d="M19 5v14"/>',
+        fire: '<path d="M12 22c4 0 7-3 7-7 0-5-4-7-3-12-4 2-7 6-7 10-2-1-3-3-3-5-2 2-3 5-3 8 0 4 4 6 9 6z"/><path d="M12 18c2 0 3-1 3-3 0-2-2-3-2-5-2 1-4 3-4 5 0 2 1 3 3 3z"/>',
+        frost: '<path d="M12 2v20M4 7l16 10M20 7 4 17M8 4l4 3 4-3M8 20l4-3 4 3"/>',
         fortune: '<path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><circle cx="12" cy="12" r="2"/>',
         nature: '<path d="M12 21V9"/><path d="M12 13c-5 0-8-3-8-8 5 0 8 3 8 8zm0 4c5 0 8-3 8-8-5 0-8 3-8 8z"/>',
         desert: '<circle cx="17" cy="6" r="3"/><path d="M2 19c4-5 8-5 12 0 3-3 5-3 8 0M17 1v2m0 6v2m-5-5h2m6 0h2"/>',
@@ -2716,6 +2864,12 @@
       knockback: 18,
       executeBonus: 0,
       damageReduction: 0,
+      burnChance: 0,
+      burnDamage: 0,
+      frostChance: 0,
+      frostSlow: 0,
+      frostDuration: 0,
+      elementalBonus: 0,
       magnet: 90,
       armor: 0,
       critChance: 0.08,
@@ -2884,25 +3038,40 @@
 
       const root = skillDefinitions.find(skill => skill.branch === "root");
       const branches = [
-        { id: "offense", name: "Weapons", color: "#fb7185" },
-        { id: "defense", name: "Survival", color: "#4ade80" },
-        { id: "utility", name: "Mobility & Loot", color: "#38bdf8" }
+        { id: "offense", name: "Damage Tree", color: "#fb7185" },
+        { id: "defense", name: "Defense Tree", color: "#4ade80" },
+        { id: "elemental", name: "Elemental Tree", color: "#f97316" },
+        { id: "utility", name: "Utility Tree", color: "#38bdf8" }
       ];
+      const activeBranch = branches.find(branch => branch.id === selectedSkillTree) ?? branches[0];
       skillGrid.innerHTML = `
-        <div class="skill-root-row">${cardMarkup(root)}</div>
-        <div class="skill-branches">
+        <div class="skill-tree-tabs">
           ${branches.map(branch => `
-            <div class="skill-branch" style="--branch-color:${branch.color}">
-              <div class="skill-branch-title">${branch.name}</div>
-              ${skillDefinitions
-                .filter(skill => skill.branch === branch.id)
-                .sort((left, right) => left.tier - right.tier)
-                .map(cardMarkup)
-                .join("")}
-            </div>
+            <button
+              class="skill-tree-tab ${branch.id === activeBranch.id ? "active" : ""}"
+              data-skill-tree="${branch.id}"
+              style="--tree-color:${branch.color}"
+            >${branch.name}</button>
           `).join("")}
         </div>
+        <div class="skill-root-row">${cardMarkup(root)}</div>
+        <div class="skill-branches single">
+          <div class="skill-branch" style="--branch-color:${activeBranch.color}">
+            <div class="skill-branch-title">${activeBranch.name}</div>
+            ${skillDefinitions
+              .filter(skill => skill.branch === activeBranch.id)
+              .sort((left, right) => left.tier - right.tier)
+              .map(cardMarkup)
+              .join("")}
+          </div>
+        </div>
       `;
+      skillGrid.querySelectorAll("[data-skill-tree]").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedSkillTree = button.dataset.skillTree;
+          renderSkills();
+        });
+      });
       skillGrid.querySelectorAll("[data-skill]").forEach(button => {
         button.addEventListener("click", () => buySkill(button.dataset.skill));
       });
@@ -3129,6 +3298,21 @@
         knockback: 18 * (1 + meta.skills.knockback * 0.14 + (loot.knockback || 0) / 100),
         executeBonus: meta.skills.execution * 0.06,
         damageReduction: meta.skills.resilience * 0.04,
+        burnChance: meta.skills.burnChance * 0.08 + (character.burnChanceBonus || 0),
+        burnDamage: Math.max(
+          character === characters.pyre ? 6 : 0,
+          meta.skills.elementalCore > 0 ? 3 + meta.skills.burnPower * 3 : 0
+        ),
+        frostChance: meta.skills.frostChance * 0.08 + (character.frostChanceBonus || 0),
+        frostSlow: Math.max(
+          character === characters.glacier ? 0.3 : 0,
+          meta.skills.frostChance > 0 ? Math.max(0.08, meta.skills.frostPower * 0.12) : 0
+        ),
+        frostDuration: Math.max(
+          character === characters.glacier ? 2 : 0,
+          meta.skills.frostChance > 0 ? 1.5 + meta.skills.frostPower * 0.5 : 0
+        ),
+        elementalBonus: meta.skills.thermalShock * 0.08,
         magnet: (90 + meta.skills.magnetism * 15 + (loot.magnet || 0)) * character.magnet,
         armor: meta.skills.barrier + (loot.armor || 0) + character.armor,
         critChance: Math.min(
@@ -3238,6 +3422,7 @@
       milestoneOverlay.hidden = true;
       state = "playing";
       beginCurrentWave();
+      if (pendingLevels > 0) showUpgradeChoices();
       lastFrame = performance.now();
     }
 
@@ -3370,6 +3555,8 @@
           splitter: true
         });
       } else if (type === "boss") {
+        const modeBossIndex = Math.max(0, Math.floor((wave - mode.bossStartWave) / Math.max(1, mode.bossEvery)));
+        const bossVariant = ["colossus", "brood", "tempest", "inferno"][modeBossIndex % 4];
         Object.assign(enemy, {
           radius: 42,
           speed: (32 + wave) * (mode.enemySpeed || 1),
@@ -3379,8 +3566,42 @@
           color: "#f472b6",
           xp: 100,
           shootTimer: 0.8,
-          boss: true
+          shootDelay: 1.15,
+          summonTimer: 4.5,
+          boss: true,
+          bossVariant
         });
+        if (bossVariant === "colossus") {
+          enemy.radius = 50;
+          enemy.speed *= 0.72;
+          enemy.health *= 1.4;
+          enemy.maxHealth = enemy.health;
+          enemy.damage *= 1.35;
+          enemy.color = "#a78bfa";
+          enemy.shootDelay = 1.5;
+        } else if (bossVariant === "brood") {
+          enemy.radius = 36;
+          enemy.speed *= 1.32;
+          enemy.health *= 0.82;
+          enemy.maxHealth = enemy.health;
+          enemy.color = "#4ade80";
+          enemy.splitter = true;
+          enemy.shootDelay = 0.9;
+        } else if (bossVariant === "tempest") {
+          enemy.radius = 40;
+          enemy.speed *= 1.08;
+          enemy.health *= 0.94;
+          enemy.maxHealth = enemy.health;
+          enemy.color = "#38bdf8";
+          enemy.shootDelay = 1.35;
+        } else {
+          enemy.radius = 45;
+          enemy.health *= 1.08;
+          enemy.maxHealth = enemy.health;
+          enemy.damage *= 1.15;
+          enemy.color = "#fb923c";
+          enemy.shootDelay = 1.05;
+        }
       }
       enemy.damage *= mode.enemyDamage || 1;
       if (allowElite && !enemy.boss && wave >= 3 && Math.random() < Math.min(0.05 + wave * 0.006, 0.16)) {
@@ -3513,6 +3734,11 @@
             knockback: player.knockback * 1.25,
             slow: 0,
             slowDuration: 0,
+            burnChance: player.burnChance,
+            burnDamage: player.burnDamage,
+            frostChance: player.frostChance,
+            frostSlow: player.frostSlow,
+            frostDuration: player.frostDuration,
             life: 1.5
           });
         }
@@ -3529,6 +3755,7 @@
           enemy.health -= enemy.boss ? damage * 0.65 : damage;
           enemy.x += dx / distance * 165;
           enemy.y += dy / distance * 165;
+          clampEnemyToArena(enemy);
           if (enemy.health <= 0) defeatEnemy(index);
         }
       } else if (player.characterId === "striker") {
@@ -3573,6 +3800,47 @@
         }
         enemyProjectiles.length = 0;
         player.invulnerable = Math.max(player.invulnerable, 1);
+      } else if (player.characterId === "pyre") {
+        for (const enemy of enemies) {
+          enemy.burnTimer = Math.max(enemy.burnTimer || 0, 7);
+          enemy.burnDps = Math.max(enemy.burnDps || 0, Math.max(player.burnDamage * 2, player.damage * 0.45));
+        }
+        player.overdriveTimer = Math.max(player.overdriveTimer, 4);
+      } else if (player.characterId === "glacier") {
+        const shards = Math.min(16, Math.max(0, maxFriendlyProjectiles - projectiles.length));
+        for (let index = 0; index < shards; index += 1) {
+          const angle = index / shards * Math.PI * 2;
+          projectiles.push({
+            x: player.x,
+            y: player.y,
+            vx: Math.cos(angle) * player.projectileSpeed,
+            vy: Math.sin(angle) * player.projectileSpeed,
+            radius: 6,
+            damage: player.damage * 1.5,
+            remainingPierce: 1 + player.pierce,
+            hitTargets: new Set(),
+            effectTargets: new Set(),
+            kind: "frost",
+            color: "#ecfeff",
+            glow: character.color,
+            chainCount: 0,
+            chainDamage: 0,
+            chainRange: 0,
+            blastRadius: 0,
+            blastDamage: 0,
+            knockback: player.knockback,
+            slow: 0.65,
+            slowDuration: 4,
+            burnChance: player.burnChance,
+            burnDamage: player.burnDamage,
+            frostChance: 1,
+            frostSlow: 0.65,
+            frostDuration: 4,
+            life: 1.6
+          });
+        }
+        player.invulnerable = Math.max(player.invulnerable, 4);
+        player.shieldTimer = Math.max(player.shieldTimer, 4);
       } else if (player.characterId === "demolitionist") {
         const minePositions = [];
         for (let mine = 0; mine < 8; mine += 1) {
@@ -3676,6 +3944,11 @@
           knockback: player.knockback * (weapon.knockbackMultiplier || 1),
           slow: weapon.slow || 0,
           slowDuration: weapon.slowDuration || 0,
+          burnChance: player.burnChance,
+          burnDamage: player.burnDamage,
+          frostChance: player.frostChance,
+          frostSlow: player.frostSlow,
+          frostDuration: player.frostDuration,
           life: 1.5
         });
       }
@@ -3683,17 +3956,58 @@
 
     function enemyShoot(enemy) {
       const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
-      const count = enemy.boss ? 7 : 1;
       const speedMultiplier = activeMode().enemyProjectileSpeed || 1;
+      let count = 1;
+      let projectileSpeed = 150;
+      let radius = 5;
+      let damageMultiplier = 1;
+      let color = "#fb7185";
+      let glow = "#f43f5e";
+      if (enemy.bossVariant === "colossus") {
+        count = 3;
+        projectileSpeed = 155;
+        radius = 10;
+        damageMultiplier = 1.3;
+        color = "#ddd6fe";
+        glow = "#8b5cf6";
+      } else if (enemy.bossVariant === "brood") {
+        count = 5;
+        projectileSpeed = 205;
+        color = "#bbf7d0";
+        glow = "#22c55e";
+      } else if (enemy.bossVariant === "tempest") {
+        count = 12;
+        projectileSpeed = 185;
+        color = "#dbeafe";
+        glow = "#3b82f6";
+      } else if (enemy.bossVariant === "inferno") {
+        count = 8;
+        projectileSpeed = 225;
+        radius = 7;
+        damageMultiplier = 1.12;
+        color = "#ffedd5";
+        glow = "#f97316";
+      } else if (enemy.boss) {
+        count = 7;
+        projectileSpeed = 190;
+        radius = 6;
+      }
       for (let index = 0; index < count; index += 1) {
-        const offset = enemy.boss ? (index - 3) * 0.18 : 0;
+        let shotAngle = angle;
+        if (enemy.bossVariant === "tempest" || enemy.bossVariant === "inferno") {
+          shotAngle = index / count * Math.PI * 2 + elapsed * 0.35;
+        } else if (count > 1) {
+          shotAngle += (index - (count - 1) / 2) * (enemy.bossVariant === "brood" ? 0.28 : 0.18);
+        }
         enemyProjectiles.push({
           x: enemy.x,
           y: enemy.y,
-          vx: Math.cos(angle + offset) * (enemy.boss ? 190 : 150) * speedMultiplier,
-          vy: Math.sin(angle + offset) * (enemy.boss ? 190 : 150) * speedMultiplier,
-          radius: enemy.boss ? 6 : 5,
-          damage: enemy.damage,
+          vx: Math.cos(shotAngle) * projectileSpeed * speedMultiplier,
+          vy: Math.sin(shotAngle) * projectileSpeed * speedMultiplier,
+          radius,
+          damage: enemy.damage * damageMultiplier,
+          color,
+          glow,
           life: 5
         });
       }
@@ -3701,6 +4015,11 @@
 
     function circleHit(left, right) {
       return Math.hypot(left.x - right.x, left.y - right.y) < left.radius + right.radius;
+    }
+
+    function clampEnemyToArena(enemy) {
+      enemy.x = Math.max(enemy.radius, Math.min(width - enemy.radius, enemy.x));
+      enemy.y = Math.max(enemy.radius, Math.min(height - enemy.radius, enemy.y));
     }
 
     function projectilesHit(left, right) {
@@ -3853,7 +4172,7 @@
       burst(enemy.x, enemy.y, enemy.color, enemy.boss ? 36 : 9);
     }
 
-    function gainXp(amount) {
+    function gainXp(amount, deferUpgrade = false) {
       player.xp += amount;
       while (player.xp >= player.xpNeeded) {
         player.xp -= player.xpNeeded;
@@ -3861,9 +4180,29 @@
         player.xpNeeded = Math.floor(player.xpNeeded * 1.28 + 5);
         pendingLevels += 1;
       }
-      if (pendingLevels > 0 && state === "playing") {
+      if (!deferUpgrade && pendingLevels > 0 && state === "playing") {
         showUpgradeChoices();
       }
+    }
+
+    function collectWaveXp() {
+      if (gems.length === 0) return;
+      const totalXp = gems.reduce((sum, gem) => sum + gem.value, 0);
+      const visibleGems = Math.min(24, Math.max(0, maxParticles - particles.length));
+      for (const gem of gems.slice(0, visibleGems)) {
+        particles.push({
+          x: gem.x,
+          y: gem.y,
+          vx: (player.x - gem.x) * 4,
+          vy: (player.y - gem.y) * 4,
+          life: 0.28,
+          maxLife: 0.28,
+          color: "#67e8f9"
+        });
+      }
+      gems.length = 0;
+      gainXp(totalXp, true);
+      burst(player.x, player.y, "#67e8f9", 12);
     }
 
     function randomUpgradeChoices() {
@@ -3923,12 +4262,18 @@
       if (nextWave !== wave) {
         wave = nextWave;
         const completedWaves = wave - 1;
+        collectWaveXp();
         if (completedWaves > 0 && completedWaves % mode.goalWaves === 0) {
           showMilestone(completedWaves);
           updateHud();
           return;
         }
         beginCurrentWave();
+        if (pendingLevels > 0) {
+          showUpgradeChoices();
+          updateHud();
+          return;
+        }
       }
 
       const move = movementVector();
@@ -3966,6 +4311,23 @@
         supplyTimer = 28 + Math.random() * 12;
       }
 
+      for (let index = enemies.length - 1; index >= 0; index -= 1) {
+        const enemy = enemies[index];
+        enemy.burnTimer = Math.max(0, (enemy.burnTimer || 0) - delta);
+        if (enemy.burnTimer <= 0) {
+          enemy.burnDps = 0;
+          continue;
+        }
+        if (!enemy.burnDps) continue;
+        enemy.health -= enemy.burnDps * delta;
+        enemy.burnFxTimer = (enemy.burnFxTimer || 0) - delta;
+        if (enemy.burnFxTimer <= 0) {
+          burst(enemy.x, enemy.y, "#fb923c", 2);
+          enemy.burnFxTimer = 0.18;
+        }
+        if (enemy.health <= 0) defeatEnemy(index);
+      }
+
       for (const enemy of enemies) {
         enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - delta);
         enemy.freezeTimer = Math.max(0, (enemy.freezeTimer || 0) - delta);
@@ -3984,10 +4346,26 @@
         }
         const moveSpeed = enemy.speed * (enemy.slowTimer > 0 ? enemy.slowMultiplier : 1);
         const preferredDistance = enemy.shootTimer > 0 && !enemy.boss ? 210 : 0;
+        if (enemy.bossVariant === "brood") {
+          enemy.summonTimer -= delta;
+          if (enemy.summonTimer <= 0 && enemies.length < 90) {
+            for (let minion = 0; minion < 3; minion += 1) {
+              const angle = minion / 3 * Math.PI * 2;
+              spawnEnemy(minion === 0 ? "splitter" : "swift", {
+                x: enemy.x + Math.cos(angle) * (enemy.radius + 18),
+                y: enemy.y + Math.sin(angle) * (enemy.radius + 18)
+              }, false);
+              clampEnemyToArena(enemies[enemies.length - 1]);
+            }
+            enemy.summonTimer = 5.5;
+            burst(enemy.x, enemy.y, "#4ade80", 16);
+          }
+        }
         if (enemy.type === "charger" && enemy.chargeTime > 0) {
           const chargeSlow = enemy.slowTimer > 0 ? enemy.slowMultiplier : 1;
           enemy.x += enemy.chargeVx * delta * chargeSlow;
           enemy.y += enemy.chargeVy * delta * chargeSlow;
+          clampEnemyToArena(enemy);
           enemy.chargeTime -= delta;
         } else if (enemy.type === "charger" && enemy.chargeWindup > 0) {
           enemy.chargeWindup -= delta;
@@ -4013,7 +4391,7 @@
           enemy.shootTimer -= delta;
           if (enemy.shootTimer <= 0) {
             enemyShoot(enemy);
-            enemy.shootTimer = enemy.boss ? 1.15 : 2.1;
+            enemy.shootTimer = enemy.boss ? enemy.shootDelay || 1.15 : 2.1;
           }
         }
         if (circleHit(player, enemy)) {
@@ -4024,6 +4402,7 @@
           }
           enemy.x -= dx / distance * 20;
           enemy.y -= dy / distance * 20;
+          clampEnemyToArena(enemy);
         }
       }
 
@@ -4062,13 +4441,25 @@
           projectile.hitTargets.add(enemy);
           const critical = Math.random() < player.critChance;
           const executeMultiplier = enemy.health <= enemy.maxHealth * 0.5 ? 1 + player.executeBonus : 1;
-          enemy.health -= projectile.damage * (critical ? 2 : 1) * executeMultiplier;
+          const elementalMultiplier = (enemy.burnTimer > 0 || enemy.slowTimer > 0)
+            ? 1 + player.elementalBonus
+            : 1;
+          enemy.health -= projectile.damage * (critical ? 2 : 1) * executeMultiplier * elementalMultiplier;
           const projectileSpeed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
           enemy.x += projectile.vx / projectileSpeed * projectile.knockback;
           enemy.y += projectile.vy / projectileSpeed * projectile.knockback;
+          clampEnemyToArena(enemy);
           if (projectile.slow > 0) {
             enemy.slowMultiplier = 1 - projectile.slow;
             enemy.slowTimer = Math.max(enemy.slowTimer || 0, projectile.slowDuration);
+          }
+          if (projectile.burnDamage > 0 && Math.random() < projectile.burnChance) {
+            enemy.burnTimer = Math.max(enemy.burnTimer || 0, 4);
+            enemy.burnDps = Math.max(enemy.burnDps || 0, projectile.burnDamage);
+          }
+          if (projectile.frostSlow > 0 && Math.random() < projectile.frostChance) {
+            enemy.slowMultiplier = Math.min(enemy.slowMultiplier || 1, 1 - projectile.frostSlow);
+            enemy.slowTimer = Math.max(enemy.slowTimer || 0, projectile.frostDuration);
           }
           burst(projectile.x, projectile.y, critical ? "#facc15" : "#67e8f9", critical ? 7 : 3);
           triggerWeaponEffect(projectile, enemy);
@@ -4437,8 +4828,8 @@
     }
 
     function drawProjectile(projectile, friendly) {
-      const color = friendly ? projectile.color || "#dffaff" : "#fb7185";
-      const glow = friendly ? projectile.glow || "#22d3ee" : "#f43f5e";
+      const color = projectile.color || (friendly ? "#dffaff" : "#fb7185");
+      const glow = projectile.glow || (friendly ? "#22d3ee" : "#f43f5e");
       const speed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
       const trail = friendly ? 16 : 12;
       context.save();
@@ -4615,6 +5006,28 @@
         context.restore();
       }
 
+      if (enemy.burnTimer > 0) {
+        context.save();
+        context.rotate(-angle);
+        context.strokeStyle = "#fb923c";
+        context.shadowColor = "#ef4444";
+        context.shadowBlur = 12;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, enemy.radius + 4 + Math.sin(elapsed * 14) * 2, 0, Math.PI * 2);
+        context.stroke();
+        context.restore();
+      } else if (enemy.slowTimer > 0) {
+        context.save();
+        context.rotate(-angle);
+        context.strokeStyle = "#7dd3fc";
+        context.globalAlpha = 0.7;
+        context.lineWidth = 2;
+        polygonPath(enemy.radius + 4, 6, Math.PI / 6);
+        context.stroke();
+        context.restore();
+      }
+
       if (enemy.type === "swift") {
         polygonPath(enemy.radius + 3, 3, 0);
       } else if (enemy.type === "tank") {
@@ -4625,6 +5038,14 @@
         polygonPath(enemy.radius + 2, 4, 0);
       } else if (enemy.type === "splitter") {
         polygonPath(enemy.radius, 8, Math.PI / 8);
+      } else if (enemy.bossVariant === "colossus") {
+        polygonPath(enemy.radius, 4, Math.PI / 4);
+      } else if (enemy.bossVariant === "brood") {
+        polygonPath(enemy.radius, 8, elapsed * 0.28);
+      } else if (enemy.bossVariant === "tempest") {
+        polygonPath(enemy.radius, 6, -elapsed * 0.55);
+      } else if (enemy.bossVariant === "inferno") {
+        polygonPath(enemy.radius, 12, elapsed * 0.4);
       } else if (enemy.boss) {
         polygonPath(enemy.radius, 10, elapsed * 0.18);
       } else {
@@ -4644,11 +5065,13 @@
       context.fill();
 
       if (enemy.boss) {
-        context.strokeStyle = "rgba(244,114,182,0.42)";
+        context.strokeStyle = enemy.color;
+        context.globalAlpha = 0.5;
         context.lineWidth = 2;
         context.beginPath();
         context.arc(0, 0, enemy.radius + 9 + Math.sin(elapsed * 4) * 2, 0, Math.PI * 2);
         context.stroke();
+        context.globalAlpha = 1;
       }
       context.restore();
 
@@ -4674,7 +5097,9 @@
         striker: { boots: "#1a2e05", trim: "#a3e635", body: "#4d7c0f", outline: "#ecfccb", visor: "#bef264" },
         oracle: { boots: "#500724", trim: "#f472b6", body: "#be185d", outline: "#fce7f3", visor: "#f9a8d4" },
         demolitionist: { boots: "#431407", trim: "#fb923c", body: "#c2410c", outline: "#ffedd5", visor: "#fdba74" },
-        medic: { boots: "#042f2e", trim: "#2dd4bf", body: "#0f766e", outline: "#ccfbf1", visor: "#5eead4" }
+        medic: { boots: "#042f2e", trim: "#2dd4bf", body: "#0f766e", outline: "#ccfbf1", visor: "#5eead4" },
+        pyre: { boots: "#450a0a", trim: "#ef4444", body: "#991b1b", outline: "#fee2e2", visor: "#fca5a5" },
+        glacier: { boots: "#083344", trim: "#67e8f9", body: "#0e7490", outline: "#cffafe", visor: "#a5f3fc" }
       };
       const palette = palettes[player.characterId] ?? palettes.ranger;
       context.save();
@@ -4763,6 +5188,17 @@
         context.lineTo(5, 0);
         context.moveTo(0, -5);
         context.lineTo(0, 5);
+      } else if (player.characterId === "pyre") {
+        context.moveTo(-5, 4);
+        context.quadraticCurveTo(-1, -7, 2, 0);
+        context.quadraticCurveTo(6, 5, 0, 6);
+        context.closePath();
+      } else if (player.characterId === "glacier") {
+        context.moveTo(0, -6);
+        context.lineTo(5, 0);
+        context.lineTo(0, 6);
+        context.lineTo(-5, 0);
+        context.closePath();
       } else {
         context.moveTo(-5, 3);
         context.lineTo(0, -5);
