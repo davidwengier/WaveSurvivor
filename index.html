@@ -203,10 +203,81 @@
 
     .hub-panel {
       width: min(64rem, 100%);
+      padding-top: 1.4rem;
       background:
         linear-gradient(135deg, rgb(34 211 238 / 8%), transparent 32%),
         radial-gradient(circle at 88% 8%, rgb(168 85 247 / 12%), transparent 24rem),
         linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(5 7 17 / 98%));
+    }
+
+    .hub-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .hub-title {
+      text-align: left;
+    }
+
+    .hub-title h1 {
+      font-size: clamp(2.8rem, 9vw, 5.5rem);
+    }
+
+    .hub-title p {
+      max-width: 42rem;
+      margin: 0.7rem 0 0;
+      color: #b8c3d6;
+      line-height: 1.55;
+    }
+
+    .settings-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid rgb(103 232 249 / 28%);
+      border-radius: 0.65rem;
+      background: rgb(8 145 178 / 12%);
+      color: #a5f3fc;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .hub-navigation {
+      position: sticky;
+      top: -1.4rem;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.4rem;
+      margin: 1rem 0;
+      padding: 0.55rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.75rem;
+      background: rgb(5 7 17 / 92%);
+      box-shadow: 0 0.7rem 1.5rem rgb(0 0 0 / 28%);
+      backdrop-filter: blur(0.8rem);
+    }
+
+    .hub-navigation button {
+      padding: 0.55rem 0.4rem;
+      border-radius: 0.45rem;
+      background: rgb(255 255 255 / 5%);
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hub-navigation button:hover {
+      background: rgb(34 211 238 / 12%);
+      color: #a5f3fc;
     }
 
     .brand-logo {
@@ -323,7 +394,7 @@
 
     .hub-grid {
       display: grid;
-      grid-template-columns: 0.85fr 1.4fr;
+      grid-template-columns: minmax(18rem, 0.9fr) minmax(24rem, 1.35fr);
       gap: 0.8rem;
       margin: 1rem 0;
       text-align: left;
@@ -604,7 +675,14 @@
       border-radius: 0.65rem;
       background: linear-gradient(145deg, color-mix(in srgb, var(--character-color) 10%, transparent), #111620);
       color: white;
+      cursor: pointer;
       text-align: left;
+      transition: border-color 150ms ease, filter 150ms ease, transform 150ms ease;
+    }
+
+    .character-card:hover {
+      filter: brightness(1.12);
+      transform: translateY(-2px);
     }
 
     .character-card.active {
@@ -624,6 +702,24 @@
       color: #aeb8ca;
       font-size: 0.68rem;
       line-height: 1.4;
+    }
+
+    .character-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.3rem;
+      margin-top: 0.55rem;
+    }
+
+    .character-stat {
+      padding: 0.32rem 0.4rem;
+      border: 1px solid rgb(255 255 255 / 9%);
+      border-radius: 0.35rem;
+      background: rgb(0 0 0 / 18%);
+      color: #dbeafe;
+      font-size: 0.6rem;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .character-card em {
@@ -1341,6 +1437,64 @@
       font-size: 0.9rem;
     }
 
+    .settings-list {
+      display: grid;
+      gap: 0.8rem;
+      margin: 1.2rem 0;
+      text-align: left;
+    }
+
+    .setting-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 0.7rem;
+      background: rgb(255 255 255 / 4%);
+    }
+
+    .setting-row strong,
+    .setting-row span {
+      display: block;
+    }
+
+    .setting-row span {
+      margin-top: 0.2rem;
+      color: #94a3b8;
+      font-size: 0.72rem;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .setting-toggle {
+      min-width: 5rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid rgb(255 255 255 / 16%);
+      border-radius: 999px;
+      background: #171b28;
+      color: #94a3b8;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .setting-toggle.enabled {
+      border-color: #22d3ee;
+      background: rgb(8 145 178 / 22%);
+      color: #a5f3fc;
+      box-shadow: 0 0 1rem rgb(34 211 238 / 16%);
+    }
+
+    .setting-slider {
+      width: min(12rem, 32vw);
+      accent-color: #22d3ee;
+    }
+
     @media (pointer: coarse), (max-width: 700px) {
       .mobile-controls {
         display: flex;
@@ -1372,10 +1526,7 @@
 
       .controls-copy,
       .upgrade-grid,
-      .hub-grid,
       .gear-grid,
-      .character-grid,
-      .mode-grid,
       .loadout-grid,
       .inventory-grid,
       .skill-grid {
@@ -1384,7 +1535,8 @@
       }
 
       .chest-grid,
-      .pause-stats {
+      .pause-stats,
+      .hub-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1392,13 +1544,38 @@
         min-width: 42rem;
       }
 
-      .skill-tree-tabs {
-        min-width: 36rem;
-      }
-
       .character-grid {
         width: 100%;
-        grid-template-columns: repeat(4, minmax(10rem, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .mode-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hub-header {
+        grid-template-columns: 1fr;
+      }
+
+      .hub-title {
+        text-align: center;
+      }
+
+      .hub-title p {
+        margin-right: auto;
+        margin-left: auto;
+      }
+
+      .settings-button {
+        justify-self: center;
+      }
+
+      .hub-navigation {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .skill-tree-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .skill-root-row .skill-card {
@@ -1474,15 +1651,31 @@
 
   <div id="titleOverlay" class="overlay">
     <div class="panel hub-panel">
-      <img class="brand-logo" src="favicon.svg" alt="">
-      <div class="eyebrow">Safehouse</div>
-      <h1>WAVE <span>SURVIVOR</span></h1>
-      <p>Prepare between expeditions. Open recovered chests, permanently improve your equipment, then choose how you want to enter the arena.</p>
+      <header class="hub-header">
+        <div class="hub-title">
+          <img class="brand-logo" src="favicon.svg" alt="">
+          <div class="eyebrow">Safehouse</div>
+          <h1>WAVE <span>SURVIVOR</span></h1>
+          <p>Choose your survivor and battlefield, then prepare your gear and permanent upgrades for the next expedition.</p>
+        </div>
+        <button id="settingsButton" class="settings-button">Settings</button>
+      </header>
       <div class="hub-resources">
         <div class="hub-resource"><small>Chests</small><strong id="chestCount">1</strong></div>
         <div class="hub-resource"><small>Scrap</small><strong id="scrapCount">0</strong></div>
       </div>
-      <div class="hub-grid">
+      <nav class="hub-navigation" aria-label="Safehouse sections">
+        <button data-hub-target="survivorSection">Survivors</button>
+        <button data-hub-target="arsenalSection">Arsenal</button>
+        <button data-hub-target="skillsSection">Skills</button>
+        <button data-hub-target="launchSection">Launch</button>
+      </nav>
+      <section id="survivorSection" class="character-section">
+        <h2>Choose survivor</h2>
+        <p>Every survivor has a complete stat profile, a unique combat specialty, and a charged ability.</p>
+        <div id="characterGrid" class="character-grid"></div>
+      </section>
+      <div id="arsenalSection" class="hub-grid">
         <section class="hub-section">
           <h2>Recovered chests</h2>
           <p>Choose a cache. Higher chest tiers improve the minimum loot rarity and scrap payout.</p>
@@ -1524,7 +1717,7 @@
         <div id="loadoutGrid" class="loadout-grid"></div>
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
-      <section class="skill-section">
+      <section id="skillsSection" class="skill-section">
         <div class="loot-heading">
           <div>
             <h2>Core skill tree</h2>
@@ -1534,12 +1727,7 @@
         </div>
         <div id="skillGrid" class="skill-grid"></div>
       </section>
-      <section class="character-section">
-        <h2>Choose survivor</h2>
-        <p>Every survivor has a unique charged ability and different starting stats.</p>
-        <div id="characterGrid" class="character-grid"></div>
-      </section>
-      <section class="mode-section">
+      <section id="launchSection" class="mode-section">
         <h2>Choose game mode</h2>
         <p>Each mode changes pacing, bosses, and chest rewards.</p>
         <div id="modeGrid" class="mode-grid"></div>
@@ -1572,8 +1760,36 @@
       <div id="pauseStats" class="pause-stats"></div>
       <div class="overlay-actions">
         <button id="resumeButton" class="primary">Resume</button>
+        <button id="pauseSettingsButton" class="secondary">Settings</button>
         <button id="lobbyButton" class="secondary">Return to lobby</button>
       </div>
+    </div>
+  </div>
+
+  <div id="settingsOverlay" class="overlay" hidden>
+    <div class="panel">
+      <div class="eyebrow">Options</div>
+      <h2>Settings</h2>
+      <p>Adjust sound without leaving your current run.</p>
+      <div class="settings-list">
+        <div class="setting-row">
+          <div>
+            <strong>Music</strong>
+            <span>Play the generated WAVE SURVIVOR soundtrack.</span>
+          </div>
+          <button id="musicToggle" class="setting-toggle" aria-pressed="false">Off</button>
+        </div>
+        <label class="setting-row" for="musicVolume">
+          <div>
+            <strong>Music volume</strong>
+            <span id="musicVolumeLabel">35%</span>
+          </div>
+          <span class="setting-control">
+            <input id="musicVolume" class="setting-slider" type="range" min="0" max="100" step="5" value="35">
+          </span>
+        </label>
+      </div>
+      <button id="closeSettingsButton" class="primary">Done</button>
     </div>
   </div>
 
@@ -1627,6 +1843,7 @@
     const titleOverlay = document.querySelector("#titleOverlay");
     const upgradeOverlay = document.querySelector("#upgradeOverlay");
     const pauseOverlay = document.querySelector("#pauseOverlay");
+    const settingsOverlay = document.querySelector("#settingsOverlay");
     const milestoneOverlay = document.querySelector("#milestoneOverlay");
     const gameOverOverlay = document.querySelector("#gameOverOverlay");
     const upgradeGrid = document.querySelector("#upgradeGrid");
@@ -1655,6 +1872,9 @@
     const characterGrid = document.querySelector("#characterGrid");
     const pauseStats = document.querySelector("#pauseStats");
     const resetProgressButton = document.querySelector("#resetProgressButton");
+    const musicToggle = document.querySelector("#musicToggle");
+    const musicVolume = document.querySelector("#musicVolume");
+    const musicVolumeLabel = document.querySelector("#musicVolumeLabel");
 
     const keys = new Set();
     const touchMove = { x: 0, y: 0 };
@@ -1691,6 +1911,11 @@
     let runRewardClaimed = false;
     let selectedChestType = "field";
     let selectedSkillTree = "offense";
+    let settingsReturnOverlay = titleOverlay;
+    let audioContext = null;
+    let musicGain = null;
+    let musicTimer = null;
+    let musicStep = 0;
 
     const gameModes = {
       survival: {
@@ -1960,6 +2185,28 @@
         description: level => `+${level * 6}% damage against enemies below half health.`
       },
       {
+        id: "criticalPower",
+        name: "Critical Overload",
+        icon: "crit",
+        accent: "#facc15",
+        branch: "offense",
+        tier: 8,
+        maxLevel: 3,
+        requires: { id: "execution", level: 2 },
+        description: level => `Critical weapon hits deal +${level * 15}% additional damage.`
+      },
+      {
+        id: "bossHunter",
+        name: "Titan Breaker",
+        icon: "damage",
+        accent: "#f43f5e",
+        branch: "offense",
+        tier: 9,
+        maxLevel: 3,
+        requires: { id: "criticalPower", level: 2 },
+        description: level => `Weapon hits deal +${level * 8}% damage to bosses.`
+      },
+      {
         id: "vitality",
         name: "Vitality Core",
         icon: "health",
@@ -2035,6 +2282,28 @@
         maxLevel: 3,
         requires: { id: "guardian", level: 2 },
         description: level => `Take ${level * 4}% less damage.`
+      },
+      {
+        id: "combatRepair",
+        name: "Combat Repair",
+        icon: "repair",
+        accent: "#34d399",
+        branch: "defense",
+        tier: 8,
+        maxLevel: 3,
+        requires: { id: "resilience", level: 2 },
+        description: level => `Restore ${level * 2} health after every 10 kills.`
+      },
+      {
+        id: "damageControl",
+        name: "Damage Control",
+        icon: "armor",
+        accent: "#2dd4bf",
+        branch: "defense",
+        tier: 9,
+        maxLevel: 3,
+        requires: { id: "combatRepair", level: 2 },
+        description: level => `Take an additional ${level * 3}% less damage.`
       },
       {
         id: "agility",
@@ -2114,6 +2383,28 @@
         description: level => `+${level * 6}% supply drop chance from elite enemies.`
       },
       {
+        id: "wisdom",
+        name: "Data Harvest",
+        icon: "magnet",
+        accent: "#67e8f9",
+        branch: "utility",
+        tier: 8,
+        maxLevel: 3,
+        requires: { id: "supplyLuck", level: 2 },
+        description: level => `Gain +${level * 8}% experience.`
+      },
+      {
+        id: "capacitor",
+        name: "Nova Capacitor",
+        icon: "fortune",
+        accent: "#c084fc",
+        branch: "utility",
+        tier: 9,
+        maxLevel: 3,
+        requires: { id: "wisdom", level: 2 },
+        description: level => `Charge survivor abilities ${level * 10}% faster.`
+      },
+      {
         id: "elementalCore",
         name: "Elemental Core",
         icon: "fire",
@@ -2178,6 +2469,28 @@
         maxLevel: 3,
         requires: { id: "burnPower", level: 2 },
         description: level => `Deal ${level * 8}% more damage to burning or chilled enemies.`
+      },
+      {
+        id: "lingeringFlames",
+        name: "Lingering Flames",
+        icon: "fire",
+        accent: "#f97316",
+        branch: "elemental",
+        tier: 5,
+        maxLevel: 3,
+        requires: { id: "thermalShock", level: 2 },
+        description: level => `Burn effects last ${level} additional second${level === 1 ? "" : "s"}.`
+      },
+      {
+        id: "brittle",
+        name: "Brittle Ice",
+        icon: "frost",
+        accent: "#a5f3fc",
+        branch: "elemental",
+        tier: 4,
+        maxLevel: 3,
+        requires: { id: "frostPower", level: 2 },
+        description: level => `Chilled enemies take +${level * 6}% damage.`
       }
     ];
 
@@ -2531,6 +2844,10 @@
       scrap: 0,
       selectedMode: "survival",
       selectedCharacter: "ranger",
+      settings: {
+        music: false,
+        musicVolume: 0.35
+      },
       gear: {
         blaster: 0,
         armor: 0,
@@ -2570,7 +2887,15 @@
         burnPower: 0,
         frostChance: 0,
         frostPower: 0,
-        thermalShock: 0
+        thermalShock: 0,
+        criticalPower: 0,
+        bossHunter: 0,
+        combatRepair: 0,
+        damageControl: 0,
+        wisdom: 0,
+        capacitor: 0,
+        lingeringFlames: 0,
+        brittle: 0
       }
     };
 
@@ -2639,6 +2964,12 @@
           scrap: Math.max(0, Math.floor(Number(parsed.scrap) || 0)),
           selectedMode: gameModes[parsed.selectedMode] ? parsed.selectedMode : "survival",
           selectedCharacter: Object.hasOwn(characters, parsed.selectedCharacter) ? parsed.selectedCharacter : "ranger",
+          settings: {
+            music: parsed.settings?.music === true,
+            musicVolume: Number.isFinite(Number(parsed.settings?.musicVolume))
+              ? Math.min(1, Math.max(0, Number(parsed.settings.musicVolume)))
+              : defaultMeta.settings.musicVolume
+          },
           gear: {
             blaster: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.blaster) || 0))),
             armor: Math.min(10, Math.max(0, Math.floor(Number(parsed.gear?.armor) || 0))),
@@ -2668,6 +2999,96 @@
       localStorage.setItem("waveSurvivorMeta", JSON.stringify(meta));
     }
 
+    function updateMusicVolume() {
+      if (!musicGain || !audioContext) return;
+      musicGain.gain.setTargetAtTime(meta.settings.musicVolume * 0.16, audioContext.currentTime, 0.05);
+    }
+
+    function playMusicStep() {
+      if (!audioContext || !musicGain || !meta.settings.music) return;
+      const melody = [220, 261.63, 329.63, 293.66, 196, 246.94, 329.63, 392];
+      const bass = [55, 65.41, 49, 73.42];
+      const now = audioContext.currentTime;
+      const lead = audioContext.createOscillator();
+      const leadEnvelope = audioContext.createGain();
+      lead.type = "triangle";
+      lead.frequency.value = melody[musicStep % melody.length];
+      leadEnvelope.gain.setValueAtTime(0.0001, now);
+      leadEnvelope.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
+      leadEnvelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+      lead.connect(leadEnvelope).connect(musicGain);
+      lead.start(now);
+      lead.stop(now + 0.45);
+      if (musicStep % 2 === 0) {
+        const low = audioContext.createOscillator();
+        const lowEnvelope = audioContext.createGain();
+        low.type = "sine";
+        low.frequency.value = bass[Math.floor(musicStep / 2) % bass.length];
+        lowEnvelope.gain.setValueAtTime(0.0001, now);
+        lowEnvelope.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
+        lowEnvelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+        low.connect(lowEnvelope).connect(musicGain);
+        low.start(now);
+        low.stop(now + 0.85);
+      }
+      musicStep += 1;
+    }
+
+    function startMusic() {
+      if (!meta.settings.music || musicTimer) return;
+      const AudioContextType = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextType) {
+        musicToggle.disabled = true;
+        musicToggle.textContent = "Unavailable";
+        return;
+      }
+      audioContext ??= new AudioContextType();
+      if (!musicGain) {
+        musicGain = audioContext.createGain();
+        musicGain.connect(audioContext.destination);
+      }
+      audioContext.resume();
+      updateMusicVolume();
+      playMusicStep();
+      musicTimer = window.setInterval(playMusicStep, 450);
+    }
+
+    function stopMusic() {
+      if (musicTimer) window.clearInterval(musicTimer);
+      musicTimer = null;
+      if (musicGain && audioContext) {
+        musicGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.03);
+      }
+    }
+
+    function renderSettings() {
+      musicToggle.textContent = meta.settings.music ? "On" : "Off";
+      musicToggle.classList.toggle("enabled", meta.settings.music);
+      musicToggle.setAttribute("aria-pressed", String(meta.settings.music));
+      musicVolume.value = String(Math.round(meta.settings.musicVolume * 100));
+      musicVolumeLabel.textContent = `${musicVolume.value}%`;
+    }
+
+    function openSettings(sourceOverlay) {
+      settingsReturnOverlay = sourceOverlay;
+      sourceOverlay.hidden = true;
+      settingsOverlay.hidden = false;
+      renderSettings();
+    }
+
+    function closeSettings() {
+      settingsOverlay.hidden = true;
+      settingsReturnOverlay.hidden = false;
+    }
+
+    function toggleMusic() {
+      meta.settings.music = !meta.settings.music;
+      saveMeta();
+      renderSettings();
+      if (meta.settings.music) startMusic();
+      else stopMusic();
+    }
+
     function resetProgress() {
       if (!window.confirm("Reset all chests, scrap, equipment, skills, and best-run progress?")) return;
       localStorage.removeItem("waveSurvivorMeta");
@@ -2676,9 +3097,11 @@
       localStorage.removeItem("maxGameBest");
       Object.assign(meta, structuredClone(defaultMeta));
       selectedChestType = "field";
+      stopMusic();
       saveMeta();
       chestResult.textContent = "All WAVE SURVIVOR progress has been reset.";
       renderHub();
+      renderSettings();
     }
 
     function activeMode() {
@@ -3099,6 +3522,25 @@
       renderHub();
     }
 
+    function characterStatsMarkup(character) {
+      const stats = [
+        ["Health", `${Math.round(character.health * 100)}%`],
+        ["Damage", `${Math.round(character.damage * 100)}%`],
+        ["Move", `${Math.round(character.speed * 100)}%`],
+        ["Attack", `${Math.round(100 / character.fireRate)}%`],
+        ["Armor", `+${character.armor}`],
+        ["Critical", `${Math.round((0.08 + character.critChance) * 100)}%`],
+        ["Pickup", `${Math.round(character.magnet * 100)}%`],
+        ["Charge", `${Math.round(character.chargeRate * 100)}%`]
+      ];
+      if (character.regenBonus > 0) stats.push(["Regen", `+${character.regenBonus}/s`]);
+      if (character.burnChanceBonus > 0) stats.push(["Burn", `+${Math.round(character.burnChanceBonus * 100)}%`]);
+      if (character.frostChanceBonus > 0) stats.push(["Frost", `+${Math.round(character.frostChanceBonus * 100)}%`]);
+      return stats.map(([label, value]) => `
+        <span class="character-stat">${label}: ${value}</span>
+      `).join("");
+    }
+
     function renderHub() {
       chestCount.textContent = meta.chests + meta.reinforcedChests + meta.relicChests;
       scrapCount.textContent = meta.scrap;
@@ -3153,7 +3595,7 @@
         >
           <div class="character-portrait ${id}"></div>
           <strong>${character.name} · ${character.role}</strong>
-          <span>${character.stats}</span>
+          <div class="character-stats">${characterStatsMarkup(character)}</div>
           <em>${character.ability}: ${character.abilityDescription}</em>
         </button>
       `).join("");
@@ -3297,7 +3739,12 @@
         pierce: 0,
         knockback: 18 * (1 + meta.skills.knockback * 0.14 + (loot.knockback || 0) / 100),
         executeBonus: meta.skills.execution * 0.06,
-        damageReduction: meta.skills.resilience * 0.04,
+        damageReduction: Math.min(0.75, meta.skills.resilience * 0.04 + meta.skills.damageControl * 0.03),
+        criticalMultiplier: 2 + meta.skills.criticalPower * 0.15,
+        bossDamageBonus: meta.skills.bossHunter * 0.08,
+        xpMultiplier: 1 + meta.skills.wisdom * 0.08,
+        abilityChargeMultiplier: 1 + meta.skills.capacitor * 0.1,
+        combatRepair: meta.skills.combatRepair * 2,
         burnChance: meta.skills.burnChance * 0.08 + (character.burnChanceBonus || 0),
         burnDamage: Math.max(
           character === characters.pyre ? 6 : 0,
@@ -3313,6 +3760,8 @@
           meta.skills.frostChance > 0 ? 1.5 + meta.skills.frostPower * 0.5 : 0
         ),
         elementalBonus: meta.skills.thermalShock * 0.08,
+        burnDuration: 4 + meta.skills.lingeringFlames,
+        frostDamageBonus: meta.skills.brittle * 0.06,
         magnet: (90 + meta.skills.magnetism * 15 + (loot.magnet || 0)) * character.magnet,
         armor: meta.skills.barrier + (loot.armor || 0) + character.armor,
         critChance: Math.min(
@@ -3366,7 +3815,7 @@
       healthFill.style.width = `${healthPercent}%`;
       healthLabel.textContent = `HP ${Math.ceil(player.health)} / ${player.maxHealth}`;
       xpFill.style.width = `${player.xp / player.xpNeeded * 100}%`;
-      xpLabel.textContent = `LEVEL ${player.level} - ${player.xp} / ${player.xpNeeded}`;
+      xpLabel.textContent = `LEVEL ${player.level} - ${Math.floor(player.xp)} / ${player.xpNeeded}`;
       timeDisplay.textContent = formatTime(elapsed);
       const goalWaves = activeMode().goalWaves;
       const nextGoal = Math.ceil(wave / goalWaves) * goalWaves;
@@ -3802,7 +4251,7 @@
         player.invulnerable = Math.max(player.invulnerable, 1);
       } else if (player.characterId === "pyre") {
         for (const enemy of enemies) {
-          enemy.burnTimer = Math.max(enemy.burnTimer || 0, 7);
+          enemy.burnTimer = Math.max(enemy.burnTimer || 0, 7 + meta.skills.lingeringFlames);
           enemy.burnDps = Math.max(enemy.burnDps || 0, Math.max(player.burnDamage * 2, player.damage * 0.45));
         }
         player.overdriveTimer = Math.max(player.overdriveTimer, 4);
@@ -4058,6 +4507,15 @@
       return collisions;
     }
 
+    function weaponTargetMultiplier(enemy) {
+      const elementalMultiplier = (enemy.burnTimer > 0 || enemy.slowTimer > 0)
+        ? 1 + player.elementalBonus
+        : 1;
+      const frostMultiplier = enemy.slowTimer > 0 ? 1 + player.frostDamageBonus : 1;
+      const bossMultiplier = enemy.boss ? 1 + player.bossDamageBonus : 1;
+      return elementalMultiplier * frostMultiplier * bossMultiplier;
+    }
+
     function triggerWeaponEffect(projectile, primaryTarget) {
       projectile.effectTargets ??= new Set();
       if (projectile.chainCount > 0) {
@@ -4081,7 +4539,7 @@
             life: 0.18,
             maxLife: 0.18
           });
-          target.health -= projectile.damage * projectile.chainDamage;
+          target.health -= projectile.damage * projectile.chainDamage * weaponTargetMultiplier(target);
           burst(target.x, target.y, "#c084fc", 5);
           const targetIndex = enemies.indexOf(target);
           if (targetIndex >= 0 && target.health <= 0) defeatEnemy(targetIndex);
@@ -4107,7 +4565,7 @@
           if (projectile.effectTargets.has(enemy)) continue;
           if (Math.hypot(enemy.x - primaryTarget.x, enemy.y - primaryTarget.y) > projectile.blastRadius + enemy.radius) continue;
           projectile.effectTargets.add(enemy);
-          enemy.health -= projectile.damage * projectile.blastDamage;
+          enemy.health -= projectile.damage * projectile.blastDamage * weaponTargetMultiplier(enemy);
           if (enemy.health <= 0) defeatEnemy(index);
         }
         for (let index = supplyCrates.length - 1; index >= 0; index -= 1) {
@@ -4143,8 +4601,12 @@
       const chargeRate = (characters[player.characterId] ?? characters.ranger).chargeRate;
       player.novaCharge = Math.min(
         100,
-        player.novaCharge + (enemy.boss ? 40 : enemy.elite ? 18 : 8) * chargeRate
+        player.novaCharge + (enemy.boss ? 40 : enemy.elite ? 18 : 8) * chargeRate * player.abilityChargeMultiplier
       );
+      if (player.combatRepair > 0 && kills % 10 === 0) {
+        player.health = Math.min(player.maxHealth, player.health + player.combatRepair);
+        burst(player.x, player.y, "#34d399", 8);
+      }
       const gemCount = enemy.boss ? 12 : enemy.elite ? 5 : 1;
       for (let gemIndex = 0; gemIndex < gemCount; gemIndex += 1) {
         gems.push({
@@ -4173,7 +4635,7 @@
     }
 
     function gainXp(amount, deferUpgrade = false) {
-      player.xp += amount;
+      player.xp += amount * player.xpMultiplier;
       while (player.xp >= player.xpNeeded) {
         player.xp -= player.xpNeeded;
         player.level += 1;
@@ -4441,10 +4903,10 @@
           projectile.hitTargets.add(enemy);
           const critical = Math.random() < player.critChance;
           const executeMultiplier = enemy.health <= enemy.maxHealth * 0.5 ? 1 + player.executeBonus : 1;
-          const elementalMultiplier = (enemy.burnTimer > 0 || enemy.slowTimer > 0)
-            ? 1 + player.elementalBonus
-            : 1;
-          enemy.health -= projectile.damage * (critical ? 2 : 1) * executeMultiplier * elementalMultiplier;
+          enemy.health -= projectile.damage
+            * (critical ? player.criticalMultiplier : 1)
+            * executeMultiplier
+            * weaponTargetMultiplier(enemy);
           const projectileSpeed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
           enemy.x += projectile.vx / projectileSpeed * projectile.knockback;
           enemy.y += projectile.vy / projectileSpeed * projectile.knockback;
@@ -4454,7 +4916,7 @@
             enemy.slowTimer = Math.max(enemy.slowTimer || 0, projectile.slowDuration);
           }
           if (projectile.burnDamage > 0 && Math.random() < projectile.burnChance) {
-            enemy.burnTimer = Math.max(enemy.burnTimer || 0, 4);
+            enemy.burnTimer = Math.max(enemy.burnTimer || 0, player.burnDuration);
             enemy.burnDps = Math.max(enemy.burnDps || 0, projectile.burnDamage);
           }
           if (projectile.frostSlow > 0 && Math.random() < projectile.frostChance) {
@@ -5457,6 +5919,8 @@
         ["Damage", (player.damage * weapon.damageMultiplier).toFixed(1)],
         ["Attack speed", `${(1 / Math.max(0.01, attackDelay)).toFixed(2)}/s`],
         ["Critical chance", `${Math.round(player.critChance * 100)}%`],
+        ["Critical damage", `${Math.round(player.criticalMultiplier * 100)}%`],
+        ["Boss damage", `+${Math.round(player.bossDamageBonus * 100)}%`],
         ["Projectiles", player.projectiles + (weapon.bonusProjectiles || 0)],
         ["Piercing", player.pierce + (weapon.innatePierce || 0)],
         ["Knockback", (player.knockback * (weapon.knockbackMultiplier || 1)).toFixed(0)],
@@ -5465,8 +5929,12 @@
         ["Movement speed", player.speed.toFixed(0)],
         ["Regeneration", `${player.regen.toFixed(2)}/s`],
         ["Pickup range", player.magnet.toFixed(0)],
+        ["Experience", `+${Math.round((player.xpMultiplier - 1) * 100)}%`],
         ["Luck", `${meta.skills.fortune * 5}%`],
-        ["Ability charge", `${Math.floor(player.novaCharge)}%`]
+        ["Ability charge", `${Math.floor(player.novaCharge)}%`],
+        ["Charge rate", `${Math.round(player.abilityChargeMultiplier * 100)}%`],
+        ["Burn", `${Math.round(player.burnChance * 100)}% · ${player.burnDamage.toFixed(1)}/s`],
+        ["Frost", `${Math.round(player.frostChance * 100)}% · ${Math.round(player.frostSlow * 100)}% slow`]
       ];
       pauseStats.innerHTML = stats.map(([label, value]) => `
         <div class="pause-stat"><small>${label}</small><strong>${value}</strong></div>
@@ -5511,7 +5979,10 @@
       if (event.repeat) return;
       if (gameplayInput && key === " ") dash();
       if (gameplayInput && key === "q") useAbility();
-      if (!interactiveTarget && key === "escape") togglePause();
+      if (!interactiveTarget && key === "escape") {
+        if (!settingsOverlay.hidden) closeSettings();
+        else togglePause();
+      }
     });
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
     window.addEventListener("blur", () => {
@@ -5565,6 +6036,21 @@
     });
     pauseButton.addEventListener("click", togglePause);
     document.querySelector("#resumeButton").addEventListener("click", togglePause);
+    document.querySelector("#settingsButton").addEventListener("click", () => openSettings(titleOverlay));
+    document.querySelector("#pauseSettingsButton").addEventListener("click", () => openSettings(pauseOverlay));
+    document.querySelector("#closeSettingsButton").addEventListener("click", closeSettings);
+    musicToggle.addEventListener("click", toggleMusic);
+    musicVolume.addEventListener("input", () => {
+      meta.settings.musicVolume = Number(musicVolume.value) / 100;
+      musicVolumeLabel.textContent = `${musicVolume.value}%`;
+      updateMusicVolume();
+      saveMeta();
+    });
+    document.querySelectorAll("[data-hub-target]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelector(`#${button.dataset.hubTarget}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
     document.querySelector("#lobbyButton").addEventListener("click", showHub);
     document.querySelector("#claimRunButton").addEventListener("click", claimRunAndReturnToHub);
     document.querySelector("#continueRunButton").addEventListener("click", continueRun);
@@ -5576,9 +6062,13 @@
     openSelectedChestButton.addEventListener("click", () => openChest(selectedChestType));
     buyChestButton.addEventListener("click", buyChest);
     resetProgressButton.addEventListener("click", resetProgress);
+    window.addEventListener("pointerdown", () => {
+      if (meta.settings.music) startMusic();
+    }, { once: true });
 
     resize();
     renderHub();
+    renderSettings();
     updateHud();
     requestAnimationFrame(frame);
   </script>
